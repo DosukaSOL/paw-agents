@@ -1,7 +1,7 @@
 {
   "name": "paw-agents",
   "version": "3.0.0",
-  "description": "PAW Agents — The operating system for autonomous AI agents",
+  "description": "PAW Agents (Programmable Autonomous Workers) — The operating system for autonomous AI agents",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

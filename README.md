@@ -5,7 +5,8 @@
 <h1 align="center">PAW Agents</h1>
 
 <p align="center">
-  <strong>The operating system for autonomous AI agents.</strong><br>
+  <strong>Programmable Autonomous Workers</strong><br>
+  The operating system for autonomous AI agents.<br>
   Multi-channel · Multi-agent · Safety-first · Extensible
 </p>
 
@@ -28,19 +29,21 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram" />
-  <img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" />
-  <img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white" alt="Slack" />
-  <img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp" />
-  <img src="https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Email" />
-  <img src="https://img.shields.io/badge/SMS-FF6600?style=for-the-badge&logo=twilio&logoColor=white" alt="SMS" />
-  <img src="https://img.shields.io/badge/WebChat-000000?style=for-the-badge&logo=socketdotio&logoColor=white" alt="WebChat" />
-  <img src="https://img.shields.io/badge/Webhooks-FF4088?style=for-the-badge&logo=webhooks&logoColor=white" alt="Webhooks" />
+  <a href="https://core.telegram.org/bots/api"><img src="https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram" /></a>
+  <a href="https://discord.com/developers/applications"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" /></a>
+  <a href="https://api.slack.com/apps"><img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white" alt="Slack" /></a>
+  <a href="https://developers.facebook.com/docs/whatsapp/cloud-api"><img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp" /></a>
+  <a href="https://nodemailer.com/about/"><img src="https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Email" /></a>
+  <a href="https://www.twilio.com/docs/sms"><img src="https://img.shields.io/badge/SMS-FF6600?style=for-the-badge&logo=twilio&logoColor=white" alt="SMS" /></a>
+  <a href="#channels"><img src="https://img.shields.io/badge/WebChat-000000?style=for-the-badge&logo=socketdotio&logoColor=white" alt="WebChat" /></a>
+  <a href="#channels"><img src="https://img.shields.io/badge/Webhooks-FF4088?style=for-the-badge&logo=webhooks&logoColor=white" alt="Webhooks" /></a>
 </p>
 
 ---
 
 ## What is PAW?
+
+**PAW** stands for **Programmable Autonomous Workers**.
 
 **PAW Agents** is a production-grade autonomous AI agent framework that converts natural language into safe, validated, traceable actions across **APIs**, **browsers**, **files**, **workflows**, **blockchains**, and **external tools**. It comes with native Solana support and the [Purp SCL](https://github.com/DosukaSOL/purp-scl) smart contract language built in.
 
@@ -729,7 +732,7 @@ MIT
 ---
 
 <p align="center">
-  <strong>🐾 PAW Agents v3.0</strong><br>
+  <strong>PAW Agents v3.0 — Programmable Autonomous Workers</strong><br>
   <em>The operating system for autonomous AI agents.</em><br><br>
   Ships with native <a href="https://solana.com">Solana</a> support and the <a href="https://github.com/DosukaSOL/purp-scl">Purp SCL</a> smart contract language.
 </p>
