@@ -11,6 +11,12 @@
 </p>
 
 <p align="center">
+  <a href="https://pawagents.ai"><img src="assets/logo-transparent.png" alt="" width="24" align="middle" />&nbsp;<b>Website</b></a>
+  &nbsp;&nbsp;&nbsp;·&nbsp;&nbsp;&nbsp;
+  <a href="https://x.com/PAWagents"><img src="assets/logo-transparent.png" alt="" width="24" align="middle" />&nbsp;<b>X</b></a>
+</p>
+
+<p align="center">
   <a href="https://github.com/DosukaSOL/paw-agents/releases"><img src="https://img.shields.io/badge/version-3.1.0-blue?style=flat-square" alt="Version" /></a>
   <a href="https://github.com/DosukaSOL/paw-agents/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" /></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square" alt="Node" /></a>
