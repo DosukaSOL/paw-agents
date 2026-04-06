@@ -57,15 +57,11 @@
 
 **PAW Agents** is a production-grade autonomous AI agent framework that converts natural language into safe, validated, traceable actions across **APIs**, **browsers**, **files**, **workflows**, **blockchains**, and **external tools**. It comes with native Solana support and the [Purp SCL](https://github.com/DosukaSOL/purp-scl) smart contract language built in.
 
-Every action follows a strict pipeline:
+Every action follows a strict six-stage pipeline:
 
-```
-INTENT → PLAN → VALIDATE → EXECUTE → VERIFY → LOG
-```
-
-Choose your mode:
-- 🔒 **Supervised** — Review and confirm all risky actions (default)
-- 🤖 **Autonomous** — Agent auto-executes, confirms only critical risks
+<p align="center">
+  <img src="assets/paw-pipeline-graphic.jpeg" alt="PAW Pipeline" width="800" />
+</p>
 
 ```
 You : "Send 0.5 SOL to GkXn..."
@@ -166,22 +162,9 @@ All channels share the same agent brain, tools, and safety pipeline. Channel ada
 
 PAW offers **three execution modes**. The validation pipeline is **always active** — but the confirmation gate is configurable.
 
-```
-/mode supervised    → Confirm all risky actions (default)
-/mode autonomous    → Auto-execute, confirm only critical risks
-/mode free          → Full autonomy — no confirmation gates (requires 2 safety warnings)
-```
-
-### How It Works
-
-| Risk Level | Supervised | Autonomous | Free |
-|------------|-----------|------------|------|
-| Low | ✅ Auto | ✅ Auto | ✅ Auto |
-| Medium | ⚠️ Confirm | ✅ Auto | ✅ Auto |
-| High | ⚠️ Confirm | ⚠️ Confirm* | ✅ Auto |
-| Critical | 🛑 Confirm | 🛑 Confirm | ✅ Auto |
-
-\* High-risk confirmation in autonomous mode is controlled by `CONFIRM_HIGH_RISK=true|false`
+<p align="center">
+  <img src="assets/paw-modes-graphic.jpeg" alt="PAW Agent Modes" width="800" />
+</p>
 
 ### Free Mode — Two-Layer Safety Gate
 
