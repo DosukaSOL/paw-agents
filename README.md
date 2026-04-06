@@ -27,6 +27,17 @@
   <a href="docs/ARCHITECTURE.md">Architecture</a>
 </p>
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram" />
+  <img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" />
+  <img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white" alt="Slack" />
+  <img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp" />
+  <img src="https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Email" />
+  <img src="https://img.shields.io/badge/SMS-FF6600?style=for-the-badge&logo=twilio&logoColor=white" alt="SMS" />
+  <img src="https://img.shields.io/badge/WebChat-000000?style=for-the-badge&logo=socketdotio&logoColor=white" alt="WebChat" />
+  <img src="https://img.shields.io/badge/Webhooks-FF4088?style=for-the-badge&logo=webhooks&logoColor=white" alt="Webhooks" />
+</p>
+
 ---
 
 ## What is PAW?
@@ -119,16 +130,16 @@ npm start
 
 PAW connects to users wherever they are. Configure one or all:
 
-| Channel | Setup | Protocol |
-|---------|-------|----------|
-| **Telegram** | `TELEGRAM_BOT_TOKEN` | Telegraf (long polling) |
-| **Discord** | `DISCORD_BOT_TOKEN` | discord.js (gateway) |
-| **Slack** | `SLACK_BOT_TOKEN` + `SLACK_APP_TOKEN` | Bolt (socket mode) |
-| **WhatsApp** | QR code pairing | Baileys (multi-device) |
-| **Email** | IMAP/SMTP config | nodemailer + IMAP polling |
-| **SMS** | Twilio credentials | Twilio REST API + webhooks |
-| **WebChat** | Built-in via Gateway | WebSocket |
-| **Webhooks** | `POST /webhook/:id` | HTTP |
+| | Channel | Setup | Protocol |
+|--|---------|-------|----------|
+| <img src="https://img.shields.io/badge/-26A5E4?style=flat-square&logo=telegram&logoColor=white" /> | **Telegram** | `TELEGRAM_BOT_TOKEN` | Telegraf (long polling) |
+| <img src="https://img.shields.io/badge/-5865F2?style=flat-square&logo=discord&logoColor=white" /> | **Discord** | `DISCORD_BOT_TOKEN` | discord.js (gateway) |
+| <img src="https://img.shields.io/badge/-4A154B?style=flat-square&logo=slack&logoColor=white" /> | **Slack** | `SLACK_BOT_TOKEN` + `SLACK_APP_TOKEN` | Bolt (socket mode) |
+| <img src="https://img.shields.io/badge/-25D366?style=flat-square&logo=whatsapp&logoColor=white" /> | **WhatsApp** | QR code pairing | Baileys (multi-device) |
+| <img src="https://img.shields.io/badge/-EA4335?style=flat-square&logo=gmail&logoColor=white" /> | **Email** | IMAP/SMTP config | nodemailer + IMAP polling |
+| <img src="https://img.shields.io/badge/-FF6600?style=flat-square&logo=twilio&logoColor=white" /> | **SMS** | Twilio credentials | Twilio REST API + webhooks |
+| <img src="https://img.shields.io/badge/-000000?style=flat-square&logo=socketdotio&logoColor=white" /> | **WebChat** | Built-in via Gateway | WebSocket |
+| <img src="https://img.shields.io/badge/-FF4088?style=flat-square&logo=webhooks&logoColor=white" /> | **Webhooks** | `POST /webhook/:id` | HTTP |
 
 All channels share the same agent brain, tools, and safety pipeline. Channel adapters are loaded dynamically — install only what you need.
 
@@ -654,21 +665,21 @@ If you want a **framework that maximizes capability, security, and extensibility
 ## Roadmap
 
 ### v3.1 — Channels & Reach
-- [ ] Instagram DM channel adapter
-- [ ] Facebook Messenger channel adapter
-- [ ] LINE channel adapter
-- [ ] WeChat channel adapter
-- [ ] Reddit channel adapter
-- [ ] Matrix / Element channel adapter
-- [ ] Voice channel (Twilio Voice / WebRTC)
+- [ ] <img src="https://img.shields.io/badge/-E4405F?style=flat-square&logo=instagram&logoColor=white" height="16" /> Instagram DM channel adapter
+- [ ] <img src="https://img.shields.io/badge/-0866FF?style=flat-square&logo=messenger&logoColor=white" height="16" /> Facebook Messenger channel adapter
+- [ ] <img src="https://img.shields.io/badge/-00C300?style=flat-square&logo=line&logoColor=white" height="16" /> LINE channel adapter
+- [ ] <img src="https://img.shields.io/badge/-07C160?style=flat-square&logo=wechat&logoColor=white" height="16" /> WeChat channel adapter
+- [ ] <img src="https://img.shields.io/badge/-FF4500?style=flat-square&logo=reddit&logoColor=white" height="16" /> Reddit channel adapter
+- [ ] <img src="https://img.shields.io/badge/-000000?style=flat-square&logo=element&logoColor=white" height="16" /> Matrix / Element channel adapter
+- [ ] <img src="https://img.shields.io/badge/-F22F46?style=flat-square&logo=twilio&logoColor=white" height="16" /> Voice channel (Twilio Voice / WebRTC)
 - [ ] Custom webhook builder UI in dashboard
 
 ### v3.2 — Apps & Companions
-- [ ] PAW Desktop app (Electron — macOS, Windows, Linux)
-- [ ] PAW Mobile app (React Native — iOS, Android)
-- [ ] PAW CLI companion (`paw chat`, `paw deploy`, `paw status`)
-- [ ] VS Code extension — chat with PAW from your editor
-- [ ] Browser extension — trigger PAW from any webpage
+- [ ] <img src="https://img.shields.io/badge/-47848F?style=flat-square&logo=electron&logoColor=white" height="16" /> PAW Desktop app (Electron — macOS, Windows, Linux)
+- [ ] <img src="https://img.shields.io/badge/-61DAFB?style=flat-square&logo=react&logoColor=black" height="16" /> PAW Mobile app (React Native — iOS, Android)
+- [ ] <img src="https://img.shields.io/badge/-4D4D4D?style=flat-square&logo=gnometerminal&logoColor=white" height="16" /> PAW CLI companion (`paw chat`, `paw deploy`, `paw status`)
+- [ ] <img src="https://img.shields.io/badge/-007ACC?style=flat-square&logo=visualstudiocode&logoColor=white" height="16" /> VS Code extension — chat with PAW from your editor
+- [ ] <img src="https://img.shields.io/badge/-4285F4?style=flat-square&logo=googlechrome&logoColor=white" height="16" /> Browser extension — trigger PAW from any webpage
 
 ### v3.3 — Intelligence & Memory
 - [ ] Long-term user profiling with preference learning
