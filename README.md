@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>The operating system for autonomous AI agents.</strong><br>
-  Multi-channel · Multi-agent · Solana-native · Purp SCL v1.0
+  Multi-channel · Multi-agent · Safety-first · Extensible
 </p>
 
 <p align="center">
@@ -14,7 +14,6 @@
   <a href="https://github.com/DosukaSOL/paw-agents/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" /></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square" alt="Node" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.6-blue?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
-  <a href="https://solana.com"><img src="https://img.shields.io/badge/Solana-native-purple?style=flat-square&logo=solana&logoColor=white" alt="Solana" /></a>
 </p>
 
 <p align="center">
@@ -24,6 +23,7 @@
   <a href="#autonomous-mode">Autonomous Mode</a> ·
   <a href="#purp-scl">Purp SCL</a> ·
   <a href="#safety">Safety</a> ·
+  <a href="#roadmap">Roadmap</a> ·
   <a href="docs/ARCHITECTURE.md">Architecture</a>
 </p>
 
@@ -31,7 +31,7 @@
 
 ## What is PAW?
 
-**PAW Agents** (Purp Autonomous Workers) is a production-grade autonomous AI agent system that converts natural language into safe, validated, traceable actions across **Solana**, **APIs**, **files**, and the **Purp ecosystem**.
+**PAW Agents** is a production-grade autonomous AI agent framework that converts natural language into safe, validated, traceable actions across **APIs**, **browsers**, **files**, **workflows**, **blockchains**, and **external tools**. It comes with native Solana support and the [Purp SCL](https://github.com/DosukaSOL/purp-scl) smart contract language built in.
 
 Every action follows a strict pipeline:
 
@@ -92,14 +92,14 @@ npm start
 | **Agent Modes** | Autonomous / Supervised toggle per user. Validation pipeline configurable. |
 | **Channels** | Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat, Webhooks |
 | **Models** | OpenAI (GPT-4o), Anthropic (Claude) with automatic failover |
-| **Blockchain** | Solana transfers, balance checks, SPL tokens, tx simulation sandbox |
+| **Blockchain** | Native Solana support: transfers, balance checks, SPL tokens, tx simulation |
 | **Purp SCL** | v1.0.0 parser, Anchor Rust codegen, TypeScript SDK generation |
 | **Browser** | Puppeteer-based automation: navigate, click, type, extract, screenshot |
 | **Multi-Agent** | Agent registry, capability routing, task delegation, multi-step orchestration |
 | **Vector Memory** | Persistent semantic memory with cosine similarity search |
 | **MCP** | Model Context Protocol client — connect to external MCP tool servers |
 | **Workflows** | DAG-based workflow engine: triggers → conditions → actions |
-| **On-Chain Registry** | Solana-based agent identity verification with PDA-derived keys |
+| **On-Chain Registry** | Agent identity verification with PDA-derived keys (Solana) |
 | **Token Gate** | SPL token-gated access control with tiered permissions |
 | **Tx Simulation** | Full dry-run sandbox with balance change analysis + warning detection |
 | **Tools** | 30+ built-in tools: HTTP, file, data, browser, memory, MCP, workflows |
@@ -174,7 +174,7 @@ CONFIRM_HIGH_RISK=true       # Confirm high-risk even in autonomous mode
 <a id="purp-scl"></a>
 ## Purp SCL v1.0 Integration
 
-PAW ships with a full Purp Smart Contract Language v1.0.0 integration:
+PAW ships with a built-in [Purp Smart Contract Language](https://github.com/DosukaSOL/purp-scl) integration — letting agents compile, validate, and deploy Solana programs without leaving the chat:
 
 ### Native `.purp` Syntax
 
@@ -244,9 +244,9 @@ spl-token = "0.4"
 ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
 │  INTENT  │ → │   PLAN   │ → │ VALIDATE │ → │ EXECUTE  │ → │  VERIFY  │ → │   LOG    │
 │          │   │          │   │          │   │          │   │          │   │          │
-│ Sanitize │   │ LLM gen  │   │ Schema   │   │ Solana   │   │ Confirm  │   │ Claw-    │
-│ Rate lim │   │ Strict   │   │ Safety   │   │ Purp     │   │ Heal     │   │ trace    │
-│ Inject   │   │ JSON     │   │ Simulate │   │ API/File │   │ Report   │   │ Redact   │
+│ Sanitize │   │ LLM gen  │   │ Schema   │   │ Tools    │   │ Confirm  │   │ Claw-    │
+│ Rate lim │   │ Strict   │   │ Safety   │   │ APIs     │   │ Heal     │   │ trace    │
+│ Inject   │   │ JSON     │   │ Simulate │   │ Browser  │   │ Report   │   │ Redact   │
 └──────────┘   └──────────┘   └──────────┘   └──────────┘   └──────────┘   └──────────┘
 ```
 
@@ -268,7 +268,7 @@ spl-token = "0.4"
 | **Validation** | Schema + logic + safety policy + blockchain simulation |
 | **Keys** | AES-256-GCM encrypted at rest, zeroed after use, never logged |
 | **Execution** | Sandboxed — Purp whitelist, file sandbox, HTTPS-only APIs, blocked internal IPs |
-| **Blockchain** | Mandatory simulation, risk scoring, confirmation gate |
+| **Blockchain** | Simulation before every transaction, risk scoring, confirmation gate |
 | **Logging** | All secrets auto-redacted from Clawtrace |
 | **Recovery** | Self-healing: diagnose → fix → retry → escalate |
 | **Rate Limit** | Per-user token bucket with configurable limits |
@@ -574,7 +574,7 @@ Every action is logged in structured JSONL with auto-redacted secrets:
 
 ## PAW Agents vs OpenClaw Agents
 
-[OpenClaw](https://github.com/openclaw) is a well-known agent framework in the Solana ecosystem. Here's how PAW differentiates — and where it goes further.
+[OpenClaw](https://github.com/openclaw) is a well-known agent framework. Here's how PAW differentiates — and where it goes further.
 
 ### Architecture Philosophy
 
@@ -644,9 +644,61 @@ OpenClaw has broader **channel coverage** (25+ platforms vs PAW's 8) and **compa
 
 OpenClaw connects to more platforms. PAW does **everything else** better.
 
-Safety pipeline that never sleeps. LLM that never touches execution. Browser automation, multi-agent orchestration, semantic memory, DAG workflows, MCP integration, on-chain identity, token-gated access, transaction simulation, a real-time dashboard, and Purp SCL v1.0 — all built in, all tested (79 tests), all production-ready.
+Safety pipeline that never sleeps. LLM that never touches execution. Browser automation, multi-agent orchestration, semantic memory, DAG workflows, MCP integration, on-chain identity, token-gated access, transaction simulation, a real-time dashboard, and Purp SCL — all built in, all tested (79 tests), all production-ready.
 
-If you want a **framework that maximizes capability, security, and extensibility for autonomous agents on Solana** — PAW is the clear choice.
+If you want a **framework that maximizes capability, security, and extensibility for autonomous AI agents** — PAW is the clear choice.
+
+---
+
+<a id="roadmap"></a>
+## Roadmap
+
+### v3.1 — Channels & Reach
+- [ ] Instagram DM channel adapter
+- [ ] Facebook Messenger channel adapter
+- [ ] LINE channel adapter
+- [ ] WeChat channel adapter
+- [ ] Reddit channel adapter
+- [ ] Matrix / Element channel adapter
+- [ ] Voice channel (Twilio Voice / WebRTC)
+- [ ] Custom webhook builder UI in dashboard
+
+### v3.2 — Apps & Companions
+- [ ] PAW Desktop app (Electron — macOS, Windows, Linux)
+- [ ] PAW Mobile app (React Native — iOS, Android)
+- [ ] PAW CLI companion (`paw chat`, `paw deploy`, `paw status`)
+- [ ] VS Code extension — chat with PAW from your editor
+- [ ] Browser extension — trigger PAW from any webpage
+
+### v3.3 — Intelligence & Memory
+- [ ] Long-term user profiling with preference learning
+- [ ] RAG (Retrieval-Augmented Generation) over user documents
+- [ ] Multi-model routing — pick the best model per task automatically
+- [ ] Fine-tuned small models for common tasks (low-latency fast path)
+- [ ] Conversation branching and rollback
+
+### v3.4 — Platform & Scale
+- [ ] Multi-tenant mode — one deployment, many teams
+- [ ] Plugin marketplace — discover and install community skills
+- [ ] Workflow template library — pre-built automations
+- [ ] Horizontal scaling with Redis-backed message queue
+- [ ] OAuth2 / SSO authentication for dashboard
+
+### v3.5 — Ecosystem
+- [ ] Additional blockchain support (Ethereum, Base, Sui)
+- [ ] Purp SCL v2 integration (frontend compilation, multi-file projects)
+- [ ] Agent-to-agent marketplace — agents discover and hire each other
+- [ ] Analytics dashboard — usage metrics, cost tracking, performance graphs
+- [ ] Public agent directory — share your PAW agent configs
+
+### Future
+- [ ] On-device inference for privacy-sensitive tasks
+- [ ] Formal verification of agent safety properties
+- [ ] Visual workflow builder (drag-and-drop)
+- [ ] Zapier / Make / n8n integration adapters
+- [ ] White-label / embedded mode for SaaS products
+
+Want to contribute to any of these? See [Contributing](#contributing).
 
 ---
 
@@ -668,5 +720,5 @@ MIT
 <p align="center">
   <strong>🐾 PAW Agents v3.0</strong><br>
   <em>The operating system for autonomous AI agents.</em><br><br>
-  Built for the <a href="https://github.com/DosukaSOL/purp-scl">Purp</a> ecosystem on <a href="https://solana.com">Solana</a>.
+  Ships with native <a href="https://solana.com">Solana</a> support and the <a href="https://github.com/DosukaSOL/purp-scl">Purp SCL</a> smart contract language.
 </p>
