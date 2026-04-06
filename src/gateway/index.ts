@@ -5,6 +5,8 @@
 import { createServer, IncomingMessage, ServerResponse } from 'http';
 import { WebSocketServer, WebSocket } from 'ws';
 import { v4 as uuid } from 'uuid';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { config } from '../core/config';
 import { GatewayClient, GatewayMessage, ChannelType } from '../core/types';
 import { PawAgent } from '../agent/loop';
@@ -60,6 +62,20 @@ export class PawGateway {
       if (req.url === '/' || req.url === '/dashboard') {
         res.writeHead(200, { 'Content-Type': 'text/html' });
         res.end(getDashboardHTML());
+        return;
+      }
+
+      // Serve logo asset
+      if (req.url === '/assets/logo-transparent.png') {
+        try {
+          const logoPath = join(__dirname, '..', '..', 'assets', 'logo-transparent.png');
+          const data = readFileSync(logoPath);
+          res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'public, max-age=86400' });
+          res.end(data);
+        } catch {
+          res.writeHead(404);
+          res.end();
+        }
         return;
       }
 

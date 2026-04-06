@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" alt="PAW Agents" width="180" />
+  <img src="assets/logo-transparent.png" alt="PAW Agents" width="400" />
 </p>
 
 <h1 align="center">PAW Agents</h1>
