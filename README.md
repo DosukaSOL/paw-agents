@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/DosukaSOL/paw-agents/releases"><img src="https://img.shields.io/badge/version-3.2.0-blue?style=flat-square" alt="Version" /></a>
+  <a href="https://github.com/DosukaSOL/paw-agents/releases"><img src="https://img.shields.io/badge/version-3.4.0-blue?style=flat-square" alt="Version" /></a>
   <a href="https://github.com/DosukaSOL/paw-agents/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" /></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square" alt="Node" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.6-blue?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
@@ -70,7 +70,7 @@ npm run build
 npm start
 ```
 
-**Requirements:** Node.js 20+ · At least one AI API key · At least one channel token (or use WebChat)
+**Requirements:** Node.js 20+ · At least one AI provider (Ollama is free!) · At least one channel token (or use WebChat)
 
 ---
 
@@ -81,7 +81,7 @@ npm start
 |----------|-------------|
 | **Agent Modes** | Supervised / Autonomous / Free — per-user with 2-layer safety gate for Free |
 | **Channels** | Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat, Webhooks, LINE, Reddit, Matrix |
-| **Models** | OpenAI, Anthropic, Google AI, Mistral, DeepSeek, Groq — automatic failover |
+| **Models** | OpenAI, Anthropic, Google AI, Mistral, DeepSeek, Groq, **Ollama (FREE)** — automatic failover |
 | **Blockchain** | Native Solana: transfers, balances, SPL tokens, tx simulation, composable DeFi |
 | **Purp SCL** | v1.1 parser → Anchor Rust codegen → TypeScript SDK + IDL |
 | **Browser** | Puppeteer: navigate, click, type, extract, screenshot |
@@ -89,14 +89,20 @@ npm start
 | **Intelligence** | User profiling, RAG, smart model routing, fast path, conversation branching |
 | **Memory** | Persistent vector memory with cosine similarity search |
 | **MCP** | Model Context Protocol client for external tool servers |
-| **Workflows** | DAG engine: triggers → conditions → actions |
-| **Apps** | CLI, Electron desktop, React Native mobile, VS Code extension, browser extension |
+| **Workflows** | DAG engine: triggers → conditions → actions + reusable templates |
+| **Apps** | PAW Hub (Desktop OS), CLI, Electron, React Native mobile, VS Code, browser extension |
 | **Tools** | 45+ built-in tools across 13 categories |
 | **Safety** | Prompt injection defense, rate limiting, risk scoring, URL sandboxing, tx simulation |
 | **Keys** | AES-256-GCM encryption, Ed25519 signing, zeroed after use |
 | **Logging** | Clawtrace JSONL audit trail with auto-redacted secrets |
 | **Recovery** | Self-healing: diagnose → fix → retry → escalate |
 | **Dashboard** | Real-time web UI: chat, status, logs, mode toggle, session persistence |
+| **Mission Control** | Real-time agent monitoring, task queues, metrics, alerts, live logs |
+| **Hub** | Desktop OS experience — Dashboard + Mission Control + CLI + Plugins + Workflows |
+| **Multi-Tenant** | Tenant isolation, per-tenant config, user roles, plan-based limits |
+| **Plugins** | Marketplace system with hooks, permissions, activation lifecycle |
+| **OAuth2/SSO** | Token-based auth, session management, OAuth2 code flow |
+| **Cross-App Sync** | Actions, memory, and conversations sync across ALL channels in real-time |
 
 ---
 
@@ -241,6 +247,14 @@ npx paw deploy        # Deploy config
 npx paw models        # List AI providers
 ```
 
+### PAW Hub (Desktop OS)
+**The Hub is PAW's desktop operating system.** Dashboard + Mission Control + CLI + Plugins + Workflows in one app.
+- Startup animation with logo and jingle
+- Sidebar navigation between all views
+- Real-time sync across all channels
+- Action source tracking (see which channel each action came from)
+- Plugin toggle, workflow runner, settings panel
+
 ### Desktop (Electron)
 Native app for macOS, Windows, Linux — system tray, dark theme, WebSocket chat.
 
@@ -269,16 +283,28 @@ Toggle individual features from the Dashboard sidebar.
 
 ## Multi-Model Support
 
-| Provider | Models | Failover |
-|----------|--------|----------|
-| **OpenAI** | GPT-4o, GPT-4 Turbo | ✅ |
-| **Anthropic** | Claude Sonnet 4 | ✅ |
-| **Google AI** | Gemma 3 27B | ✅ |
-| **Mistral** | Mistral Large | ✅ |
-| **DeepSeek** | DeepSeek Chat / R1 | ✅ |
-| **Groq** | Llama 3.3 70B | ✅ |
+| Provider | Models | Free? | Failover |
+|----------|--------|-------|----------|
+| **Ollama** | Gemma 4, Llama 3, any local model | ✅ FREE | ✅ |
+| **OpenAI** | GPT-4o, GPT-4 Turbo | ❌ | ✅ |
+| **Anthropic** | Claude Sonnet 4 | ❌ | ✅ |
+| **Google AI** | Gemma 3 27B | ❌ | ✅ |
+| **Mistral** | Mistral Large | ❌ | ✅ |
+| **DeepSeek** | DeepSeek Chat / R1 | ❌ | ✅ |
+| **Groq** | Llama 3.3 70B | ❌ | ✅ |
 
-Configure one or many — PAW routes to your preferred provider and auto-fails over.
+### 🆓 Run AI Agents for FREE with Ollama
+
+**Ollama + Gemma 4** means you can run a full AI agent locally — zero API bills, zero subscriptions.
+
+```bash
+# Install Ollama (https://ollama.com)
+ollama pull gemma4
+# PAW auto-detects your local Ollama instance
+npm start
+```
+
+Set `OLLAMA_ENABLED=true` and `OLLAMA_MODEL=gemma4` in `.env`. PAW uses Ollama's OpenAI-compatible API at `http://127.0.0.1:11434`.
 
 ---
 
@@ -295,6 +321,9 @@ ws://127.0.0.1:18789       # WebSocket
 | `/health` | Health check + uptime |
 | `/api/status` | Agent status and mode |
 | `/webhook/:id` | Webhook triggers |
+| `/api/mission-control` | Mission Control state (agents, tasks, metrics, alerts) |
+| `/api/actions` | Action history with source tracking |
+| `/api/sync/stats` | Cross-app sync statistics |
 
 ---
 
@@ -322,6 +351,11 @@ paw-agents/
 │   ├── integrations/               # 11 channel adapters + Solana + Purp
 │   ├── security/                   # Sanitizer, keystore, rate limiter
 │   ├── clawtrace/                  # JSONL audit logger
+│   ├── mission-control/            # Real-time monitoring & management
+│   ├── plugins/                    # Plugin marketplace system
+│   ├── multi-tenant/               # Tenant isolation & management
+│   ├── auth/                       # OAuth2 / SSO authentication
+│   ├── sync/                       # Cross-app memory & action sync
 │   ├── cli/                        # CLI companion
 │   └── self-healing/               # Failure recovery
 ├── desktop/                        # Electron app + Pawl companion
@@ -347,8 +381,8 @@ Desktop (Electron) · Mobile (React Native) · CLI · VS Code extension · Brows
 ### ✅ v3.3 — Intelligence & Memory
 User profiling · RAG · Smart model routing · Fast path · Conversation branching
 
-### 🔜 v3.4 — Platform & Scale
-Multi-tenant · Plugin marketplace · Workflow templates · Horizontal scaling · OAuth2/SSO
+### ✅ v3.4 — Platform & Scale
+Ollama/Gemma 4 (FREE AI) · PAW Hub desktop OS · Mission Control · Multi-tenant · Plugin marketplace · Workflow templates · OAuth2/SSO · Cross-app sync · Action source tracking · Horizontal scaling types
 
 ### 🔜 v3.5 — Ecosystem
 Ethereum/Base/Sui · Purp SCL v2 · Agent marketplace · Analytics dashboard · Public agent directory
@@ -371,6 +405,6 @@ MIT
 ---
 
 <p align="center">
-  <strong>PAW Agents v3.2 — Programmable Autonomous Workers</strong><br>
+  <strong>PAW Agents v3.4 — Platform & Scale</strong><br>
   <em>The operating system for autonomous AI agents.</em>
 </p>

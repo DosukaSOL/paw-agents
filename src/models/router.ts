@@ -254,6 +254,54 @@ class GroqProvider implements ModelProvider {
   }
 }
 
+// ─── Ollama Provider (Local — Gemma 4, Llama, etc.) ───
+class OllamaProvider implements ModelProvider {
+  name = 'ollama';
+  model: string;
+  private baseUrl: string;
+
+  constructor(cfg: { baseUrl: string; model: string }) {
+    this.baseUrl = cfg.baseUrl.replace(/\/+$/, '');
+    this.model = cfg.model;
+  }
+
+  async available(): Promise<boolean> {
+    try {
+      const res = await fetch(`${this.baseUrl}/api/tags`, { signal: AbortSignal.timeout(2000) });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async generate(system: string, prompt: string): Promise<string> {
+    // Ollama exposes an OpenAI-compatible endpoint
+    const response = await fetch(`${this.baseUrl}/v1/chat/completions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: this.model,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.1,
+        max_tokens: 4096,
+        stream: false,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json() as { choices: Array<{ message: { content: string } }> };
+    const text = data.choices?.[0]?.message?.content;
+    if (!text) throw new Error('Empty response from Ollama');
+    return text;
+  }
+}
+
 // ─── Router ───
 export class ModelRouter {
   private providers: ModelProvider[] = [];
@@ -303,6 +351,14 @@ export class ModelRouter {
       this.providers.push(new GroqProvider({
         apiKey: config.models.groq.apiKey,
         model: config.models.groq.model,
+      }));
+    }
+
+    // Ollama — local, no API key needed
+    if (config.models.ollama.enabled) {
+      this.providers.push(new OllamaProvider({
+        baseUrl: config.models.ollama.baseUrl,
+        model: config.models.ollama.model,
       }));
     }
   }

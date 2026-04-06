@@ -138,6 +138,11 @@ export const config = {
       apiKey: optionalEnv('GROQ_API_KEY', ''),
       model: optionalEnv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
     },
+    ollama: {
+      enabled: optionalBool('OLLAMA_ENABLED', true),
+      baseUrl: optionalEnv('OLLAMA_BASE_URL', 'http://127.0.0.1:11434'),
+      model: optionalEnv('OLLAMA_MODEL', 'gemma4'),
+    },
     defaultProvider: optionalEnv('DEFAULT_MODEL_PROVIDER', 'openai'),
   },
   // ─── Solana ───
@@ -205,6 +210,26 @@ export const config = {
   },
   env: optionalEnv('NODE_ENV', 'production'),
   logLevel: optionalEnv('LOG_LEVEL', 'info'),
+  // ─── Multi-Tenant (v3.4) ───
+  multiTenant: {
+    enabled: optionalBool('MULTI_TENANT_ENABLED', false),
+    isolation: optionalEnv('TENANT_ISOLATION', 'strict') as 'strict' | 'shared',
+    maxTenants: safeParseInt('MAX_TENANTS', 100, 1),
+  },
+  // ─── OAuth2 / SSO (v3.4) ───
+  oauth2: {
+    enabled: optionalBool('OAUTH2_ENABLED', false),
+    clientId: optionalEnv('OAUTH2_CLIENT_ID', ''),
+    clientSecret: optionalEnv('OAUTH2_CLIENT_SECRET', ''),
+    issuerUrl: optionalEnv('OAUTH2_ISSUER_URL', ''),
+    sessionSecret: optionalEnv('SESSION_SECRET', ''),
+  },
+  // ─── Hub (v3.4) ───
+  hub: {
+    enabled: optionalBool('HUB_ENABLED', true),
+    syncBroadcast: optionalBool('HUB_SYNC_BROADCAST', true),
+    maxRecentActions: safeParseInt('HUB_MAX_RECENT_ACTIONS', 500, 10),
+  },
 } as const;
 
 export function getSecurityPolicy(): SecurityPolicy {

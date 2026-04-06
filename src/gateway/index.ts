@@ -12,6 +12,8 @@ import { config } from '../core/config';
 import { GatewayClient, GatewayMessage, ChannelType } from '../core/types';
 import { PawAgent } from '../agent/loop';
 import { getDashboardHTML } from '../dashboard/index';
+import { missionControl } from '../mission-control/index';
+import { crossAppSync } from '../sync/cross-app';
 
 interface ConnectedClient {
   ws: WebSocket;
@@ -55,7 +57,7 @@ export class PawGateway {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           status: 'ok',
-          version: '3.2.0',
+          version: '3.4.0',
           clients: this.clients.size,
           uptime: process.uptime(),
         }));
@@ -90,6 +92,36 @@ export class PawGateway {
           channels: this.getActiveChannels(),
           clients: this.clients.size,
           mode: config.agent.mode,
+        }));
+        return;
+      }
+
+      // Mission Control state
+      if (req.url === '/api/mission-control') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(missionControl.getState()));
+        return;
+      }
+
+      // Action history
+      if (req.url?.startsWith('/api/actions')) {
+        const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
+        const limit = Math.min(parseInt(url.searchParams.get('limit') ?? '50', 10), 200);
+        const channel = url.searchParams.get('channel') as ChannelType | null;
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(crossAppSync.getActionHistory(limit, channel ?? undefined)));
+        return;
+      }
+
+      // Sync stats
+      if (req.url === '/api/sync/stats') {
+        const stats = crossAppSync.getStats();
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          sessions: stats.sessions,
+          memories: stats.memories,
+          actions: stats.actions,
+          channels: Array.from(stats.channels),
         }));
         return;
       }
@@ -164,7 +196,21 @@ export class PawGateway {
           // Route message to agent
           if (msg.type === 'message') {
             const userId = client.info.user_id ?? `webchat:${clientId}`;
+            const channel = client.info.channel;
+            const startTime = Date.now();
+
+            // Track in cross-app sync
+            crossAppSync.addChannelToSession(userId, channel);
+            crossAppSync.addMessage(userId, String(msg.payload), 'user', channel);
+            missionControl.recordMessage();
+
             const response = await this.agent.process(userId, String(msg.payload));
+            const durationMs = Date.now() - startTime;
+
+            // Record in cross-app sync and mission control
+            crossAppSync.addMessage(userId, typeof response === 'string' ? response : JSON.stringify(response), 'agent', channel);
+            crossAppSync.recordAction('agent_response', String(msg.payload).substring(0, 100), channel, userId, durationMs, true);
+            missionControl.recordResponseTime(durationMs);
 
             this.sendToClient(clientId, {
               type: 'response',
@@ -173,6 +219,9 @@ export class PawGateway {
               payload: response,
               timestamp: new Date().toISOString(),
             });
+
+            // Broadcast sync event to all other clients
+            this.broadcastSync(clientId, channel);
           }
 
           // Handle commands
@@ -344,6 +393,30 @@ export class PawGateway {
       channels.add(client.info.channel);
     }
     return Array.from(channels);
+  }
+
+  // ─── Broadcast sync state to all other clients ───
+  private broadcastSync(excludeClientId: string, sourceChannel: ChannelType): void {
+    const syncPayload: GatewayMessage = {
+      type: 'event',
+      channel: sourceChannel,
+      from: 'system',
+      payload: {
+        event: 'sync',
+        metrics: missionControl.getCurrentMetrics(),
+        syncStats: {
+          sessions: crossAppSync.getStats().sessions,
+          actions: crossAppSync.getStats().actions,
+        },
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    for (const [id, client] of this.clients) {
+      if (id !== excludeClientId && client.authenticated && client.ws.readyState === WebSocket.OPEN) {
+        client.ws.send(JSON.stringify(syncPayload));
+      }
+    }
   }
 
   // ─── Timing-safe string comparison ───

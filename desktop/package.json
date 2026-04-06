@@ -1,7 +1,7 @@
 {
-  "name": "paw-desktop",
-  "version": "3.2.0",
-  "description": "PAW Agents Desktop — Chat with your AI agent from your desktop",
+  "name": "paw-hub",
+  "version": "3.4.0",
+  "description": "PAW Hub — Your AI Agent OS for Desktop",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc",

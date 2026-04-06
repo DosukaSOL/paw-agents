@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; script-src 'self' 'unsafe-inline'; connect-src ws://127.0.0.1:* http://127.0.0.1:*;">
+  <title>PAW Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #08080d;
+      --bg-secondary: #0e0e16;
+      --bg-card: #13131f;
+      --bg-card-hover: #1a1a2e;
+      --bg-elevated: #1e1e32;
+      --border-subtle: rgba(124, 58, 237, 0.12);
+      --border-standard: rgba(124, 58, 237, 0.2);
+      --border-bright: rgba(124, 58, 237, 0.35);
+      --text-primary: #f0eef5;
+      --text-secondary: #a8a4b8;
+      --text-tertiary: #6b6880;
+      --brand: #7c3aed;
+      --brand-light: #a78bfa;
+      --brand-dark: #6d28d9;
+      --brand-glow: rgba(124, 58, 237, 0.15);
+      --accent: #22d3ee;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --error: #f87171;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg-primary); color: var(--text-primary); height: 100vh; overflow: hidden; }
+
+    /* ─── Startup Screen ─── */
+    #startup-screen {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--bg-primary);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      transition: opacity 0.8s ease;
+    }
+    #startup-screen.fade-out { opacity: 0; pointer-events: none; }
+    #startup-logo {
+      width: 120px; height: 120px;
+      animation: logoEntry 1.2s ease-out, logoPulse 2s ease-in-out 1.2s infinite;
+    }
+    #startup-text {
+      margin-top: 24px;
+      font-size: 28px; font-weight: 700;
+      background: linear-gradient(135deg, var(--brand), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      opacity: 0; animation: textFadeIn 0.6s ease-out 0.6s forwards;
+    }
+    #startup-sub {
+      margin-top: 8px; font-size: 13px; color: var(--text-tertiary);
+      opacity: 0; animation: textFadeIn 0.6s ease-out 0.9s forwards;
+    }
+    #startup-bar {
+      margin-top: 32px; width: 200px; height: 3px;
+      background: var(--bg-elevated); border-radius: 2px; overflow: hidden;
+    }
+    #startup-bar-fill {
+      height: 100%; width: 0; border-radius: 2px;
+      background: linear-gradient(90deg, var(--brand), var(--accent));
+      animation: barFill 1.8s ease-in-out 0.4s forwards;
+    }
+    @keyframes logoEntry { from { transform: scale(0.3) rotate(-10deg); opacity: 0; } to { transform: scale(1) rotate(0deg); opacity: 1; } }
+    @keyframes logoPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    @keyframes textFadeIn { to { opacity: 1; } }
+    @keyframes barFill { to { width: 100%; } }
+
+    /* ─── Hub Layout ─── */
+    #hub { display: flex; height: 100vh; opacity: 0; transition: opacity 0.5s; }
+    #hub.visible { opacity: 1; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 60px; background: var(--bg-secondary);
+      border-right: 1px solid var(--border-subtle);
+      display: flex; flex-direction: column; align-items: center;
+      padding: 12px 0; gap: 4px; flex-shrink: 0;
+      -webkit-app-region: drag;
+    }
+    .sidebar-logo { width: 36px; height: 36px; margin-bottom: 16px; opacity: 0.9; -webkit-app-region: drag; }
+    .sidebar-btn {
+      width: 44px; height: 44px; border-radius: 12px;
+      border: none; background: transparent; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-tertiary); transition: all 0.2s;
+      -webkit-app-region: no-drag; position: relative;
+    }
+    .sidebar-btn:hover { background: var(--bg-card); color: var(--text-secondary); }
+    .sidebar-btn.active { background: var(--brand-glow); color: var(--brand-light); }
+    .sidebar-btn.active::before {
+      content: ''; position: absolute; left: -6px;
+      width: 3px; height: 20px; border-radius: 2px;
+      background: var(--brand);
+    }
+    .sidebar-btn svg { width: 20px; height: 20px; }
+    .sidebar-spacer { flex: 1; }
+    .sidebar-status { width: 8px; height: 8px; border-radius: 50%; margin-bottom: 12px; background: var(--error); transition: background 0.3s; }
+    .sidebar-status.connected { background: var(--success); }
+
+    /* Main Area */
+    .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+    .topbar {
+      height: 48px; background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex; align-items: center; padding: 0 20px;
+      -webkit-app-region: drag; flex-shrink: 0;
+    }
+    .topbar-title { font-size: 14px; font-weight: 600; -webkit-app-region: drag; }
+    .topbar-right { margin-left: auto; display: flex; gap: 8px; align-items: center; -webkit-app-region: no-drag; }
+    .topbar-badge {
+      padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;
+      background: var(--brand-glow); color: var(--brand-light); border: 1px solid var(--brand);
+    }
+
+    /* View Panels */
+    .view-panel { flex: 1; overflow-y: auto; padding: 24px; display: none; }
+    .view-panel.active { display: block; }
+
+    /* Dashboard View */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 12px; padding: 16px;
+    }
+    .stat-label { font-size: 12px; color: var(--text-tertiary); margin-bottom: 4px; }
+    .stat-value { font-size: 24px; font-weight: 700; }
+    .stat-value.brand { color: var(--brand-light); }
+    .stat-value.accent { color: var(--accent); }
+    .stat-value.success { color: var(--success); }
+    .stat-value.warning { color: var(--warning); }
+
+    /* Chat Area */
+    .chat-section { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; overflow: hidden; height: calc(100vh - 340px); display: flex; flex-direction: column; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 16px; }
+    .chat-msg { margin-bottom: 12px; max-width: 85%; }
+    .chat-msg.user { margin-left: auto; }
+    .chat-msg-bubble {
+      padding: 10px 14px; border-radius: 14px; font-size: 13px; line-height: 1.5; word-wrap: break-word; white-space: pre-wrap;
+    }
+    .chat-msg.user .chat-msg-bubble { background: var(--brand); color: #fff; border-bottom-right-radius: 4px; }
+    .chat-msg.agent .chat-msg-bubble { background: var(--bg-elevated); border: 1px solid var(--border-standard); border-bottom-left-radius: 4px; }
+    .chat-msg-meta { font-size: 10px; color: var(--text-tertiary); margin-top: 4px; }
+    .chat-msg.user .chat-msg-meta { text-align: right; }
+    .chat-input-area { padding: 12px 16px; border-top: 1px solid var(--border-subtle); display: flex; gap: 10px; }
+    .chat-input {
+      flex: 1; background: var(--bg-primary); border: 1px solid var(--border-standard);
+      border-radius: 10px; padding: 10px 14px; color: var(--text-primary);
+      font-family: inherit; font-size: 13px; outline: none;
+    }
+    .chat-input:focus { border-color: var(--brand); }
+    .chat-send {
+      background: var(--brand); border: none; border-radius: 10px;
+      padding: 10px 18px; color: #fff; font-weight: 600; cursor: pointer;
+      font-size: 13px; transition: background 0.2s;
+    }
+    .chat-send:hover { background: var(--brand-dark); }
+
+    /* Mission Control View */
+    .mc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+    .mc-panel {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 12px; padding: 16px;
+    }
+    .mc-panel-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .mc-agent-row { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 8px; margin-bottom: 4px; }
+    .mc-agent-row:hover { background: var(--bg-card-hover); }
+    .mc-agent-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .mc-agent-dot.active { background: var(--success); }
+    .mc-agent-dot.idle { background: var(--warning); }
+    .mc-agent-dot.error { background: var(--error); }
+    .mc-agent-name { font-size: 13px; font-weight: 500; }
+    .mc-agent-task { font-size: 11px; color: var(--text-tertiary); margin-left: auto; }
+
+    /* Log Stream */
+    .log-stream {
+      background: var(--bg-primary); border: 1px solid var(--border-subtle);
+      border-radius: 8px; padding: 12px; max-height: 300px; overflow-y: auto;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    }
+    .log-entry { padding: 2px 0; display: flex; gap: 8px; }
+    .log-time { color: var(--text-tertiary); min-width: 80px; }
+    .log-level { min-width: 48px; font-weight: 600; }
+    .log-level.info { color: var(--accent); }
+    .log-level.warn { color: var(--warning); }
+    .log-level.error { color: var(--error); }
+    .log-level.debug { color: var(--text-tertiary); }
+    .log-msg { color: var(--text-secondary); }
+
+    /* Task Queue */
+    .task-row { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 6px; font-size: 12px; }
+    .task-row:nth-child(even) { background: rgba(255,255,255,0.02); }
+    .task-status { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+    .task-status.queued { background: rgba(124,58,237,0.15); color: var(--brand-light); }
+    .task-status.processing { background: rgba(34,211,238,0.15); color: var(--accent); }
+    .task-status.completed { background: rgba(52,211,153,0.15); color: var(--success); }
+    .task-status.failed { background: rgba(248,113,113,0.15); color: var(--error); }
+    .task-channel { font-size: 10px; color: var(--text-tertiary); margin-left: auto; }
+
+    /* Alert Banner */
+    .alert-bar { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; }
+    .alert-chip {
+      display: flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 8px; font-size: 11px; white-space: nowrap; cursor: pointer;
+    }
+    .alert-chip.warning { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: var(--warning); }
+    .alert-chip.error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--error); }
+    .alert-chip.info { background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.3); color: var(--accent); }
+
+    /* CLI View */
+    .cli-terminal {
+      background: var(--bg-primary); border: 1px solid var(--border-subtle);
+      border-radius: 12px; height: calc(100vh - 120px); display: flex; flex-direction: column;
+    }
+    .cli-header { padding: 10px 16px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; gap: 8px; }
+    .cli-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .cli-dot:nth-child(1) { background: var(--error); }
+    .cli-dot:nth-child(2) { background: var(--warning); }
+    .cli-dot:nth-child(3) { background: var(--success); }
+    .cli-header-title { margin-left: 8px; font-size: 12px; color: var(--text-tertiary); font-family: 'JetBrains Mono', monospace; }
+    .cli-output { flex: 1; overflow-y: auto; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; }
+    .cli-line { margin-bottom: 2px; }
+    .cli-prompt { color: var(--brand-light); }
+    .cli-response { color: var(--text-secondary); }
+    .cli-error { color: var(--error); }
+    .cli-success { color: var(--success); }
+    .cli-input-row { padding: 12px 16px; border-top: 1px solid var(--border-subtle); display: flex; gap: 8px; }
+    .cli-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: var(--text-primary); font-family: 'JetBrains Mono', monospace; font-size: 12px;
+    }
+    .cli-prefix { color: var(--brand-light); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+    /* Plugins View */
+    .plugin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .plugin-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 12px; padding: 16px; transition: border-color 0.2s;
+    }
+    .plugin-card:hover { border-color: var(--brand); }
+    .plugin-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .plugin-author { font-size: 11px; color: var(--text-tertiary); margin-bottom: 8px; }
+    .plugin-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.5; }
+    .plugin-footer { display: flex; align-items: center; justify-content: space-between; }
+    .plugin-category { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 600; background: var(--brand-glow); color: var(--brand-light); }
+    .plugin-toggle {
+      width: 40px; height: 22px; border-radius: 11px;
+      background: var(--bg-elevated); border: 1px solid var(--border-standard);
+      cursor: pointer; position: relative; transition: background 0.2s;
+    }
+    .plugin-toggle.active { background: var(--brand); border-color: var(--brand); }
+    .plugin-toggle::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 16px; height: 16px; border-radius: 50%; background: #fff;
+      transition: transform 0.2s;
+    }
+    .plugin-toggle.active::after { transform: translateX(18px); }
+
+    /* Workflow View */
+    .wf-card {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 12px; padding: 16px; margin-bottom: 12px;
+    }
+    .wf-name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .wf-desc { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
+    .wf-steps { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .wf-step {
+      padding: 4px 10px; border-radius: 6px; font-size: 11px;
+      background: var(--bg-elevated); border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+    .wf-step::before { content: '→ '; color: var(--brand-light); }
+    .wf-footer { display: flex; gap: 8px; }
+    .wf-btn {
+      padding: 6px 14px; border-radius: 8px; border: none;
+      font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+    }
+    .wf-btn-primary { background: var(--brand); color: #fff; }
+    .wf-btn-primary:hover { background: var(--brand-dark); }
+    .wf-btn-secondary { background: var(--bg-elevated); color: var(--text-secondary); border: 1px solid var(--border-standard); }
+
+    /* Settings View */
+    .settings-section { margin-bottom: 24px; }
+    .settings-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+    .settings-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px; background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 8px; margin-bottom: 8px;
+    }
+    .settings-label { font-size: 13px; }
+    .settings-desc { font-size: 11px; color: var(--text-tertiary); }
+    .settings-select {
+      background: var(--bg-elevated); border: 1px solid var(--border-standard);
+      border-radius: 6px; padding: 6px 10px; color: var(--text-primary);
+      font-family: inherit; font-size: 12px; outline: none;
+    }
+
+    /* Action History — Source Tracking */
+    .action-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    .action-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-tertiary); text-align: left; padding: 8px; border-bottom: 1px solid var(--border-subtle); }
+    .action-table td { font-size: 12px; padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .source-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600;
+    }
+    .source-badge.telegram { background: rgba(0,136,204,0.15); color: #0088cc; }
+    .source-badge.discord { background: rgba(88,101,242,0.15); color: #5865F2; }
+    .source-badge.desktop { background: rgba(124,58,237,0.15); color: var(--brand-light); }
+    .source-badge.hub { background: rgba(34,211,238,0.15); color: var(--accent); }
+    .source-badge.webchat { background: rgba(52,211,153,0.15); color: var(--success); }
+    .source-badge.slack { background: rgba(74,21,75,0.15); color: #E01E5A; }
+    .source-badge.api { background: rgba(255,255,255,0.08); color: var(--text-secondary); }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.2); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.4); }
+  </style>
+</head>
+<body>
+  <!-- Startup Screen -->
+  <div id="startup-screen">
+    <img id="startup-logo" src="../icon.png" alt="PAW">
+    <div id="startup-text">PAW Hub</div>
+    <div id="startup-sub">v3.4 — Platform & Scale</div>
+    <div id="startup-bar"><div id="startup-bar-fill"></div></div>
+  </div>
+
+  <!-- Hub Interface -->
+  <div id="hub">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <img class="sidebar-logo" src="../icon.png" alt="P">
+      <button class="sidebar-btn active" data-view="dashboard" title="Dashboard">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      </button>
+      <button class="sidebar-btn" data-view="mission-control" title="Mission Control">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      </button>
+      <button class="sidebar-btn" data-view="cli" title="CLI Companion">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+      </button>
+      <button class="sidebar-btn" data-view="plugins" title="Plugins">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </button>
+      <button class="sidebar-btn" data-view="workflows" title="Workflows">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </button>
+      <div class="sidebar-spacer"></div>
+      <button class="sidebar-btn" data-view="settings" title="Settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.32 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <div class="sidebar-status" id="sidebar-status"></div>
+    </nav>
+
+    <!-- Main Area -->
+    <div class="main-area">
+      <div class="topbar">
+        <span class="topbar-title" id="topbar-title">Dashboard</span>
+        <div class="topbar-right">
+          <span class="topbar-badge">v3.4</span>
+          <span class="topbar-badge" id="provider-badge">Ollama</span>
+        </div>
+      </div>
+
+      <!-- Dashboard View -->
+      <div class="view-panel active" id="view-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Active Agents</div><div class="stat-value brand" id="stat-agents">1</div></div>
+          <div class="stat-card"><div class="stat-label">Connected Channels</div><div class="stat-value accent" id="stat-channels">0</div></div>
+          <div class="stat-card"><div class="stat-label">Tasks Today</div><div class="stat-value success" id="stat-tasks">0</div></div>
+          <div class="stat-card"><div class="stat-label">Avg Response</div><div class="stat-value warning" id="stat-response">0ms</div></div>
+          <div class="stat-card"><div class="stat-label">Model Provider</div><div class="stat-value" id="stat-provider" style="font-size:16px">—</div></div>
+          <div class="stat-card"><div class="stat-label">Memory Usage</div><div class="stat-value" id="stat-memory" style="font-size:16px">—</div></div>
+        </div>
+        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:12px">Chat</h3>
+        <div class="chat-section">
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-msg agent">
+              <div class="chat-msg-bubble">Welcome to PAW Hub! I'm your AI agent. How can I help?</div>
+              <div class="chat-msg-meta">PAW Agent · Hub</div>
+            </div>
+          </div>
+          <div class="chat-input-area">
+            <input class="chat-input" id="chat-input" placeholder="Message PAW..." autocomplete="off">
+            <button class="chat-send" id="chat-send">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mission Control View -->
+      <div class="view-panel" id="view-mission-control">
+        <div class="alert-bar" id="mc-alerts"></div>
+        <div class="mc-grid">
+          <div class="mc-panel">
+            <div class="mc-panel-title">Agents</div>
+            <div id="mc-agents">
+              <div class="mc-agent-row"><div class="mc-agent-dot active"></div><div class="mc-agent-name">PAW Main Agent</div><div class="mc-agent-task">Ready</div></div>
+            </div>
+          </div>
+          <div class="mc-panel">
+            <div class="mc-panel-title">System Metrics</div>
+            <div class="stats-grid" style="grid-template-columns:1fr 1fr" id="mc-metrics">
+              <div class="stat-card"><div class="stat-label">CPU</div><div class="stat-value accent" id="mc-cpu">0%</div></div>
+              <div class="stat-card"><div class="stat-label">Memory</div><div class="stat-value brand" id="mc-mem">0 MB</div></div>
+              <div class="stat-card"><div class="stat-label">Uptime</div><div class="stat-value success" id="mc-uptime">0s</div></div>
+              <div class="stat-card"><div class="stat-label">Error Rate</div><div class="stat-value" id="mc-errors" style="color:var(--success)">0%</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="mc-panel">
+          <div class="mc-panel-title">Task Queue</div>
+          <div id="mc-tasks"></div>
+        </div>
+        <div class="mc-panel" style="margin-top:16px">
+          <div class="mc-panel-title">Live Logs</div>
+          <div class="log-stream" id="mc-logs">
+            <div class="log-entry"><span class="log-time">--:--:--</span><span class="log-level info">INFO</span><span class="log-msg">Mission Control initialized</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CLI View -->
+      <div class="view-panel" id="view-cli" style="padding:0">
+        <div class="cli-terminal">
+          <div class="cli-header">
+            <div class="cli-dot"></div><div class="cli-dot"></div><div class="cli-dot"></div>
+            <span class="cli-header-title">paw-cli — v3.4.0</span>
+          </div>
+          <div class="cli-output" id="cli-output">
+            <div class="cli-line"><span class="cli-success">PAW CLI v3.4.0</span></div>
+            <div class="cli-line"><span class="cli-response">Type 'help' for available commands, or talk to your agent naturally.</span></div>
+            <div class="cli-line">&nbsp;</div>
+          </div>
+          <div class="cli-input-row">
+            <span class="cli-prefix">paw &gt;</span>
+            <input class="cli-input" id="cli-input" placeholder="Enter command..." autocomplete="off">
+          </div>
+        </div>
+      </div>
+
+      <!-- Plugins View -->
+      <div class="view-panel" id="view-plugins">
+        <h3 style="font-size:16px;margin-bottom:4px">Plugin Marketplace</h3>
+        <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:20px">Extend PAW with community and official plugins</p>
+        <div class="plugin-grid" id="plugin-grid"></div>
+      </div>
+
+      <!-- Workflows View -->
+      <div class="view-panel" id="view-workflows">
+        <h3 style="font-size:16px;margin-bottom:4px">Workflow Templates</h3>
+        <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:20px">Automate multi-step tasks with reusable workflows</p>
+        <div id="workflow-list"></div>
+      </div>
+
+      <!-- Settings View -->
+      <div class="view-panel" id="view-settings">
+        <div class="settings-section">
+          <div class="settings-title">General</div>
+          <div class="settings-row">
+            <div><div class="settings-label">Agent Mode</div><div class="settings-desc">Control how autonomous the agent is</div></div>
+            <select class="settings-select" id="setting-mode"><option value="supervised">Supervised</option><option value="autonomous">Autonomous</option><option value="free">Free</option></select>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Default Provider</div><div class="settings-desc">Primary AI model provider</div></div>
+            <select class="settings-select" id="setting-provider"><option value="ollama">Ollama (Free)</option><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="google">Google</option><option value="groq">Groq</option><option value="mistral">Mistral</option><option value="deepseek">DeepSeek</option></select>
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-title">Ollama (Local AI)</div>
+          <div class="settings-row">
+            <div><div class="settings-label">Ollama URL</div><div class="settings-desc">Local Ollama server address</div></div>
+            <input class="settings-select" id="setting-ollama-url" value="http://127.0.0.1:11434" style="width:220px">
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Ollama Model</div><div class="settings-desc">Model to use (gemma4, llama3, etc.)</div></div>
+            <input class="settings-select" id="setting-ollama-model" value="gemma4" style="width:160px">
+          </div>
+        </div>
+        <div class="settings-section">
+          <div class="settings-title">Action History — Source Tracking</div>
+          <table class="action-table">
+            <thead><tr><th>Time</th><th>Action</th><th>Source</th><th>Status</th><th>Duration</th></tr></thead>
+            <tbody id="action-history"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ─── Hub State ───
+    const state = {
+      view: 'dashboard',
+      connected: false,
+      ws: null,
+      messages: [],
+      cliHistory: [],
+      cliIndex: -1,
+      actions: [],
+    };
+
+    // ─── Startup Animation ───
+    setTimeout(() => {
+      // Play startup jingle (simple synth beep sequence)
+      try {
+        const ctx = new AudioContext();
+        const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
+        notes.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0.08, ctx.currentTime + i * 0.12);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.12 + 0.3);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + i * 0.12);
+          osc.stop(ctx.currentTime + i * 0.12 + 0.3);
+        });
+      } catch(e) {}
+    }, 200);
+
+    setTimeout(() => {
+      document.getElementById('startup-screen').classList.add('fade-out');
+      document.getElementById('hub').classList.add('visible');
+      setTimeout(() => document.getElementById('startup-screen').style.display = 'none', 800);
+      connectGateway();
+    }, 2600);
+
+    // ─── Navigation ───
+    const viewNames = { dashboard: 'Dashboard', 'mission-control': 'Mission Control', cli: 'CLI Companion', plugins: 'Plugins', workflows: 'Workflows', settings: 'Settings' };
+    document.querySelectorAll('.sidebar-btn[data-view]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const view = btn.dataset.view;
+        document.querySelectorAll('.sidebar-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('view-' + view).classList.add('active');
+        document.getElementById('topbar-title').textContent = viewNames[view] || view;
+        state.view = view;
+      });
+    });
+
+    // ─── WebSocket ───
+    function connectGateway() {
+      const url = 'ws://127.0.0.1:18789';
+      try {
+        state.ws = new WebSocket(url);
+        state.ws.onopen = () => {
+          state.connected = true;
+          document.getElementById('sidebar-status').classList.add('connected');
+          addLog('info', 'gateway', 'Connected to PAW Gateway');
+          state.ws.send(JSON.stringify({ type: 'register', channel: 'hub', client_id: 'hub_' + Date.now() }));
+        };
+        state.ws.onmessage = (e) => {
+          try {
+            const msg = JSON.parse(e.data);
+            handleGatewayMessage(msg);
+          } catch(err) {}
+        };
+        state.ws.onclose = () => {
+          state.connected = false;
+          document.getElementById('sidebar-status').classList.remove('connected');
+          addLog('warn', 'gateway', 'Disconnected — reconnecting in 3s');
+          setTimeout(connectGateway, 3000);
+        };
+        state.ws.onerror = () => {};
+      } catch(e) {
+        setTimeout(connectGateway, 3000);
+      }
+    }
+
+    function handleGatewayMessage(msg) {
+      if (msg.type === 'response') {
+        const text = typeof msg.payload === 'string' ? msg.payload : (msg.payload?.text || msg.payload?.response || JSON.stringify(msg.payload));
+        addChatMessage('agent', text);
+        addLog('info', 'agent', 'Response received');
+      }
+      if (msg.type === 'event') {
+        if (msg.payload?.event === 'connected') addLog('info', 'gateway', 'Authenticated with gateway');
+        if (msg.payload?.event === 'sync') updateMissionControl(msg.payload);
+      }
+    }
+
+    function sendMessage(text) {
+      if (!state.ws || state.ws.readyState !== 1) return;
+      state.ws.send(JSON.stringify({
+        type: 'message', channel: 'hub', from: 'hub-user',
+        payload: text, timestamp: new Date().toISOString()
+      }));
+      addChatMessage('user', text);
+      recordAction('message', 'Sent: ' + text.substring(0, 50), 'hub');
+    }
+
+    // ─── Chat ───
+    function addChatMessage(role, text) {
+      const container = document.getElementById('chat-messages');
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = 'chat-msg ' + role;
+      div.innerHTML = '<div class="chat-msg-bubble">' + escapeHtml(text) + '</div><div class="chat-msg-meta">' + (role === 'user' ? 'You' : 'PAW Agent') + ' · ' + time + '</div>';
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    document.getElementById('chat-send').addEventListener('click', () => {
+      const input = document.getElementById('chat-input');
+      if (input.value.trim()) { sendMessage(input.value.trim()); input.value = ''; }
+    });
+    document.getElementById('chat-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('chat-send').click(); }
+    });
+
+    // ─── CLI ───
+    const cliCommands = {
+      help: () => 'Available commands:\\n  status  — Show agent status\\n  mode <supervised|autonomous|free> — Set agent mode\\n  providers — List AI providers\\n  plugins — List installed plugins\\n  workflows — List workflow templates\\n  history — Show action history\\n  clear — Clear terminal\\n  health — Check gateway health',
+      status: () => 'Gateway: ' + (state.connected ? 'Connected ✓' : 'Disconnected ✗') + '\\nView: ' + state.view + '\\nActions: ' + state.actions.length,
+      providers: () => 'AI Providers:\\n  ● Ollama (gemma4) — FREE, local\\n  ● OpenAI (gpt-4o)\\n  ● Anthropic (claude-sonnet-4-20250514)\\n  ● Google (gemma-3-27b-it)\\n  ● Groq (llama-3.3-70b)\\n  ● Mistral (mistral-large)\\n  ● DeepSeek (deepseek-chat)',
+      plugins: () => 'Installed Plugins: 4\\n  DeFi Price Alerts — active\\n  Usage Analytics — active\\n  GitHub Integration — loaded\\n  Advanced Scheduler — loaded',
+      workflows: () => 'Workflow Templates: 4\\n  Daily Portfolio Check\\n  New User Onboarding\\n  Price Alert & Auto-Action\\n  Multi-Channel Broadcast',
+      clear: () => { document.getElementById('cli-output').innerHTML = ''; return ''; },
+      history: () => state.actions.length === 0 ? 'No actions recorded yet.' : state.actions.slice(-10).map(a => a.time + ' [' + a.source + '] ' + a.action).join('\\n'),
+      health: () => { fetch('http://127.0.0.1:18789/health').then(r=>r.json()).then(d=>addCliLine(JSON.stringify(d,null,2),'cli-response')).catch(()=>addCliLine('Gateway unreachable','cli-error')); return 'Checking...'; },
+    };
+
+    function addCliLine(text, cls) {
+      const output = document.getElementById('cli-output');
+      const div = document.createElement('div');
+      div.className = 'cli-line';
+      div.innerHTML = '<span class="' + (cls||'cli-response') + '">' + escapeHtml(text) + '</span>';
+      output.appendChild(div);
+      output.scrollTop = output.scrollHeight;
+    }
+
+    document.getElementById('cli-input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const input = e.target;
+        const cmd = input.value.trim();
+        if (!cmd) return;
+        addCliLine('paw > ' + cmd, 'cli-prompt');
+        state.cliHistory.push(cmd);
+        state.cliIndex = state.cliHistory.length;
+        input.value = '';
+
+        const parts = cmd.split(' ');
+        const handler = cliCommands[parts[0]];
+        if (handler) {
+          const result = handler(parts.slice(1));
+          if (result) addCliLine(result, 'cli-response');
+        } else {
+          // Send as agent message
+          sendMessage(cmd);
+          addCliLine('Sent to agent...', 'cli-response');
+        }
+        recordAction('cli_command', cmd, 'hub');
+      }
+      if (e.key === 'ArrowUp' && state.cliHistory.length > 0) {
+        state.cliIndex = Math.max(0, state.cliIndex - 1);
+        e.target.value = state.cliHistory[state.cliIndex] || '';
+      }
+      if (e.key === 'ArrowDown') {
+        state.cliIndex = Math.min(state.cliHistory.length, state.cliIndex + 1);
+        e.target.value = state.cliHistory[state.cliIndex] || '';
+      }
+    });
+
+    // ─── Plugins ───
+    const builtinPlugins = [
+      { id: 'paw-defi-alerts', name: 'DeFi Price Alerts', author: 'PAW Team', desc: 'Monitor DeFi positions and get alerts on price changes, liquidation risks, and yield opportunities.', category: 'defi', active: true },
+      { id: 'paw-analytics', name: 'Usage Analytics', author: 'PAW Team', desc: 'Track usage patterns, popular commands, and generate insights about agent utilization.', category: 'analytics', active: true },
+      { id: 'paw-github', name: 'GitHub Integration', author: 'PAW Team', desc: 'Create issues, manage PRs, and monitor repos directly from PAW.', category: 'integration', active: false },
+      { id: 'paw-scheduler', name: 'Advanced Scheduler', author: 'PAW Team', desc: 'Schedule recurring tasks, reminders, and automated workflows with natural language.', category: 'utility', active: false },
+    ];
+    function renderPlugins() {
+      const grid = document.getElementById('plugin-grid');
+      grid.innerHTML = builtinPlugins.map(p => 
+        '<div class="plugin-card"><div class="plugin-name">' + p.name + '</div><div class="plugin-author">by ' + p.author + '</div><div class="plugin-desc">' + p.desc + '</div><div class="plugin-footer"><span class="plugin-category">' + p.category + '</span><div class="plugin-toggle ' + (p.active ? 'active' : '') + '" data-plugin="' + p.id + '"></div></div></div>'
+      ).join('');
+      grid.querySelectorAll('.plugin-toggle').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+          toggle.classList.toggle('active');
+          const plugin = builtinPlugins.find(p => p.id === toggle.dataset.plugin);
+          if (plugin) plugin.active = !plugin.active;
+        });
+      });
+    }
+    renderPlugins();
+
+    // ─── Workflows ───
+    const builtinWorkflows = [
+      { name: 'Daily Portfolio Check', desc: 'Check wallet balances, active DeFi positions, and send a summary.', steps: ['Check Balances', 'Check DeFi', 'Send Summary'], category: 'defi' },
+      { name: 'New User Onboarding', desc: 'Guide new users through PAW setup: wallet, preferences, and first task.', steps: ['Welcome', 'Setup Wallet', 'Set Preferences'], category: 'utility' },
+      { name: 'Price Alert & Auto-Action', desc: 'Monitor token price and execute an action when threshold is hit.', steps: ['Check Price', 'Evaluate', 'Execute Action'], category: 'defi' },
+      { name: 'Multi-Channel Broadcast', desc: 'Send a message to all connected channels simultaneously.', steps: ['Prepare Message', 'Send to All'], category: 'utility' },
+    ];
+    function renderWorkflows() {
+      const list = document.getElementById('workflow-list');
+      list.innerHTML = builtinWorkflows.map(w =>
+        '<div class="wf-card"><div class="wf-name">' + w.name + '</div><div class="wf-desc">' + w.desc + '</div><div class="wf-steps">' + w.steps.map(s => '<span class="wf-step">' + s + '</span>').join('') + '</div><div class="wf-footer"><button class="wf-btn wf-btn-primary">Run Workflow</button><button class="wf-btn wf-btn-secondary">Edit</button></div></div>'
+      ).join('');
+    }
+    renderWorkflows();
+
+    // ─── Mission Control Updates ───
+    function updateMissionControl(data) {
+      if (data.metrics) {
+        document.getElementById('mc-cpu').textContent = data.metrics.cpu_usage_pct + '%';
+        document.getElementById('mc-mem').textContent = data.metrics.memory_usage_mb + ' MB';
+        document.getElementById('mc-uptime').textContent = formatUptime(data.metrics.uptime_seconds);
+        document.getElementById('mc-errors').textContent = data.metrics.error_rate_pct + '%';
+        document.getElementById('stat-tasks').textContent = data.metrics.total_tasks_today;
+        document.getElementById('stat-response').textContent = data.metrics.avg_response_time_ms + 'ms';
+        document.getElementById('stat-memory').textContent = data.metrics.memory_usage_mb + ' MB';
+      }
+    }
+    function formatUptime(s) {
+      if (s < 60) return s + 's';
+      if (s < 3600) return Math.floor(s/60) + 'm';
+      return Math.floor(s/3600) + 'h ' + Math.floor((s%3600)/60) + 'm';
+    }
+
+    // ─── Action Tracking ───
+    function recordAction(action, desc, source) {
+      const time = new Date().toLocaleTimeString();
+      state.actions.push({ time, action, desc, source, status: 'success', duration: Math.floor(Math.random()*200+50) + 'ms' });
+      renderActionHistory();
+    }
+    function renderActionHistory() {
+      const tbody = document.getElementById('action-history');
+      tbody.innerHTML = state.actions.slice(-20).reverse().map(a =>
+        '<tr><td style="color:var(--text-tertiary)">' + a.time + '</td><td>' + escapeHtml(a.desc).substring(0,60) + '</td><td><span class="source-badge ' + a.source + '">' + a.source + '</span></td><td style="color:var(--success)">✓</td><td style="color:var(--text-tertiary)">' + a.duration + '</td></tr>'
+      ).join('');
+    }
+
+    // ─── Logging ───
+    function addLog(level, source, message) {
+      const logsEl = document.getElementById('mc-logs');
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      div.innerHTML = '<span class="log-time">' + time + '</span><span class="log-level ' + level + '">' + level.toUpperCase() + '</span><span class="log-msg">[' + source + '] ' + escapeHtml(message) + '</span>';
+      logsEl.appendChild(div);
+      logsEl.scrollTop = logsEl.scrollHeight;
+      if (logsEl.children.length > 200) logsEl.removeChild(logsEl.firstChild);
+    }
+
+    // ─── Util ───
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+  </script>
+</body>
+</html>

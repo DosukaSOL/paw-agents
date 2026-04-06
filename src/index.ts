@@ -1,6 +1,6 @@
-// ─── PAW Agents v3.1 — Entry Point ───
+// ─── PAW Agents v3.4 — Entry Point ───
 // The operating system for autonomous AI workers.
-// Multi-channel, multi-agent, with WebSocket gateway + dashboard.
+// Multi-channel, multi-agent, with WebSocket gateway, dashboard, Hub, and Mission Control.
 
 import { PawAgent } from './agent/loop';
 import { TelegramBot } from './integrations/telegram/bot';
@@ -14,13 +14,15 @@ import { MatrixAdapter } from './integrations/matrix/adapter';
 import { PawGateway } from './gateway/index';
 import { CronEngine } from './cron/index';
 import { config } from './core/config';
+import { missionControl } from './mission-control/index';
+import { crossAppSync } from './sync/cross-app';
 
 async function main(): Promise<void> {
   console.log(`
   ╔═══════════════════════════════════════════════════╗
   ║                                                   ║
-  ║   🐾  PAW AGENTS v3.2                             ║
-  ║   Purp Autonomous Workers                         ║
+  ║   🐾  PAW AGENTS v3.4                             ║
+  ║   Platform & Scale                                ║
   ║                                                   ║
   ║   The operating system for autonomous AI agents.  ║
   ║                                                   ║
@@ -28,12 +30,17 @@ async function main(): Promise<void> {
   ║   Gateway: ws://${config.gateway.host}:${String(config.gateway.port).padEnd(22)}  ║
   ║   Dashboard: http://${config.gateway.host}:${String(config.gateway.port).padEnd(19)}  ║
   ║   Network: ${config.solana.network.padEnd(33)}  ║
+  ║   Ollama: ${(config.models.ollama.enabled ? config.models.ollama.model : 'disabled').padEnd(33)}  ║
   ║                                                   ║
   ╚═══════════════════════════════════════════════════╝
   `);
 
   // Initialize agent
   const agent = new PawAgent();
+
+  // Register agent in Mission Control
+  missionControl.registerAgent('paw-main', 'PAW Main Agent', config.models.defaultProvider);
+  missionControl.log('info', 'system', 'PAW Agents v3.4 starting...');
 
   // Start WebSocket Gateway
   const gateway = new PawGateway(agent);
@@ -163,6 +170,8 @@ async function main(): Promise<void> {
   }
 
   console.log('[PAW] 🐾 All systems online.');
+  missionControl.log('info', 'system', 'All systems online — PAW v3.4 ready');
+  missionControl.updateAgentStatus('paw-main', 'active');
 }
 
 main().catch((err) => {

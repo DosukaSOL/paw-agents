@@ -550,7 +550,7 @@ export function getDashboardHTML(): string {
       <div class="topbar-left">
         <img src="/assets/logo-transparent.png" alt="PAW" class="topbar-logo" />
         <span class="topbar-title">PAW Agents</span>
-        <span class="topbar-badge">v3.2.0</span>
+        <span class="topbar-badge">v3.4.0</span>
       </div>
       <div class="topbar-right">
         <span class="status-indicator">

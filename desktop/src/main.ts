@@ -1,5 +1,6 @@
-// ─── PAW Desktop — Electron Main Process ───
-// Connects to the PAW WebSocket gateway for chat functionality.
+// ─── PAW Hub — Desktop OS Experience ───
+// Combines Dashboard, Mission Control, CLI Companion, Plugins, and Workflows
+// into a single unified desktop application with Pawl companion.
 
 import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron';
 import * as path from 'path';
@@ -10,12 +11,39 @@ const GATEWAY_URL = process.env.PAW_GATEWAY_URL ?? 'ws://127.0.0.1:18789';
 const AUTH_TOKEN = process.env.PAW_AUTH_TOKEN ?? '';
 
 let mainWindow: BrowserWindow | null = null;
+let hubWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let ws: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let pawl: PawlCompanion | null = null;
 
-// ─── Create main window ───
+// ─── Create Hub window (primary) ───
+function createHubWindow(): void {
+  hubWindow = new BrowserWindow({
+    width: 1200,
+    height: 800,
+    minWidth: 800,
+    minHeight: 600,
+    title: 'PAW Hub',
+    titleBarStyle: 'hiddenInset',
+    icon: path.join(__dirname, '..', 'icon.png'),
+    backgroundColor: '#08080d',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+    },
+  });
+
+  hubWindow.loadFile(path.join(__dirname, '..', 'renderer', 'hub.html'));
+
+  hubWindow.on('closed', () => {
+    hubWindow = null;
+  });
+}
+
+// ─── Create classic chat window ───
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 900,
@@ -129,10 +157,11 @@ function createTray(): void {
   const trayIconPath = path.join(__dirname, '..', 'icon.png');
   const icon = nativeImage.createFromPath(trayIconPath).resize({ width: 18, height: 18 });
   tray = new Tray(icon);
-  tray.setToolTip('PAW Agents');
+  tray.setToolTip('PAW Hub');
 
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Show PAW', click: () => mainWindow?.show() },
+    { label: 'Show PAW Hub', click: () => { if (hubWindow) hubWindow.show(); else createHubWindow(); } },
+    { label: 'Show Chat', click: () => { if (mainWindow) mainWindow.show(); else { createWindow(); } } },
     { type: 'separator' },
     { label: 'Pawl Companion', type: 'checkbox', checked: true, click: (item) => {
       if (item.checked) {
@@ -150,12 +179,12 @@ function createTray(): void {
   ]);
 
   tray.setContextMenu(contextMenu);
-  tray.on('click', () => mainWindow?.show());
+  tray.on('click', () => { if (hubWindow) hubWindow.show(); else createHubWindow(); });
 }
 
 // ─── App lifecycle ───
 app.whenReady().then(() => {
-  createWindow();
+  createHubWindow();
   createTray();
   setupIPC();
   connectGateway();
@@ -164,15 +193,19 @@ app.whenReady().then(() => {
   pawl = new PawlCompanion();
   pawl.show();
 
-  // Listen for Pawl double-click → show main window
+  // Listen for Pawl double-click → show Hub
   ipcMain.on('pawl:open-app', () => {
-    mainWindow?.show();
-    mainWindow?.focus();
+    if (hubWindow) {
+      hubWindow.show();
+      hubWindow.focus();
+    } else {
+      createHubWindow();
+    }
   });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow();
+      createHubWindow();
     }
   });
 });
