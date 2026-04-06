@@ -8,6 +8,7 @@ import { v4 as uuid } from 'uuid';
 import { config } from '../core/config';
 import { GatewayClient, GatewayMessage, ChannelType } from '../core/types';
 import { PawAgent } from '../agent/loop';
+import { getDashboardHTML } from '../dashboard/index';
 
 interface ConnectedClient {
   ws: WebSocket;
@@ -48,10 +49,17 @@ export class PawGateway {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           status: 'ok',
-          version: '2.0.0',
+          version: '3.0.0',
           clients: this.clients.size,
           uptime: process.uptime(),
         }));
+        return;
+      }
+
+      // Serve dashboard at root
+      if (req.url === '/' || req.url === '/dashboard') {
+        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.end(getDashboardHTML());
         return;
       }
 

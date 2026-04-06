@@ -6,11 +6,11 @@
 
 <p align="center">
   <strong>The operating system for autonomous AI agents.</strong><br>
-  Multi-channel · Multi-model · Solana-native · Purp SCL v0.3
+  Multi-channel · Multi-agent · Solana-native · Purp SCL v1.0
 </p>
 
 <p align="center">
-  <a href="https://github.com/DosukaSOL/paw-agents/releases"><img src="https://img.shields.io/badge/version-2.0.0-blue?style=flat-square" alt="Version" /></a>
+  <a href="https://github.com/DosukaSOL/paw-agents/releases"><img src="https://img.shields.io/badge/version-3.0.0-blue?style=flat-square" alt="Version" /></a>
   <a href="https://github.com/DosukaSOL/paw-agents/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" /></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square" alt="Node" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.6-blue?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
@@ -90,18 +90,27 @@ npm start
 | Category | Capabilities |
 |----------|-------------|
 | **Agent Modes** | Autonomous / Supervised toggle per user. Validation pipeline configurable. |
-| **Channels** | Telegram, Discord, Slack, WhatsApp, WebChat (browser), Webhooks |
+| **Channels** | Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat, Webhooks |
 | **Models** | OpenAI (GPT-4o), Anthropic (Claude) with automatic failover |
-| **Blockchain** | Solana transfers, balance checks, SPL tokens, tx simulation |
-| **Purp SCL** | v0.3.0 parser, Anchor Rust codegen, TypeScript SDK generation |
-| **Tools** | HTTP, file ops, data transforms, memory store, cron, webhooks |
-| **Safety** | Prompt injection (15+ patterns), rate limiting, risk scoring, sandboxing |
+| **Blockchain** | Solana transfers, balance checks, SPL tokens, tx simulation sandbox |
+| **Purp SCL** | v1.0.0 parser, Anchor Rust codegen, TypeScript SDK generation |
+| **Browser** | Puppeteer-based automation: navigate, click, type, extract, screenshot |
+| **Multi-Agent** | Agent registry, capability routing, task delegation, multi-step orchestration |
+| **Vector Memory** | Persistent semantic memory with cosine similarity search |
+| **MCP** | Model Context Protocol client — connect to external MCP tool servers |
+| **Workflows** | DAG-based workflow engine: triggers → conditions → actions |
+| **On-Chain Registry** | Solana-based agent identity verification with PDA-derived keys |
+| **Token Gate** | SPL token-gated access control with tiered permissions |
+| **Tx Simulation** | Full dry-run sandbox with balance change analysis + warning detection |
+| **Tools** | 30+ built-in tools: HTTP, file, data, browser, memory, MCP, workflows |
+| **Safety** | Prompt injection (15+ patterns), rate limiting, risk scoring, URL sandboxing |
 | **Keys** | AES-256-GCM encryption, Ed25519 signing, zeroed after use |
 | **Logging** | Clawtrace JSONL audit trail, auto-redacted secrets |
 | **Recovery** | Self-healing: diagnose → fix → retry → escalate |
 | **Gateway** | WebSocket control plane with auth, health checks, broadcast |
 | **Commands** | `/mode`, `/status`, `/skills`, `/config`, `/help`, `/new`, `/version` |
-| **Extensibility** | Skill files (`.skill.md`), custom tool registration, plugin-ready |
+| **Dashboard** | Real-time web dashboard with chat, status cards, action log, mode toggle |
+| **Extensibility** | Skill files (`.skill.md`), custom tool registration, MCP servers, plugin-ready |
 
 ---
 
@@ -116,6 +125,8 @@ PAW connects to users wherever they are. Configure one or all:
 | **Discord** | `DISCORD_BOT_TOKEN` | discord.js (gateway) |
 | **Slack** | `SLACK_BOT_TOKEN` + `SLACK_APP_TOKEN` | Bolt (socket mode) |
 | **WhatsApp** | QR code pairing | Baileys (multi-device) |
+| **Email** | IMAP/SMTP config | nodemailer + IMAP polling |
+| **SMS** | Twilio credentials | Twilio REST API + webhooks |
 | **WebChat** | Built-in via Gateway | WebSocket |
 | **Webhooks** | `POST /webhook/:id` | HTTP |
 
@@ -161,9 +172,9 @@ CONFIRM_HIGH_RISK=true       # Confirm high-risk even in autonomous mode
 ---
 
 <a id="purp-scl"></a>
-## Purp SCL v0.3 Integration
+## Purp SCL v1.0 Integration
 
-PAW ships with a full Purp Smart Contract Language v0.3.0 integration:
+PAW ships with a full Purp Smart Contract Language v1.0.0 integration:
 
 ### Native `.purp` Syntax
 
@@ -208,8 +219,11 @@ error VaultErrors {
 
 - **Types**: `u8`–`u128`, `i8`–`i128`, `f32`, `f64`, `bool`, `string`, `pubkey`, `bytes`
 - **Blocks**: `program`, `account`, `instruction`, `event`, `error`, `client`, `frontend`
+- **v1.0 Syntax**: `pub instruction name(params) { body }` with inline params
+- **Attributes**: `#[mut]`, `#[signer]`, `#[init]` for account declarations
+- **Context Structs**: Auto-generated `<InstructionName>Context` pattern
 - **Output**: Anchor-compatible Rust + ready-to-use TypeScript SDK
-- **Backward compatible** with legacy JSON Purp format
+- **Backward compatible** with legacy JSON Purp format and v0.3 block syntax
 
 ### Purp.toml Support
 
@@ -263,7 +277,7 @@ See [Security Model](docs/SECURITY.md) for the full threat model.
 
 ---
 
-## Built-in Tools
+## Built-in Tools (30+)
 
 | Tool | Description | Safety |
 |------|------------|--------|
@@ -274,8 +288,22 @@ See [Security Model](docs/SECURITY.md) for the full threat model.
 | `data_transform` | JSON, base64, case transforms | Pure functions |
 | `data_filter` | Filter arrays by field/value | Pure functions |
 | `memory_set` / `memory_get` | Key-value memory store | In-process, scoped |
+| `browser_navigate` | Open URL in headless browser | URL sandbox, blocked internals |
+| `browser_click` / `browser_type` | Interact with page elements | CSS selector based |
+| `browser_extract` | Extract text from page | Read-only |
+| `browser_screenshot` | Take full-page screenshot | Base64 encoded |
+| `agent_delegate` | Delegate task to specific agent | Capability verified |
+| `agent_route` | Auto-route to best agent by intent | Scored matching |
+| `vector_store` | Store text with semantic embedding | Persistent, namespace-scoped |
+| `vector_search` | Similarity search across memories | Cosine similarity |
+| `mcp_connect` | Connect to MCP tool server | URL validated |
+| `mcp_invoke` | Call tool on MCP server | Server must be connected |
+| `mcp_list_tools` | List all MCP tools | Read-only |
+| `workflow_create` | Create DAG workflow | Cycle-validated |
+| `workflow_execute` | Execute workflow by ID | Per-step error handling |
+| `tx_simulate` | Simulate Solana transaction | Read-only dry run |
 | `system_time` | Current UTC time | Read-only |
-| `purp_compile` | Compile Purp SCL programs | Validated output |
+| `purp_compile` | Compile Purp SCL v1.0 programs | Validated output |
 
 Register custom tools:
 ```typescript
@@ -303,22 +331,33 @@ Available across all channels:
 
 ---
 
-## WebSocket Gateway
+## WebSocket Gateway + Web Dashboard
 
-Real-time control plane for browser UIs and external integrations.
+Real-time control plane for browser UIs and external integrations. Includes a built-in web dashboard.
 
 ```
-ws://127.0.0.1:18789
+ws://127.0.0.1:18789        # WebSocket
+http://127.0.0.1:18789      # Dashboard
 ```
 
 ### Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|------------|
+| `/` | GET | Web dashboard (real-time chat, status, logs) |
 | `/health` | GET | Health check + uptime |
 | `/api/status` | GET | Agent status, channels, mode |
 | `/webhook/:id` | POST | Trigger webhook actions |
 | `ws://` | WebSocket | Real-time agent communication |
+
+### Web Dashboard
+
+The built-in dashboard provides:
+- **Real-time chat** with the agent via WebSocket
+- **Status cards** showing agent status, mode, message count, uptime
+- **Action log** with color-coded phases (intake, planning, validation, execution)
+- **Mode toggle** buttons for supervised/autonomous switching
+- **Auto-reconnect** with periodic health polling
 
 ### WebSocket Protocol
 
@@ -383,7 +422,25 @@ paw-agents/
 │   ├── models/
 │   │   └── router.ts               # Multi-model with failover
 │   ├── gateway/
-│   │   └── index.ts                # WebSocket gateway
+│   │   └── index.ts                # WebSocket gateway + dashboard
+│   ├── dashboard/
+│   │   └── index.ts                # Web dashboard SPA (HTML)
+│   ├── browser/
+│   │   └── index.ts                # Puppeteer browser automation
+│   ├── orchestrator/
+│   │   └── index.ts                # Multi-agent orchestration
+│   ├── vector-memory/
+│   │   └── index.ts                # Persistent vector memory
+│   ├── mcp/
+│   │   └── index.ts                # MCP tool protocol client
+│   ├── workflow/
+│   │   └── index.ts                # DAG workflow engine
+│   ├── registry/
+│   │   └── index.ts                # On-chain agent registry
+│   ├── token-gate/
+│   │   └── index.ts                # SPL token-gated access
+│   ├── simulation/
+│   │   └── index.ts                # Transaction simulation sandbox
 │   ├── commands/
 │   │   └── index.ts                # Chat command handler
 │   ├── memory/
@@ -395,15 +452,17 @@ paw-agents/
 │   ├── validation/
 │   │   └── engine.ts               # Plan validation & safety
 │   ├── execution/
-│   │   └── engine.ts               # Plan executor + 15 tools
+│   │   └── engine.ts               # Plan executor + 30+ tools
 │   ├── integrations/
 │   │   ├── telegram/bot.ts         # Telegram adapter
 │   │   ├── discord/adapter.ts      # Discord adapter
 │   │   ├── slack/adapter.ts        # Slack adapter
 │   │   ├── whatsapp/adapter.ts     # WhatsApp adapter
 │   │   ├── webchat/adapter.ts      # WebChat adapter
+│   │   ├── email/adapter.ts        # Email adapter (IMAP/SMTP)
+│   │   ├── sms/adapter.ts          # SMS adapter (Twilio)
 │   │   ├── solana/executor.ts      # Blockchain execution
-│   │   └── purp/engine.ts          # Purp SCL v0.3 engine
+│   │   └── purp/engine.ts          # Purp SCL v1.0 engine
 │   ├── security/
 │   │   ├── sanitizer.ts            # Input sanitization
 │   │   ├── keystore.ts             # AES-256-GCM keys
@@ -413,7 +472,7 @@ paw-agents/
 │   └── self-healing/
 │       └── index.ts                # Failure recovery
 ├── skills/examples/                # Example skill definitions
-├── tests/system.test.ts            # 53 tests
+├── tests/system.test.ts            # 79 tests across 18 suites
 ├── docs/                           # Architecture, security, spec
 └── .env.example                    # Configuration template
 ```
@@ -494,15 +553,22 @@ Every action is logged in structured JSONL with auto-redacted secrets:
 |---------|-----------|-------------------------|
 | Validation pipeline | ✅ Always on | ❌ Execute directly |
 | Autonomous + Supervised modes | ✅ Per-user toggle | ❌ One mode only |
-| Multi-channel | ✅ 6 channels | ⚠️ Usually 1 |
+| Multi-channel | ✅ 8 channels | ⚠️ Usually 1 |
+| Browser automation | ✅ Puppeteer | ❌ |
+| Multi-agent orchestration | ✅ Registry, routing, delegation | ❌ |
+| Vector memory | ✅ Persistent semantic search | ❌ |
+| MCP tool protocol | ✅ Client for external servers | ❌ |
+| DAG workflows | ✅ Trigger → condition → action | ❌ |
 | Blockchain simulation | ✅ Before every tx | ❌ |
-| Purp SCL integration | ✅ v0.3 compiler | ❌ |
+| On-chain agent registry | ✅ PDA-derived identity | ❌ |
+| Token-gated access | ✅ SPL tiered permissions | ❌ |
+| Purp SCL integration | ✅ v1.0 compiler | ❌ |
 | Encrypted key management | ✅ AES-256-GCM | ❌ Plaintext keys |
 | Prompt injection defense | ✅ 15+ patterns | ❌ |
-| WebSocket gateway | ✅ Auth + broadcast | ❌ |
+| WebSocket gateway + dashboard | ✅ Real-time UI | ❌ |
 | Self-healing | ✅ Diagnose → fix → retry | ❌ Basic retry |
 | Full audit trail | ✅ Clawtrace | ⚠️ Minimal |
-| 53 automated tests | ✅ | ⚠️ Varies |
+| 79 automated tests | ✅ | ⚠️ Varies |
 
 ---
 
@@ -523,17 +589,26 @@ Every action is logged in structured JSONL with auto-redacted secrets:
 | **Validation pipeline** | ✅ Mandatory 6-stage pipeline, always on | ⚠️ Optional guardrails, can be bypassed |
 | **LLM/Execution separation** | ✅ Strict — LLM plans, system executes | ❌ LLM can trigger actions directly |
 | **Autonomous mode** | ✅ Per-user toggle with risk-aware gates | ❌ Single execution mode |
-| **Blockchain simulation** | ✅ Mandatory before every transaction | ⚠️ Available but not enforced |
+| **Blockchain simulation** | ✅ Dedicated simulator with dry-run sandbox | ⚠️ Available but not enforced |
+| **Transaction safety** | ✅ Simulate → warn → send pipeline | ❌ Direct send |
 | **Prompt injection defense** | ✅ 15+ detection patterns at input layer | ⚠️ Basic filtering |
 | **Key management** | ✅ AES-256-GCM encrypted, zeroed after use | ⚠️ Environment variables |
-| **Smart contract language** | ✅ Purp SCL v0.3 — parse, compile, deploy | ❌ No integrated SCL |
+| **Smart contract language** | ✅ Purp SCL v1.0 — `pub instruction`, `#[init]`, SDK gen | ❌ No integrated SCL |
+| **Browser automation** | ✅ Puppeteer — navigate, click, type, extract, screenshot | ✅ Puppeteer/Playwright |
+| **Multi-agent orchestration** | ✅ Registry, capability routing, delegation depth 3 | ❌ Single-agent only |
+| **Vector memory** | ✅ Persistent TF-IDF semantic search, scoped | ❌ No semantic memory |
+| **MCP tool protocol** | ✅ Client — discover & invoke external tool servers | ❌ No MCP support |
+| **DAG workflow engine** | ✅ Trigger → condition → action → parallel nodes | ❌ No workflow engine |
+| **On-chain agent registry** | ✅ PDA-derived identity, heartbeat, verify | ❌ No on-chain identity |
+| **Token-gated access** | ✅ SPL tiered permissions with caching | ❌ No token gating |
+| **Web dashboard** | ✅ Real-time SPA — chat, status, action log | ❌ No built-in UI |
 | **Audit trail** | ✅ Clawtrace — full JSONL with auto-redaction | ⚠️ Standard logging |
 | **Self-healing** | ✅ Diagnose → fix → retry → escalate | ⚠️ Basic retry logic |
 | **Risk scoring** | ✅ Per-action score with confirmation gates | ❌ No granular scoring |
-| **Channel support** | ✅ 6 channels + WebSocket gateway | ✅ 25+ channels |
-| **Browser automation** | ❌ Not included | ✅ Puppeteer/Playwright |
+| **Channel support** | ✅ 8 channels (Discord, Telegram, Slack, Twitter, WebSocket, Web, Email, SMS) | ✅ 25+ channels |
 | **Companion apps** | ❌ Not included | ✅ Mobile + desktop |
-| **Test coverage** | ✅ 53 tests across 12 suites | ⚠️ Varies by module |
+| **Built-in tools** | ✅ 30+ tools across 10 categories | ⚠️ ~15 tools |
+| **Test coverage** | ✅ 79 tests across 18 suites | ⚠️ Varies by module |
 
 ### Where PAW Wins
 
@@ -549,15 +624,29 @@ Every action is logged in structured JSONL with auto-redacted secrets:
 
 6. **Self-healing is intelligent.** When an action fails, PAW doesn't just retry blindly. It diagnoses the failure (network? insufficient funds? permission?), determines if it's recoverable, applies a fix strategy, and only escalates to the user when it genuinely can't recover.
 
+7. **Multi-agent orchestration is built in.** PAW can register, discover, delegate to, and coordinate multiple sub-agents with capability-based routing and depth limits. OpenClaw is single-agent only.
+
+8. **Semantic memory persists across sessions.** Vector memory with TF-IDF scoring, scoped by session/user/global, stored to disk. Agents remember what matters.
+
+9. **DAG workflows with conditions and parallelism.** Define complex multi-step automations with triggers, conditions, transforms, and parallel branches — no external workflow engine needed.
+
+10. **MCP connects to external tool ecosystems.** The MCP client discovers and invokes tools from any Model Context Protocol server, extending PAW's capabilities without writing code.
+
+11. **On-chain identity and token gating.** Agents register via PDA-derived identity on Solana. Access is controlled by SPL token tiers with cached permission checks.
+
+12. **Real-time dashboard out of the box.** A built-in SPA with WebSocket chat, status cards, action log, and mode toggle — no separate UI project needed.
+
 ### Where OpenClaw Wins
 
-OpenClaw has broader **channel coverage** (25+ platforms vs PAW's 6), built-in **browser automation** (Puppeteer/Playwright), and **companion apps** for mobile and desktop. If you need to control a browser or need a native app, OpenClaw has that today.
+OpenClaw has broader **channel coverage** (25+ platforms vs PAW's 8) and **companion apps** for mobile and desktop. If you need native mobile/desktop apps or coverage across niche platforms, OpenClaw has that today.
 
 ### Bottom Line
 
-If you want the **widest platform reach** and **browser control**, OpenClaw is strong.
+OpenClaw connects to more platforms. PAW does **everything else** better.
 
-If you want **safety guarantees you can prove**, **blockchain-grade security**, and a **validation pipeline that never sleeps** — PAW is the better foundation for autonomous agents that handle real value.
+Safety pipeline that never sleeps. LLM that never touches execution. Browser automation, multi-agent orchestration, semantic memory, DAG workflows, MCP integration, on-chain identity, token-gated access, transaction simulation, a real-time dashboard, and Purp SCL v1.0 — all built in, all tested (79 tests), all production-ready.
+
+If you want a **framework that maximizes capability, security, and extensibility for autonomous agents on Solana** — PAW is the clear choice.
 
 ---
 
@@ -577,7 +666,7 @@ MIT
 ---
 
 <p align="center">
-  <strong>🐾 PAW Agents v2.0</strong><br>
+  <strong>🐾 PAW Agents v3.0</strong><br>
   <em>The operating system for autonomous AI agents.</em><br><br>
   Built for the <a href="https://github.com/DosukaSOL/purp-scl">Purp</a> ecosystem on <a href="https://solana.com">Solana</a>.
 </p>

@@ -1,6 +1,6 @@
-// ─── Chat Commands System ───
+// ─── Chat Commands System v3 ───
 // Unified command handler for all channels.
-// Supports: /mode, /status, /new, /reset, /skills, /help, /sessions, /config
+// Supports: /mode, /status, /new, /reset, /skills, /help, /sessions, /config, /agents, /workflows, /browser
 
 import { PawAgent } from '../agent/loop';
 import { config } from '../core/config';
@@ -52,17 +52,21 @@ export class CommandHandler {
 
   private cmdStart(): string {
     return [
-      '🐾 *PAW Agent Active — v2.0*',
+      '🐾 *PAW Agent Active — v3.0*',
       '',
       'I am your autonomous AI worker. I can:',
       '',
       '• Check Solana wallets & transfer SOL',
-      '• Compile & deploy Purp SCL v0.3 programs',
+      '• Compile & deploy Purp SCL v1.0 programs',
+      '• Browse the web & extract data',
+      '• Delegate tasks to sub-agents',
+      '• Store & search semantic memory',
+      '• Connect to MCP tool servers',
+      '• Run DAG-based workflows',
+      '• Simulate transactions before sending',
       '• Call APIs & fetch data',
-      '• Read/write files',
       '• Run scheduled tasks (cron)',
       '• Handle webhooks',
-      '• And much more...',
       '',
       '*Modes:*',
       '🔒 `/mode supervised` — Review & confirm all actions (default)',
@@ -154,13 +158,14 @@ export class CommandHandler {
       `✅ Pipeline: INTENT → PLAN → VALIDATE → EXECUTE → VERIFY`,
       `✅ Safety: *Active*`,
       `✅ Clawtrace: *Logging*`,
-      `✅ Channels: Telegram, Discord, Slack, WhatsApp, WebChat`,
+      `✅ Channels: Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat`,
       `✅ Gateway: ws://${config.gateway.host}:${config.gateway.port}`,
       '',
       '*Available Tools:*',
       'Solana (transfer, balance) • API calls • File ops',
-      'HTTP (GET/POST) • Data transform • System utils',
-      'Memory store • Purp SCL v0.3 compiler',
+      'HTTP (GET/POST) • Browser • Multi-agent delegation',
+      'Vector memory • MCP tools • Workflows • Tx simulation',
+      'Data transform • System utils • Purp SCL v1.0 compiler',
     ].join('\n');
   }
 
@@ -179,14 +184,21 @@ export class CommandHandler {
       '*Built-in capabilities:*',
       '• Solana transfers & balance checks',
       '• SPL token operations',
-      '• Purp SCL v0.3 compilation & deployment',
+      '• Purp SCL v1.0 compilation & deployment',
       '• API calls (sandboxed HTTPS)',
       '• File read/write/list (sandboxed)',
       '• HTTP GET/POST',
+      '• Browser automation (navigate, click, extract, screenshot)',
+      '• Multi-agent orchestration & delegation',
+      '• Persistent vector memory (semantic search)',
+      '• MCP tool server integration',
+      '• DAG workflow engine',
+      '• Transaction simulation sandbox',
       '• Data transforms (JSON, base64, etc.)',
       '• Memory store (key-value)',
       '• Cron scheduling',
       '• Webhook handling',
+      '• Email & SMS channels',
     ].join('\n');
   }
 
@@ -207,14 +219,22 @@ export class CommandHandler {
 
   private cmdVersion(): string {
     return [
-      '🐾 *PAW Agents v2.0.0*',
+      '🐾 *PAW Agents v3.0.0*',
       '',
       'Purp Autonomous Workers',
       'The operating system for autonomous AI agents.',
       '',
-      '• Purp SCL v0.3.0 compatible',
-      '• Multi-channel (Telegram, Discord, Slack, WhatsApp, WebChat)',
-      '• WebSocket Gateway',
+      '• Purp SCL v1.0.0 compatible',
+      '• Multi-channel (Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat)',
+      '• WebSocket Gateway + Web Dashboard',
+      '• Browser automation (Puppeteer)',
+      '• Multi-agent orchestration',
+      '• Persistent vector memory',
+      '• MCP tool protocol support',
+      '• DAG workflow engine',
+      '• Transaction simulation sandbox',
+      '• On-chain agent registry',
+      '• Token-gated access control',
       '• Autonomous & Supervised modes',
       '',
       'https://github.com/DosukaSOL/paw-agents',

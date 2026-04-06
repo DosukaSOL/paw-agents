@@ -11,6 +11,11 @@ import { CommandHandler } from '../src/commands/index';
 import { CronEngine } from '../src/cron/index';
 import { AgentPlan, RiskLevel } from '../src/core/types';
 import { SecureSigner, encryptKey, decryptKey } from '../src/security/keystore';
+import { VectorMemory } from '../src/vector-memory/index';
+import { AgentOrchestrator } from '../src/orchestrator/index';
+import { WorkflowEngine } from '../src/workflow/index';
+import { MCPClient } from '../src/mcp/index';
+import { getDashboardHTML } from '../src/dashboard/index';
 import { v4 as uuid } from 'uuid';
 
 // ─── Test Helper ───
@@ -611,7 +616,7 @@ describe('Chat Commands', () => {
     const handler = new CommandHandler(mockAgent as any);
     const result = handler.handle('user1', '/version');
     expect(result.handled).toBe(true);
-    expect(result.response).toContain('v2.0.0');
+    expect(result.response).toContain('v3.0.0');
   });
 
   test('handles /status command', () => {
@@ -619,5 +624,349 @@ describe('Chat Commands', () => {
     const result = handler.handle('user1', '/status');
     expect(result.handled).toBe(true);
     expect(result.response).toContain('Online');
+  });
+});
+
+// ═══════════════════════════════════════
+// TEST 13: Vector Memory
+// ═══════════════════════════════════════
+describe('Vector Memory', () => {
+  test('stores and searches by similarity', () => {
+    const mem = new VectorMemory('/tmp/paw-test-vector-' + Date.now() + '.json');
+    mem.add('Solana blockchain development tutorial', 'global', 'docs');
+    mem.add('How to cook pasta with tomato sauce', 'global', 'docs');
+    mem.add('Building smart contracts on Solana with Anchor', 'global', 'docs');
+
+    const results = mem.search('solana anchor smart contracts');
+    expect(results.length).toBeGreaterThan(0);
+    // The Solana-related entries should score higher than cooking
+    const topResult = results[0];
+    expect(topResult.entry.text).toContain('Solana');
+  });
+
+  test('respects namespace filtering', () => {
+    const mem = new VectorMemory('/tmp/paw-test-vector-ns-' + Date.now() + '.json');
+    mem.add('Test entry A', 'global', 'alpha');
+    mem.add('Test entry B', 'global', 'beta');
+
+    const results = mem.search('test entry', { namespace: 'alpha' });
+    expect(results.every(r => r.entry.namespace === 'alpha')).toBe(true);
+  });
+
+  test('reports stats correctly', () => {
+    const mem = new VectorMemory('/tmp/paw-test-vector-stats-' + Date.now() + '.json');
+    mem.add('Session data', 'session', 'ns');
+    mem.add('User preference', 'user', 'ns');
+    mem.add('Global knowledge', 'global', 'ns');
+
+    const stats = mem.stats();
+    expect(stats.total).toBe(3);
+    expect(stats.by_scope.session).toBe(1);
+    expect(stats.by_scope.user).toBe(1);
+    expect(stats.by_scope.global).toBe(1);
+  });
+
+  test('deletes entries', () => {
+    const mem = new VectorMemory('/tmp/paw-test-vector-del-' + Date.now() + '.json');
+    const entry = mem.add('Delete me', 'session', 'test');
+    expect(mem.get(entry.id)).not.toBeNull();
+    mem.delete(entry.id);
+    expect(mem.get(entry.id)).toBeNull();
+  });
+
+  test('clears by scope', () => {
+    const mem = new VectorMemory('/tmp/paw-test-vector-clear-' + Date.now() + '.json');
+    mem.add('A', 'session', 'ns');
+    mem.add('B', 'session', 'ns');
+    mem.add('C', 'global', 'ns');
+
+    const cleared = mem.clearScope('session', 'ns');
+    expect(cleared).toBe(2);
+    expect(mem.stats().total).toBe(1);
+  });
+});
+
+// ═══════════════════════════════════════
+// TEST 14: Multi-Agent Orchestration
+// ═══════════════════════════════════════
+describe('Multi-Agent Orchestration', () => {
+  test('registers and finds agents by capability', () => {
+    const orch = new AgentOrchestrator();
+    orch.registerAgent({
+      id: 'sol-agent',
+      name: 'Solana Agent',
+      description: 'Handles Solana blockchain transactions',
+      capabilities: ['solana', 'transfer', 'balance'],
+      handler: async (task) => ({ result: 'ok', task }),
+    });
+
+    const found = orch.findAgent('check solana balance');
+    expect(found).not.toBeNull();
+    expect(found!.id).toBe('sol-agent');
+  });
+
+  test('delegates tasks to agents', async () => {
+    const orch = new AgentOrchestrator();
+    orch.registerAgent({
+      id: 'echo-agent',
+      name: 'Echo',
+      description: 'Echoes back tasks',
+      capabilities: ['echo'],
+      handler: async (task) => ({ echoed: task }),
+    });
+
+    const result = await orch.delegate('coordinator', 'echo-agent', 'hello world');
+    expect(result.success).toBe(true);
+  });
+
+  test('routes to best agent automatically', async () => {
+    const orch = new AgentOrchestrator();
+    orch.registerAgent({
+      id: 'math-agent',
+      name: 'Math Agent',
+      description: 'Does math calculations',
+      capabilities: ['math', 'calculate', 'arithmetic'],
+      handler: async () => ({ answer: 42 }),
+    });
+    orch.registerAgent({
+      id: 'text-agent',
+      name: 'Text Agent',
+      description: 'Processes text and strings',
+      capabilities: ['text', 'string', 'format'],
+      handler: async () => ({ text: 'done' }),
+    });
+
+    const result = await orch.route('coordinator', 'calculate the sum of numbers');
+    expect(result.success).toBe(true);
+    expect(result.agent_id).toBe('math-agent');
+  });
+
+  test('returns failure for unknown agents', async () => {
+    const orch = new AgentOrchestrator();
+    await expect(orch.delegate('coordinator', 'nonexistent', 'task')).rejects.toThrow();
+  });
+
+  test('orchestrates multi-step subtasks', async () => {
+    const orch = new AgentOrchestrator();
+    const handlerResults: string[] = [];
+
+    orch.registerAgent({
+      id: 'step-agent',
+      name: 'Step Agent',
+      description: 'Handles steps',
+      capabilities: ['step', 'process'],
+      handler: async (task) => { handlerResults.push(task); return { done: task }; },
+    });
+
+    const orchResults = await orch.orchestrate('coordinator', [
+      { agentId: 'step-agent', message: 'step-1' },
+      { agentId: 'step-agent', message: 'step-2' },
+      { agentId: 'step-agent', message: 'step-3' },
+    ]);
+
+    expect(orchResults).toHaveLength(3);
+    expect(orchResults.every(r => r.success)).toBe(true);
+    expect(handlerResults).toEqual(['step-1', 'step-2', 'step-3']);
+  });
+});
+
+// ═══════════════════════════════════════
+// TEST 15: Workflow Engine
+// ═══════════════════════════════════════
+describe('Workflow Engine', () => {
+  test('creates and lists workflows', () => {
+    const engine = new WorkflowEngine();
+    const wf = engine.createWorkflow('Test WF', 'A test workflow', [
+      { id: 'trigger', type: 'trigger', name: 'Start', config: {} },
+      { id: 'action', type: 'action', name: 'Do Something', config: { action: 'log' } },
+    ]);
+
+    expect(wf.name).toBe('Test WF');
+    expect(engine.listWorkflows()).toHaveLength(1);
+  });
+
+  test('executes a simple workflow', async () => {
+    const engine = new WorkflowEngine();
+    let actionCalled = false;
+
+    engine.registerHandler('test_action', async () => {
+      actionCalled = true;
+      return { ok: true };
+    });
+
+    const wf = engine.createWorkflow('Simple', 'Simple workflow', [
+      { id: 't1', type: 'trigger', name: 'Start', config: {}, next: ['a1'] },
+      { id: 'a1', type: 'action', name: 'Test', config: { action: 'test_action' } },
+    ]);
+
+    const result = await engine.execute(wf.id);
+    expect(result.status).toBe('completed');
+    expect(actionCalled).toBe(true);
+  });
+
+  test('evaluates conditions', async () => {
+    const engine = new WorkflowEngine();
+    let actionReached = false;
+
+    engine.registerHandler('mark', async () => { actionReached = true; return {}; });
+
+    const wf = engine.createWorkflow('Conditional', 'With condition', [
+      { id: 't1', type: 'trigger', name: 'Start', config: {}, next: ['c1'] },
+      { id: 'c1', type: 'condition', name: 'Check', config: { field: 'status', operator: 'eq', value: 'active' }, next: ['a1'] },
+      { id: 'a1', type: 'action', name: 'Mark', config: { action: 'mark' } },
+    ]);
+
+    // Condition met
+    const r1 = await engine.execute(wf.id, { status: 'active' });
+    expect(r1.status).toBe('completed');
+    expect(actionReached).toBe(true);
+
+    // Condition not met
+    actionReached = false;
+    const r2 = await engine.execute(wf.id, { status: 'inactive' });
+    expect(r2.status).toBe('completed');
+    expect(actionReached).toBe(false);
+  });
+
+  test('rejects cyclic workflows', () => {
+    const engine = new WorkflowEngine();
+    expect(() => {
+      engine.createWorkflow('Cycle', 'Has cycle', [
+        { id: 'a', type: 'action', name: 'A', config: {}, next: ['b'] },
+        { id: 'b', type: 'action', name: 'B', config: {}, next: ['a'] },
+      ]);
+    }).toThrow(/[Cc]ycle/);
+  });
+
+  test('toggles workflow enabled state', () => {
+    const engine = new WorkflowEngine();
+    const wf = engine.createWorkflow('Toggle', 'Toggleable', [
+      { id: 't1', type: 'trigger', name: 'Start', config: {} },
+    ]);
+
+    engine.toggleWorkflow(wf.id, false);
+    expect(engine.getWorkflow(wf.id)!.enabled).toBe(false);
+  });
+
+  test('tracks execution history', async () => {
+    const engine = new WorkflowEngine();
+    engine.registerHandler('noop', async () => ({}));
+
+    const wf = engine.createWorkflow('History', 'With history', [
+      { id: 't1', type: 'trigger', name: 'Start', config: {}, next: ['a1'] },
+      { id: 'a1', type: 'action', name: 'Noop', config: { action: 'noop' } },
+    ]);
+
+    await engine.execute(wf.id);
+    await engine.execute(wf.id);
+
+    const history = engine.getHistory(wf.id);
+    expect(history).toHaveLength(2);
+  });
+});
+
+// ═══════════════════════════════════════
+// TEST 16: MCP Client
+// ═══════════════════════════════════════
+describe('MCP Client', () => {
+  test('starts with no servers', () => {
+    const client = new MCPClient();
+    expect(client.listServers()).toHaveLength(0);
+    expect(client.listTools()).toHaveLength(0);
+  });
+
+  test('finds no tool when none connected', () => {
+    const client = new MCPClient();
+    expect(client.findTool('anything')).toBeNull();
+  });
+
+  test('disconnects gracefully for unknown server', () => {
+    const client = new MCPClient();
+    expect(client.disconnect('unknown')).toBe(false);
+  });
+
+  test('rejects non-http URLs', async () => {
+    const client = new MCPClient();
+    await expect(client.connect('bad', 'ftp://evil.com')).rejects.toThrow();
+  });
+});
+
+// ═══════════════════════════════════════
+// TEST 17: Dashboard
+// ═══════════════════════════════════════
+describe('Dashboard', () => {
+  test('returns valid HTML', () => {
+    const html = getDashboardHTML();
+    expect(html).toContain('<!DOCTYPE html>');
+    expect(html).toContain('PAW');
+    expect(html).toContain('</html>');
+  });
+
+  test('contains WebSocket connection code', () => {
+    const html = getDashboardHTML();
+    expect(html).toContain('WebSocket');
+  });
+
+  test('contains status cards', () => {
+    const html = getDashboardHTML();
+    expect(html).toContain('status');
+  });
+
+  test('contains chat interface', () => {
+    const html = getDashboardHTML();
+    expect(html).toContain('chat');
+  });
+});
+
+// ═══════════════════════════════════════
+// TEST 18: Purp v1.0 Parser
+// ═══════════════════════════════════════
+describe('Purp v1.0 Parser', () => {
+  test('parses pub instruction with inline params', () => {
+    const purp = new PurpEngine();
+    const source = `
+program HelloWorld {
+}
+
+account GreetingAccount {
+  message: string,
+  author: pubkey
+}
+
+pub instruction create_greeting(#[mut] #[signer] author, #[init] account greeting, message: string) {
+  greeting.message = message
+  greeting.author = author.key
+}
+`;
+    const program = purp.parse(source) as any;
+    expect(program.name).toBe('HelloWorld');
+    expect(program.accounts.length).toBe(1);
+    expect(program.accounts[0].name).toBe('GreetingAccount');
+    expect(program.instructions.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test('compiles v1.0 with Context struct naming', () => {
+    const purp = new PurpEngine();
+    const source = `
+program Counter {
+}
+account CounterState {
+  count: u64
+}
+instruction Increment {
+  accounts:
+    #[mut] counter_state
+  args:
+    amount: u64
+  body:
+    counter_state.count += amount
+}
+`;
+    const program = purp.parse(source);
+    const result = purp.compile(program as any);
+    expect(result.success).toBe(true);
+    if (result.rust_output) {
+      expect(result.rust_output).toContain('Context');
+    }
   });
 });

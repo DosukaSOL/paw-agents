@@ -1,12 +1,18 @@
-// ─── Execution Engine ───
+// ─── Execution Engine v3.0 ───
 // Executes ONLY validated plans. Supports Solana, Purp, JS tools, APIs.
 // Includes retry, rollback, and error recovery.
-// Extended with file ops, HTTP, data transforms, system tools, and memory.
+// Extended with browser, orchestrator, vector memory, workflows, MCP, simulation.
 
 import { AgentPlan, ExecutionResult, StepResult, PlanStep, ExecutionError } from '../core/types';
 import { SolanaExecutor } from '../integrations/solana/executor';
 import { PurpEngine } from '../integrations/purp/engine';
 import { PublicKey, Transaction } from '@solana/web3.js';
+import { BrowserEngine } from '../browser/index';
+import { AgentOrchestrator } from '../orchestrator/index';
+import { VectorMemory } from '../vector-memory/index';
+import { MCPClient } from '../mcp/index';
+import { WorkflowEngine } from '../workflow/index';
+import { TransactionSimulator } from '../simulation/index';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -22,12 +28,32 @@ export class ExecutionEngine {
   private tools = new Map<string, ToolHandler>();
   private solana: SolanaExecutor;
   private purp: PurpEngine;
+  private browser: BrowserEngine;
+  private orchestrator: AgentOrchestrator;
+  private vectorMemory: VectorMemory;
+  private mcpClient: MCPClient;
+  private workflowEngine: WorkflowEngine;
+  private simulator: TransactionSimulator;
 
   constructor(solana: SolanaExecutor, purp: PurpEngine) {
     this.solana = solana;
     this.purp = purp;
+    this.browser = new BrowserEngine();
+    this.orchestrator = new AgentOrchestrator();
+    this.vectorMemory = new VectorMemory();
+    this.mcpClient = new MCPClient();
+    this.workflowEngine = new WorkflowEngine();
+    this.simulator = new TransactionSimulator({ rpcUrl: process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com' });
     this.registerBuiltinTools();
   }
+
+  // ─── Expose sub-systems ───
+  getBrowser(): BrowserEngine { return this.browser; }
+  getOrchestrator(): AgentOrchestrator { return this.orchestrator; }
+  getVectorMemory(): VectorMemory { return this.vectorMemory; }
+  getMCPClient(): MCPClient { return this.mcpClient; }
+  getWorkflowEngine(): WorkflowEngine { return this.workflowEngine; }
+  getSimulator(): TransactionSimulator { return this.simulator; }
 
   // ─── Register a tool handler ───
   registerTool(name: string, handler: ToolHandler): void {
@@ -333,6 +359,117 @@ export class ExecutionEngine {
     this.registerTool('memory_get', async (params) => {
       const key = String(params.key);
       return { key, value: memoryStore.get(key) ?? null, found: memoryStore.has(key) };
+    });
+
+    // ─── Browser automation tools ───
+    this.registerTool('browser_navigate', async (params) => {
+      return this.browser.execute({ type: 'navigate', url: params.url as string });
+    });
+
+    this.registerTool('browser_click', async (params) => {
+      return this.browser.execute({ type: 'click', selector: params.selector as string });
+    });
+
+    this.registerTool('browser_type', async (params) => {
+      return this.browser.execute({ type: 'type', selector: params.selector as string, text: params.value as string });
+    });
+
+    this.registerTool('browser_extract', async (params) => {
+      return this.browser.execute({ type: 'extract', selector: params.selector as string });
+    });
+
+    this.registerTool('browser_screenshot', async (params) => {
+      return this.browser.execute({ type: 'screenshot', url: params.url as string | undefined });
+    });
+
+    // ─── Multi-agent orchestration tools ───
+    this.registerTool('agent_delegate', async (params) => {
+      return this.orchestrator.delegate(
+        'paw-core',
+        params.agent_id as string,
+        params.task as string,
+      );
+    });
+
+    this.registerTool('agent_route', async (params) => {
+      return this.orchestrator.route(
+        'paw-core',
+        params.intent as string,
+      );
+    });
+
+    // ─── Vector memory tools ───
+    this.registerTool('vector_store', async (params) => {
+      return this.vectorMemory.add(
+        params.text as string,
+        (params.scope as 'session' | 'user' | 'global') ?? 'session',
+        params.namespace as string ?? 'default',
+        params.metadata as Record<string, unknown> ?? {},
+      );
+    });
+
+    this.registerTool('vector_search', async (params) => {
+      return this.vectorMemory.search(params.query as string, {
+        scope: params.scope as string,
+        namespace: params.namespace as string,
+        limit: params.limit as number,
+        threshold: params.threshold as number,
+      });
+    });
+
+    this.registerTool('vector_stats', async () => {
+      return this.vectorMemory.stats();
+    });
+
+    // ─── MCP tools ───
+    this.registerTool('mcp_connect', async (params) => {
+      return this.mcpClient.connect(
+        params.name as string,
+        params.url as string,
+        params.api_key as string | undefined,
+      );
+    });
+
+    this.registerTool('mcp_invoke', async (params) => {
+      return this.mcpClient.invoke(
+        params.server as string,
+        params.tool as string,
+        params.arguments as Record<string, unknown> ?? {},
+      );
+    });
+
+    this.registerTool('mcp_list_tools', async () => {
+      return this.mcpClient.listTools();
+    });
+
+    // ─── Workflow tools ───
+    this.registerTool('workflow_create', async (params) => {
+      return this.workflowEngine.createWorkflow(
+        params.name as string,
+        params.description as string ?? '',
+        params.nodes as any[],
+      );
+    });
+
+    this.registerTool('workflow_execute', async (params) => {
+      return this.workflowEngine.execute(
+        params.workflow_id as string,
+        params.data as Record<string, unknown> ?? {},
+      );
+    });
+
+    this.registerTool('workflow_list', async () => {
+      return this.workflowEngine.listWorkflows();
+    });
+
+    // ─── Transaction simulation ───
+    this.registerTool('tx_simulate', async (params) => {
+      const balance = await this.simulator.getBalance(params.address as string);
+      return { address: params.address, balance_lamports: balance, balance_sol: balance / 1e9 };
+    });
+
+    this.registerTool('tx_history', async () => {
+      return this.simulator.getHistory();
     });
   }
 

@@ -131,6 +131,12 @@ export class PawAgent {
         'data_transform', 'data_filter',
         'system_time', 'system_sleep',
         'memory_get', 'memory_set',
+        'browser_navigate', 'browser_click', 'browser_type', 'browser_extract', 'browser_screenshot',
+        'agent_delegate', 'agent_route',
+        'vector_store', 'vector_search', 'vector_stats',
+        'mcp_connect', 'mcp_invoke', 'mcp_list_tools',
+        'workflow_create', 'workflow_execute', 'workflow_list',
+        'tx_simulate', 'tx_history',
       ];
 
       // ═══ STEP 5: Generate plan (LLM reasoning) ═══

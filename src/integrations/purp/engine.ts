@@ -1,14 +1,16 @@
-// ─── Purp SCL v0.3 Language Integration ───
-// Supports the full Purp Smart Contract Language v0.3.0 syntax.
+// ─── Purp SCL Language Integration (PAW v1.0, upstream compat: v0.3.1) ───
+// Supports the full Purp Smart Contract Language syntax (compatible with purp-scl v0.3.1).
 // Parses .purp files with program/account/instruction/event/error/client/frontend blocks.
-// Compiles to Anchor Rust + TypeScript SDK, with local simulation engine.
+// Features: pub instruction inline params, #[init], context structs emitted after module close,
+// import resolution with circular detection, comma-separated fields, assert/require statements,
+// CPI, SPL ops. Compiles to Anchor Rust + TypeScript SDK.
 
 import { PlanStep, PurpCompileResult, PurpError, PurpProjectConfig } from '../../core/types';
 import { config } from '../../core/config';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// ─── Purp v0.3 Types ───
+// ─── Purp v1.0 Types ───
 type PurpType = 'u8' | 'u16' | 'u32' | 'u64' | 'u128' | 'i8' | 'i16' | 'i32' | 'i64' | 'i128'
   | 'f32' | 'f64' | 'bool' | 'string' | 'pubkey' | 'bytes';
 
@@ -26,9 +28,10 @@ interface PurpAccountDef {
 
 interface PurpInstructionDef {
   name: string;
-  accounts: { name: string; mutable: boolean; signer: boolean }[];
+  accounts: { name: string; mutable: boolean; signer: boolean; init: boolean }[];
   args: PurpField[];
   body: string[];
+  visibility: 'pub' | 'private';
 }
 
 interface PurpEventDef {
@@ -44,11 +47,12 @@ interface PurpErrorDef {
 
 interface PurpClientDef {
   name: string;
-  functions: { name: string; body: string[] }[];
+  functions: { name: string; isAsync: boolean; params: string[]; body: string[] }[];
 }
 
 interface PurpFrontendDef {
   name: string;
+  pages: { path: string; components: string[] }[];
   components: string[];
 }
 
@@ -63,6 +67,8 @@ interface PurpProgram {
   clients: PurpClientDef[];
   frontends: PurpFrontendDef[];
   imports: string[];
+  structs: { name: string; fields: PurpField[] }[];
+  constants: { name: string; type: string; value: string }[];
 }
 
 // ─── Legacy Purp Types (backward compat) ───
@@ -85,17 +91,18 @@ const MAX_EVENTS = 20;
 const MAX_ERRORS = 50;
 const MAX_STRING_LENGTH = 1024;
 
-// ─── Purp v0.3 Block Patterns ───
-const BLOCK_PATTERN = /^(program|account|instruction|event|error|client|frontend)\s+(\w+)\s*\{/;
-const FIELD_PATTERN = /^\s*(\w+):\s*(\w+)/;
-const IMPORT_PATTERN = /^use\s+([\w:]+)/;
-const ACCOUNT_ATTR_PATTERN = /^\s*#\[(mut|signer|seeds\(.*?\))\]/;
-const ARG_PATTERN = /^\s*(\w+):\s*(\w+)/;
+// ─── Purp v1.0 Block Patterns ───
+const BLOCK_PATTERN = /^(?:pub\s+)?(program|account|instruction|event|error|client|frontend|struct|const)\s+(\w+)/;
+const FIELD_PATTERN = /^\s*(\w+)\s*:\s*(\w+)/;
+const IMPORT_PATTERN = /^(?:use|import)\s+([\w:\/\.@]+)/;
+const ACCOUNT_ATTR_PATTERN = /^\s*#\[(mut|signer|init|seeds\(.*?\)|payer\(.*?\)|space\(.*?\))\]/;
+const ARG_PATTERN = /^\s*(\w+)\s*:\s*(\w+)/;
+// v1.0: pub instruction name(#[mut] signer author, #[init] account greeting, msg: string) { ... }
+const PUB_INSTRUCTION_PATTERN = /^(?:pub\s+)?instruction\s+(\w+)\s*\(/;
 
 export class PurpEngine {
-  // ─── Parse Purp v0.3 source (.purp files) ───
+  // ─── Parse Purp v1.0 source (.purp files) ───
   parse(source: string): PurpProgram | LegacyPurpProgram {
-    // Try native .purp format first
     const trimmed = source.trim();
     if (trimmed.startsWith('{')) {
       return this.parseLegacy(source);
@@ -103,12 +110,12 @@ export class PurpEngine {
     return this.parsePurpV3(source);
   }
 
-  // ─── Parse native Purp v0.3 syntax ───
+  // ─── Parse native Purp v1.0 syntax ───
   private parsePurpV3(source: string): PurpProgram {
     const lines = source.split('\n');
     const program: PurpProgram = {
       name: '',
-      version: '0.3.0',
+      version: '1.0.0',
       accounts: [],
       instructions: [],
       events: [],
@@ -116,6 +123,8 @@ export class PurpEngine {
       clients: [],
       frontends: [],
       imports: [],
+      structs: [],
+      constants: [],
     };
 
     let i = 0;
@@ -128,11 +137,20 @@ export class PurpEngine {
         continue;
       }
 
-      // Parse imports
+      // Parse imports (use X or import X)
       const importMatch = line.match(IMPORT_PATTERN);
       if (importMatch) {
         program.imports.push(importMatch[1]);
         i++;
+        continue;
+      }
+
+      // v1.0: pub instruction with inline params
+      const pubInstrMatch = line.match(PUB_INSTRUCTION_PATTERN);
+      if (pubInstrMatch) {
+        const { instruction, endLine } = this.parsePubInstruction(lines, i);
+        program.instructions.push(instruction);
+        i = endLine + 1;
         continue;
       }
 
@@ -145,6 +163,8 @@ export class PurpEngine {
         switch (blockType) {
           case 'program':
             program.name = blockName;
+            // Parse nested declarations inside program block
+            this.parseProgramBody(block, program);
             break;
           case 'account':
             program.accounts.push(this.parseAccountBlock(blockName, block));
@@ -164,6 +184,9 @@ export class PurpEngine {
           case 'frontend':
             program.frontends.push(this.parseFrontendBlock(blockName, block));
             break;
+          case 'struct':
+            program.structs.push({ name: blockName, fields: this.parseFields(block) });
+            break;
         }
 
         i = endLine + 1;
@@ -178,6 +201,102 @@ export class PurpEngine {
     }
 
     return program;
+  }
+
+  // ─── Parse nested declarations inside a program { } block ───
+  private parseProgramBody(lines: string[], program: PurpProgram): void {
+    let i = 0;
+    while (i < lines.length) {
+      const line = lines[i].trim();
+      if (!line || line.startsWith('//')) { i++; continue; }
+
+      // Nested pub instruction
+      const pubInstrMatch = line.match(PUB_INSTRUCTION_PATTERN);
+      if (pubInstrMatch) {
+        const { instruction, endLine } = this.parsePubInstruction(lines, i);
+        program.instructions.push(instruction);
+        i = endLine + 1;
+        continue;
+      }
+
+      const blockMatch = line.match(BLOCK_PATTERN);
+      if (blockMatch) {
+        const [, blockType, blockName] = blockMatch;
+        const { block, endLine } = this.extractBlock(lines, i);
+
+        switch (blockType) {
+          case 'account':
+            program.accounts.push(this.parseAccountBlock(blockName, block));
+            break;
+          case 'instruction':
+            program.instructions.push(this.parseInstructionBlock(blockName, block));
+            break;
+          case 'event':
+            program.events.push(this.parseEventBlock(blockName, block));
+            break;
+          case 'error':
+            program.errors.push(...this.parseErrorBlock(block));
+            break;
+        }
+        i = endLine + 1;
+        continue;
+      }
+      i++;
+    }
+  }
+
+  // ─── Parse v1.0 pub instruction with inline params ───
+  // pub instruction create_greeting(#[mut] signer author, #[init] account greeting, message: string) { ... }
+  private parsePubInstruction(lines: string[], startLine: number): { instruction: PurpInstructionDef; endLine: number } {
+    // Gather the full declaration (may span multiple lines until we find the opening {)
+    let declStr = '';
+    let i = startLine;
+    while (i < lines.length) {
+      declStr += lines[i] + ' ';
+      if (lines[i].includes('{')) break;
+      i++;
+    }
+
+    const nameMatch = declStr.match(/(?:pub\s+)?instruction\s+(\w+)\s*\(/);
+    const name = nameMatch ? nameMatch[1] : 'unknown';
+    const isPub = declStr.trim().startsWith('pub');
+
+    // Extract parameters between ( and )
+    const paramsMatch = declStr.match(/\(\s*([\s\S]*?)\)\s*\{/);
+    const paramsStr = paramsMatch ? paramsMatch[1] : '';
+
+    const accounts: PurpInstructionDef['accounts'] = [];
+    const args: PurpField[] = [];
+
+    // Parse each comma-separated param
+    const params = paramsStr.split(',').map(p => p.trim()).filter(Boolean);
+    for (const param of params) {
+      const isMut = param.includes('#[mut]');
+      const isSigner = param.includes('signer');
+      const isInit = param.includes('#[init]');
+      const isAccount = param.includes('account');
+
+      if (isSigner || isAccount) {
+        // It's an account param: strip attributes and keywords to get the name
+        const accName = param.replace(/#\[.*?\]/g, '').replace(/\b(mut|signer|account)\b/g, '').trim().split(/\s+/).pop() ?? 'unknown';
+        accounts.push({ name: accName, mutable: isMut, signer: isSigner, init: isInit });
+      } else {
+        // It's a regular arg: "name: type"
+        const argMatch = param.replace(/#\[.*?\]/g, '').trim().match(/(\w+)\s*:\s*(\w+)/);
+        if (argMatch) {
+          args.push({ name: argMatch[1], type: argMatch[2] as PurpType });
+        }
+      }
+    }
+
+    // Now extract the body
+    const { block, endLine } = this.extractBlock(lines, startLine);
+    const body = block.filter(l => l.trim() && !l.trim().startsWith('//'));
+
+    return {
+      instruction: { name, accounts, args, body: body.map(l => l.trim()), visibility: isPub ? 'pub' : 'private' },
+      endLine,
+    };
   }
 
   // ─── Extract a block between { and matching } ───
@@ -206,34 +325,42 @@ export class PurpEngine {
     return { block, endLine: i };
   }
 
-  // ─── Parse account block fields ───
+  // ─── Parse account block fields (supports v1.0 comma-separated) ───
   private parseAccountBlock(name: string, lines: string[]): PurpAccountDef {
-    const fields: PurpField[] = [];
+    const fields = this.parseFields(lines);
     const seeds: string[] = [];
 
     for (const line of lines) {
       const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('//')) continue;
-
-      // Check for seed annotations
       const seedMatch = trimmed.match(/#\[seeds\((.*?)\)\]/);
       if (seedMatch) {
         seeds.push(...seedMatch[1].split(',').map(s => s.trim().replace(/"/g, '')));
-        continue;
-      }
-
-      const fieldMatch = trimmed.match(FIELD_PATTERN);
-      if (fieldMatch) {
-        fields.push({ name: fieldMatch[1], type: fieldMatch[2] as PurpType });
       }
     }
 
     return { name, fields, seeds: seeds.length > 0 ? seeds : undefined };
   }
 
-  // ─── Parse instruction block ───
+  // ─── Parse comma-separated fields (v1.0: "name: type," or "name: type") ───
+  private parseFields(lines: string[]): PurpField[] {
+    const fields: PurpField[] = [];
+    // Join all lines and split by comma or newline to handle both formats
+    const joined = lines.join('\n');
+
+    for (const line of joined.split(/[,\n]/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('#')) continue;
+      const fieldMatch = trimmed.match(FIELD_PATTERN);
+      if (fieldMatch) {
+        fields.push({ name: fieldMatch[1], type: fieldMatch[2] as PurpType });
+      }
+    }
+    return fields;
+  }
+
+  // ─── Parse instruction block (legacy section format) ───
   private parseInstructionBlock(name: string, lines: string[]): PurpInstructionDef {
-    const accounts: { name: string; mutable: boolean; signer: boolean }[] = [];
+    const accounts: PurpInstructionDef['accounts'] = [];
     const args: PurpField[] = [];
     const body: string[] = [];
     let section: 'accounts' | 'args' | 'body' = 'accounts';
@@ -258,9 +385,10 @@ export class PurpEngine {
       if (section === 'accounts') {
         const mutable = trimmed.includes('#[mut]') || trimmed.includes('mut ');
         const signer = trimmed.includes('#[signer]') || trimmed.includes('signer ');
-        const accName = trimmed.replace(/#\[.*?\]/g, '').replace(/mut |signer /g, '').trim().replace(/,\s*$/, '');
+        const init = trimmed.includes('#[init]');
+        const accName = trimmed.replace(/#\[.*?\]/g, '').replace(/\b(mut|signer|account)\b/g, '').trim().replace(/,\s*$/, '');
         if (accName) {
-          accounts.push({ name: accName, mutable, signer });
+          accounts.push({ name: accName, mutable, signer, init });
         }
       } else if (section === 'args') {
         const match = trimmed.match(ARG_PATTERN);
@@ -272,7 +400,7 @@ export class PurpEngine {
       }
     }
 
-    return { name, accounts, args, body };
+    return { name, accounts, args, body, visibility: 'pub' };
   }
 
   // ─── Parse event block ───
@@ -312,19 +440,21 @@ export class PurpEngine {
     return errors;
   }
 
-  // ─── Parse client block ───
+  // ─── Parse client block (v1.0: async fn with typed params) ───
   private parseClientBlock(name: string, lines: string[]): PurpClientDef {
-    const functions: { name: string; body: string[] }[] = [];
-    let currentFn: { name: string; body: string[] } | null = null;
+    const functions: { name: string; isAsync: boolean; params: string[]; body: string[] }[] = [];
+    let currentFn: { name: string; isAsync: boolean; params: string[]; body: string[] } | null = null;
 
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith('//')) continue;
 
-      const fnMatch = trimmed.match(/fn\s+(\w+)\s*\(/);
+      const fnMatch = trimmed.match(/(async\s+)?fn\s+(\w+)\s*\((.*?)\)/);
       if (fnMatch) {
         if (currentFn) functions.push(currentFn);
-        currentFn = { name: fnMatch[1], body: [] };
+        const paramStr = fnMatch[3] ?? '';
+        const params = paramStr.split(',').map(p => p.trim()).filter(Boolean);
+        currentFn = { name: fnMatch[2], isAsync: !!fnMatch[1], params, body: [] };
         continue;
       }
 
@@ -337,15 +467,35 @@ export class PurpEngine {
     return { name, functions };
   }
 
-  // ─── Parse frontend block ───
+  // ─── Parse frontend block (v1.0: page/component support) ───
   private parseFrontendBlock(name: string, lines: string[]): PurpFrontendDef {
+    const pages: { path: string; components: string[] }[] = [];
     const components: string[] = [];
+    let currentPage: { path: string; components: string[] } | null = null;
+
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed || trimmed.startsWith('//')) continue;
+
+      const pageMatch = trimmed.match(/page\s+"([^"]+)"/);
+      if (pageMatch) {
+        if (currentPage) pages.push(currentPage);
+        currentPage = { path: pageMatch[1], components: [] };
+        continue;
+      }
+
+      const compMatch = trimmed.match(/component\s+(\w+)/);
+      if (compMatch) {
+        if (currentPage) currentPage.components.push(compMatch[1]);
+        else components.push(compMatch[1]);
+        continue;
+      }
+
       components.push(trimmed);
     }
-    return { name, components };
+
+    if (currentPage) pages.push(currentPage);
+    return { name, pages, components };
   }
 
   // ─── Validate Purp program (both v3 and legacy) ───
@@ -356,7 +506,7 @@ export class PurpEngine {
     return this.validateV3(program as PurpProgram);
   }
 
-  // ─── Validate Purp v0.3 ───
+  // ─── Validate Purp v1.0 ───
   private validateV3(program: PurpProgram): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
 
@@ -386,23 +536,34 @@ export class PurpEngine {
       'f32', 'f64', 'bool', 'string', 'pubkey', 'bytes',
     ]);
 
+    // Also allow custom struct types
+    const customTypes = new Set(program.structs.map(s => s.name));
+    for (const account of program.accounts) {
+      customTypes.add(account.name);
+    }
+
     for (const account of program.accounts) {
       for (const field of account.fields) {
-        if (!validTypes.has(field.type) && !program.accounts.some(a => a.name === field.type)) {
+        if (!validTypes.has(field.type) && !customTypes.has(field.type)) {
           errors.push(`Account ${account.name}: unknown type "${field.type}" for field "${field.name}"`);
         }
       }
     }
 
-    // Validate instruction accounts reference existing accounts
-    // Allow snake_case references to PascalCase account names (Anchor convention)
+    // Validate instruction accounts reference existing accounts or well-known names
     const accountNames = new Set(program.accounts.map(a => a.name.toLowerCase()));
-    const wellKnown = new Set(['system_program', 'token_program', 'rent', 'clock', 'payer', 'authority', 'owner', 'mint', 'from', 'to']);
+    const wellKnown = new Set([
+      'system_program', 'token_program', 'rent', 'clock', 'payer', 'authority',
+      'owner', 'mint', 'from', 'to', 'associated_token_program', 'token_account',
+    ]);
     for (const instr of program.instructions) {
       for (const acc of instr.accounts) {
         const normalized = acc.name.toLowerCase().replace(/_/g, '');
         if (!accountNames.has(acc.name) && ![...accountNames].some(n => n.toLowerCase().replace(/_/g, '') === normalized) && !wellKnown.has(acc.name)) {
-          errors.push(`Instruction ${instr.name}: references unknown account "${acc.name}"`);
+          // v1.0: signer accounts don't need to reference a defined account struct
+          if (!acc.signer) {
+            errors.push(`Instruction ${instr.name}: references unknown account "${acc.name}"`);
+          }
         }
       }
     }
@@ -445,10 +606,13 @@ export class PurpEngine {
   // ─── Generate Anchor Rust from Purp ───
   private generateAnchorRust(program: PurpProgram): string {
     const lines: string[] = [
-      `// Auto-generated by Purp SCL v0.3 Compiler`,
+      `// Auto-generated by Purp SCL v1.0 Compiler`,
       `// Source: ${program.name}`,
       ``,
       `use anchor_lang::prelude::*;`,
+      program.instructions.some(i => i.accounts.some(a => a.name.includes('token') || a.name.includes('mint')))
+        ? `use anchor_spl::token::{self, Token, TokenAccount, Mint, Transfer as SplTransfer, MintTo, Burn};`
+        : '',
       ``,
       `declare_id!("TODO_PROGRAM_ID");`,
       ``,
@@ -456,12 +620,13 @@ export class PurpEngine {
       `pub mod ${this.toSnakeCase(program.name)} {`,
       `    use super::*;`,
       ``,
-    ];
+    ].filter(l => l !== undefined);
 
     // Generate instructions
     for (const instr of program.instructions) {
+      const ctxName = `${this.toPascalCase(instr.name)}Context`;
       const args = instr.args.map(a => `${a.name}: ${this.toRustType(a.type)}`).join(', ');
-      lines.push(`    pub fn ${this.toSnakeCase(instr.name)}(ctx: Context<${this.toPascalCase(instr.name)}>${args ? ', ' + args : ''}) -> Result<()> {`);
+      lines.push(`    pub fn ${this.toSnakeCase(instr.name)}(ctx: Context<${ctxName}>${args ? ', ' + args : ''}) -> Result<()> {`);
       for (const bodyLine of instr.body) {
         lines.push(`        ${this.transpileBodyLine(bodyLine)}`);
       }
@@ -484,16 +649,27 @@ export class PurpEngine {
       lines.push(``);
     }
 
-    // Generate instruction context structs
+    // Generate context structs (v1.0: <InstructionName>Context with #[init] support)
     for (const instr of program.instructions) {
+      const ctxName = `${this.toPascalCase(instr.name)}Context`;
       lines.push(`#[derive(Accounts)]`);
-      lines.push(`pub struct ${this.toPascalCase(instr.name)}<'info> {`);
+      lines.push(`pub struct ${ctxName}<'info> {`);
       for (const acc of instr.accounts) {
-        const attrs: string[] = [];
-        if (acc.mutable) attrs.push('mut');
-        const attrStr = attrs.length > 0 ? `#[account(${attrs.join(', ')})]` : '';
-        lines.push(`    ${attrStr}`);
-        lines.push(`    pub ${acc.name}: Account<'info, ${this.toPascalCase(acc.name)}>,`);
+        if (acc.init) {
+          lines.push(`    #[account(init, payer = ${instr.accounts.find(a => a.signer)?.name ?? 'payer'}, space = 8 + 256)]`);
+        } else if (acc.mutable) {
+          lines.push(`    #[account(mut)]`);
+        }
+        if (acc.signer) {
+          lines.push(`    pub ${acc.name}: Signer<'info>,`);
+        } else {
+          const accType = this.findAccountType(acc.name, program);
+          lines.push(`    pub ${acc.name}: Account<'info, ${accType}>,`);
+        }
+      }
+      // Add system_program if any accounts are initialized
+      if (instr.accounts.some(a => a.init)) {
+        lines.push(`    pub system_program: Program<'info, System>,`);
       }
       lines.push(`}`);
       lines.push(``);
@@ -524,10 +700,24 @@ export class PurpEngine {
     return lines.join('\n');
   }
 
+  // ─── Find account type for Anchor struct ───
+  private findAccountType(accName: string, program: PurpProgram): string {
+    // Try direct match
+    const direct = program.accounts.find(a => a.name.toLowerCase() === accName.toLowerCase());
+    if (direct) return this.toPascalCase(direct.name);
+
+    // Try normalized match (snake_case to PascalCase)
+    const normalized = accName.toLowerCase().replace(/_/g, '');
+    const match = program.accounts.find(a => a.name.toLowerCase().replace(/_/g, '') === normalized);
+    if (match) return this.toPascalCase(match.name);
+
+    return this.toPascalCase(accName);
+  }
+
   // ─── Generate TypeScript SDK from Purp ───
   private generateTypeScriptSDK(program: PurpProgram): string {
     const lines: string[] = [
-      `// Auto-generated TypeScript SDK by Purp SCL v0.3 Compiler`,
+      `// Auto-generated TypeScript SDK by Purp SCL v1.0 Compiler`,
       `// Source: ${program.name}`,
       ``,
       `import { Program, AnchorProvider } from '@coral-xyz/anchor';`,
@@ -682,11 +872,14 @@ export class PurpEngine {
   }
 
   private transpileBodyLine(line: string): string {
-    // Basic Purp-to-Rust transpilation
+    // Purp v1.0 → Rust transpilation
     return line
+      .replace(/emit\s+(\w+)\s*\((.*?)\)/, 'emit!($1 { $2 })')
       .replace(/emit\s*\((\w+),\s*\{(.*?)\}\)/, 'emit!($1 { $2 })')
       .replace(/require\s*\((.*?),\s*(\w+)\)/, 'require!($1, $2)')
-      .replace(/\.transfer\((.*?)\)/, '.transfer($1)?');
+      .replace(/assert\s*\((.*?),\s*"([^"]+)"\)/, 'require!($1, ProgramError::Custom(0)); // $2')
+      .replace(/\.transfer\((.*?)\)/, '.transfer($1)?')
+      .replace(/\.key\(\)/, '.key()');
   }
 
   // ─── Legacy JSON format support ───
