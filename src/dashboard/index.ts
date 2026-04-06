@@ -9,6 +9,7 @@ export function getDashboardHTML(): string {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PAW Agents — Dashboard</title>
+  <link rel="icon" type="image/png" href="/assets/logo-transparent.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -373,6 +374,24 @@ export function getDashboardHTML(): string {
       display: flex; flex-direction: column; gap: 4px;
     }
 
+    /* ─── Chat Tabs ─── */
+    .chat-tabs {
+      display: flex; gap: 2px; padding: 6px 12px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+      overflow-x: auto; flex-shrink: 0;
+    }
+    .chat-tab {
+      padding: 5px 12px; border: none; border-radius: var(--radius-sm);
+      background: transparent; color: var(--text-tertiary);
+      font-size: 0.72rem; font-family: var(--font-mono);
+      cursor: pointer; white-space: nowrap; transition: all var(--transition);
+    }
+    .chat-tab:hover { background: var(--bg-card); color: var(--text-primary); }
+    .chat-tab.active { background: var(--brand); color: #fff; }
+    .chat-tab-new { color: var(--brand-light); font-weight: 700; font-size: 0.82rem; }
+    .chat-tab-new:hover { background: rgba(124, 58, 237, 0.15); color: var(--brand); }
+
     .msg-row { display: flex; flex-direction: column; padding: 6px 0; animation: fadeIn 0.3s ease; }
     .msg-row.user { align-items: flex-end; }
 
@@ -400,6 +419,14 @@ export function getDashboardHTML(): string {
       background: var(--bg-card);
       border: 1px solid var(--border-subtle);
       border-bottom-left-radius: 4px;
+    }
+
+    .msg-row.error .msg-sender { color: var(--error); }
+    .msg-row.error .msg-bubble {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-bottom-left-radius: 4px;
+      color: var(--error);
     }
 
     .msg-row.system .msg-bubble {
@@ -523,7 +550,7 @@ export function getDashboardHTML(): string {
       <div class="topbar-left">
         <img src="/assets/logo-transparent.png" alt="PAW" class="topbar-logo" />
         <span class="topbar-title">PAW Agents</span>
-        <span class="topbar-badge">v3.0.0</span>
+        <span class="topbar-badge">v3.2.0</span>
       </div>
       <div class="topbar-right">
         <span class="status-indicator">
@@ -620,6 +647,7 @@ export function getDashboardHTML(): string {
           <span class="chat-header-title">Agent Terminal</span>
           <span class="chat-header-meta" id="session-id">—</span>
         </div>
+        <div class="chat-tabs" id="chat-tabs"></div>
         <div class="chat-messages" id="chat-messages"></div>
         <div class="chat-input-area">
           <input type="text" id="chat-input" placeholder="Enter a command or message..." onkeydown="if(event.key==='Enter')sendMessage()" autocomplete="off" spellcheck="false" />
@@ -670,6 +698,92 @@ export function getDashboardHTML(): string {
     let ws = null;
     let msgCount = 0;
     let currentMode = 'supervised';
+    let modeDebounce = null;
+    let currentChatId = null;
+
+    // ─── Session Persistence ───
+    const STORAGE_KEY = 'paw-dash-chats';
+    const ACTIVE_KEY = 'paw-dash-active-chat';
+
+    function generateId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
+
+    function loadChats() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+    }
+
+    function saveChats(chats) { localStorage.setItem(STORAGE_KEY, JSON.stringify(chats)); }
+
+    function getActiveChat() {
+      const chats = loadChats();
+      let id = localStorage.getItem(ACTIVE_KEY);
+      if (!id || !chats[id]) {
+        id = generateId();
+        chats[id] = { name: 'Chat ' + (Object.keys(chats).length + 1), messages: [], created: Date.now() };
+        saveChats(chats);
+      }
+      localStorage.setItem(ACTIVE_KEY, id);
+      return id;
+    }
+
+    function saveMessage(role, text) {
+      if (!currentChatId) return;
+      const chats = loadChats();
+      if (!chats[currentChatId]) return;
+      chats[currentChatId].messages.push({ role, text, ts: Date.now() });
+      saveChats(chats);
+      renderChatTabs();
+    }
+
+    function restoreMessages() {
+      const el = document.getElementById('chat-messages');
+      el.innerHTML = '';
+      const chats = loadChats();
+      const chat = chats[currentChatId];
+      if (!chat) return;
+      chat.messages.forEach(m => {
+        if (m.role === 'user') addUserMsg(m.text, true);
+        else if (m.role === 'agent') addAgentMsg(m.text, true);
+        else if (m.role === 'system') addSystemMsg(m.text, true);
+        else if (m.role === 'error') addErrorMsg(m.text, true);
+      });
+    }
+
+    function renderChatTabs() {
+      const container = document.getElementById('chat-tabs');
+      if (!container) return;
+      const chats = loadChats();
+      const ids = Object.keys(chats).sort((a, b) => (chats[a].created || 0) - (chats[b].created || 0));
+      container.innerHTML = ids.map(id => {
+        const c = chats[id];
+        const active = id === currentChatId ? ' active' : '';
+        const msgPreview = c.messages.length ? ' (' + c.messages.length + ')' : '';
+        return '<button class="chat-tab' + active + '" data-chatid="' + escapeHtml(id) + '">' + escapeHtml(c.name + msgPreview) + '</button>';
+      }).join('') + '<button class="chat-tab chat-tab-new" id="newChatBtn">+</button>';
+      // Bind events safely (no inline onclick to prevent XSS via localStorage IDs)
+      container.querySelectorAll('.chat-tab[data-chatid]').forEach(function(btn) {
+        btn.addEventListener('click', function() { switchChat(btn.getAttribute('data-chatid')); });
+      });
+      var newBtn = document.getElementById('newChatBtn');
+      if (newBtn) newBtn.addEventListener('click', function() { newChat(); });
+    }
+
+    function switchChat(id) {
+      currentChatId = id;
+      localStorage.setItem(ACTIVE_KEY, id);
+      restoreMessages();
+      renderChatTabs();
+    }
+
+    function newChat() {
+      const chats = loadChats();
+      const id = generateId();
+      chats[id] = { name: 'Chat ' + (Object.keys(chats).length + 1), messages: [], created: Date.now() };
+      saveChats(chats);
+      currentChatId = id;
+      localStorage.setItem(ACTIVE_KEY, id);
+      document.getElementById('chat-messages').innerHTML = '';
+      renderChatTabs();
+    }
 
     // ─── Theme ───
     function toggleTheme() {
@@ -720,8 +834,32 @@ export function getDashboardHTML(): string {
     function handleMessage(msg) {
       if (msg.type === 'response' && msg.payload) {
         const resp = msg.payload;
-        addAgentMsg(resp.message || JSON.stringify(resp));
-        addLog(resp.success ? 'execution' : 'error', resp.message || 'Action completed');
+        // Handle mode_changed events — don't put them in chat
+        if (resp.event === 'mode_changed') {
+          currentMode = resp.mode;
+          document.querySelectorAll('.mode-option').forEach(b => b.classList.remove('active'));
+          const btn = document.getElementById('btn-' + resp.mode);
+          if (btn) btn.classList.add('active');
+          addLog('system', 'mode changed → ' + resp.mode);
+          return;
+        }
+        // Handle status responses (from 'status' command)
+        if (resp.clients !== undefined || resp.channels !== undefined) {
+          addLog('system', 'status: ' + JSON.stringify(resp));
+          return;
+        }
+        // Handle errors — show them distinctly in chat
+        if (resp.success === false || resp.error) {
+          const errorText = resp.message || 'An error occurred';
+          addErrorMsg(errorText);
+          addLog('error', resp.error ? resp.error + ': ' + errorText : errorText);
+          return;
+        }
+        // Normal agent responses
+        if (resp.message) {
+          addAgentMsg(resp.message);
+          addLog('execution', resp.message.slice(0, 140));
+        }
       } else if (msg.type === 'event') {
         const payload = msg.payload || {};
         if (payload.event === 'connected') {
@@ -748,13 +886,16 @@ export function getDashboardHTML(): string {
     }
 
     function setMode(mode) {
-      currentMode = mode;
-      document.querySelectorAll('.mode-option').forEach(b => b.classList.remove('active'));
-      document.getElementById('btn-' + mode).classList.add('active');
-      if (ws && ws.readyState === 1) {
-        ws.send(JSON.stringify({ type: 'command', payload: { command: 'set_mode', mode: mode }, timestamp: new Date().toISOString() }));
-      }
-      addLog('system', 'mode → ' + mode);
+      if (modeDebounce) clearTimeout(modeDebounce);
+      modeDebounce = setTimeout(() => {
+        currentMode = mode;
+        document.querySelectorAll('.mode-option').forEach(b => b.classList.remove('active'));
+        document.getElementById('btn-' + mode).classList.add('active');
+        if (ws && ws.readyState === 1) {
+          ws.send(JSON.stringify({ type: 'command', payload: { command: 'set_mode', mode: mode }, timestamp: new Date().toISOString() }));
+        }
+        addLog('system', 'mode → ' + mode);
+      }, 300);
     }
 
     function requestFreeMode() {
@@ -776,28 +917,40 @@ export function getDashboardHTML(): string {
       setMode('free');
     }
 
-    function addUserMsg(text) {
+    function addUserMsg(text, skipSave) {
       const row = document.createElement('div');
       row.className = 'msg-row user';
       row.innerHTML = '<div class="msg-sender">You</div><div class="msg-bubble">' + escapeHtml(text) + '</div>';
       document.getElementById('chat-messages').appendChild(row);
       row.scrollIntoView({ behavior: 'smooth' });
+      if (!skipSave) saveMessage('user', text);
     }
 
-    function addAgentMsg(text) {
+    function addAgentMsg(text, skipSave) {
       const row = document.createElement('div');
       row.className = 'msg-row agent';
       row.innerHTML = '<div class="msg-sender">PAW</div><div class="msg-bubble">' + escapeHtml(text) + '</div>';
       document.getElementById('chat-messages').appendChild(row);
       row.scrollIntoView({ behavior: 'smooth' });
+      if (!skipSave) saveMessage('agent', text);
     }
 
-    function addSystemMsg(text) {
+    function addErrorMsg(text, skipSave) {
+      const row = document.createElement('div');
+      row.className = 'msg-row error';
+      row.innerHTML = '<div class="msg-sender">⚠ PAW</div><div class="msg-bubble msg-error">' + escapeHtml(text) + '</div>';
+      document.getElementById('chat-messages').appendChild(row);
+      row.scrollIntoView({ behavior: 'smooth' });
+      if (!skipSave) saveMessage('error', text);
+    }
+
+    function addSystemMsg(text, skipSave) {
       const row = document.createElement('div');
       row.className = 'msg-row system';
       row.innerHTML = '<div class="msg-bubble">' + escapeHtml(text) + '</div>';
       document.getElementById('chat-messages').appendChild(row);
       row.scrollIntoView({ behavior: 'smooth' });
+      if (!skipSave) saveMessage('system', text);
     }
 
     function addLog(tag, message) {
@@ -838,6 +991,11 @@ export function getDashboardHTML(): string {
         ws.send(JSON.stringify({ type: 'command', payload: { command: 'pawl_config', feature: feature, value: value }, timestamp: new Date().toISOString() }));
       }
     }
+
+    // ─── Init session persistence ───
+    currentChatId = getActiveChat();
+    restoreMessages();
+    renderChatTabs();
 
     setInterval(fetchStatus, 30000);
     connect();

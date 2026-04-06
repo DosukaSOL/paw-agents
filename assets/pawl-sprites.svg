@@ -1,17 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" fill="none">
   <!-- ═══════════════════════════════════════════════════════════════
-       PAWL — PAW Agents Desktop Companion Sprite Sheet
-       A cute purple dog mascot. 128x128 per frame, 10 columns × 5 rows.
+       PAWL — PAW Agents Desktop Companion Sprite Sheet (v2 — Dog)
+       A cute purple dog mascot with floppy ears, snout, collar.
+       128x128 per frame, 5 columns × 5 rows.
        
-       Row 1: Idle states (front, left, right, sit-front, blink)
-       Row 2: Emotions (happy, excited, mad, sad, confused)
-       Row 3: Actions (bark, alert, success, error, thinking)
-       Row 4: Movement (walk-left-1, walk-left-2, walk-right-1, walk-right-2, jump)
-       Row 5: Special (sleep, wag-1, wag-2, notification, love)
+       Row 1 (y=0):   Idle (front, left, right, sit, blink)
+       Row 2 (y=128): Emotions (happy, excited, mad, sad, confused)
+       Row 3 (y=256): Actions (bark, alert, success, error, thinking)
+       Row 4 (y=384): Movement (walk-L1, walk-L2, walk-R1, walk-R2, jump)
+       Row 5 (y=512): Special (sleep, wag1, wag2, notification, love)
        ═══════════════════════════════════════════════════════════════ -->
   
   <defs>
-    <!-- Base dog body color -->
+    <!-- Dog fur gradients -->
     <linearGradient id="fur" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#a78bfa"/>
       <stop offset="100%" stop-color="#7c3aed"/>
@@ -24,658 +25,780 @@
       <stop offset="0%" stop-color="#ede9fe"/>
       <stop offset="100%" stop-color="#ddd6fe"/>
     </linearGradient>
+    <linearGradient id="earInner" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#e9d5ff"/>
+      <stop offset="100%" stop-color="#c4b5fd"/>
+    </linearGradient>
+    <linearGradient id="collar" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
   </defs>
 
-  <!-- ═══ ROW 1: IDLE STATES ═══ -->
-  
+  <!-- ═══ ROW 1: IDLE STATES (y=0) ═══ -->
+
   <!-- Frame 0,0: Idle Front -->
   <g transform="translate(0,0)">
+    <!-- Tail (behind body) -->
+    <path d="M88 72 Q102 60 98 48 Q96 42 90 44" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
     <!-- Body -->
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <!-- Belly -->
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <!-- Belly patch -->
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <!-- Front legs -->
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <!-- Paws with pads -->
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <circle cx="51" cy="113" r="1.5" fill="#ddd6fe"/>
+    <circle cx="55" cy="113" r="1.5" fill="#ddd6fe"/>
+    <circle cx="73" cy="113" r="1.5" fill="#ddd6fe"/>
+    <circle cx="77" cy="113" r="1.5" fill="#ddd6fe"/>
     <!-- Head -->
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <!-- Ears -->
-    <ellipse cx="44" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-15,44,30)"/>
-    <ellipse cx="84" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(15,84,30)"/>
-    <!-- Inner ears -->
-    <ellipse cx="44" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-15,44,32)"/>
-    <ellipse cx="84" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(15,84,32)"/>
-    <!-- Eyes -->
-    <circle cx="54" cy="46" r="5" fill="#1e1e32"/>
-    <circle cx="74" cy="46" r="5" fill="#1e1e32"/>
-    <circle cx="56" cy="44" r="2" fill="white"/>
-    <circle cx="76" cy="44" r="2" fill="white"/>
+    <ellipse cx="64" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <!-- Floppy ears (drooping down) -->
+    <ellipse cx="40" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(15,40,50)"/>
+    <ellipse cx="88" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-15,88,50)"/>
+    <ellipse cx="40" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(15,40,52)"/>
+    <ellipse cx="88" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-15,88,52)"/>
+    <!-- Snout / muzzle -->
+    <ellipse cx="64" cy="54" rx="12" ry="9" fill="#ede9fe"/>
     <!-- Nose -->
-    <ellipse cx="64" cy="56" rx="4" ry="3" fill="#4c1d95"/>
+    <ellipse cx="64" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <ellipse cx="63" cy="49" rx="1.5" ry="1" fill="#4c1d95" opacity="0.5"/>
+    <!-- Eyes -->
+    <circle cx="53" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="75" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="55" cy="40" r="2.2" fill="white"/>
+    <circle cx="77" cy="40" r="2.2" fill="white"/>
+    <circle cx="53" cy="43" r="1" fill="white" opacity="0.4"/>
+    <circle cx="75" cy="43" r="1" fill="white" opacity="0.4"/>
     <!-- Mouth -->
-    <path d="M60 59 Q64 63 68 59" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <!-- Legs -->
-    <rect x="46" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <!-- Paws -->
-    <ellipse cx="51" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <!-- Tail -->
-    <path d="M92 80 Q105 65 98 55" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M59 56 Q64 60 69 56" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
+    <!-- Collar -->
+    <rect x="46" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <!-- Collar tag -->
+    <circle cx="64" cy="69" r="4" fill="#fbbf24"/>
+    <text x="64" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 1,0: Idle Left -->
   <g transform="translate(128,0)">
-    <ellipse cx="60" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="58" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="56" cy="48" r="24" fill="url(#fur)"/>
-    <ellipse cx="36" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-20,36,30)"/>
-    <ellipse cx="72" cy="32" rx="8" ry="14" fill="url(#furDark)" transform="rotate(5,72,32)"/>
-    <ellipse cx="36" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-20,36,32)"/>
-    <!-- Eyes looking left -->
-    <circle cx="46" cy="46" r="5" fill="#1e1e32"/>
-    <circle cx="63" cy="46" r="4" fill="#1e1e32"/>
-    <circle cx="44" cy="44" r="2" fill="white"/>
-    <circle cx="61" cy="44" r="1.5" fill="white"/>
-    <ellipse cx="54" cy="56" rx="4" ry="3" fill="#4c1d95"/>
-    <path d="M50 59 Q54 63 58 59" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <rect x="42" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="68" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="47" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="73" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <path d="M88 80 Q101 65 95 55" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M88 74 Q102 62 98 50 Q96 44 90 46" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="60" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="58" cy="84" rx="15" ry="12" fill="url(#belly)"/>
+    <rect x="42" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="64" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="47" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="69" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <!-- Head turned left -->
+    <ellipse cx="56" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="32" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(20,32,50)"/>
+    <ellipse cx="32" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(20,32,52)"/>
+    <ellipse cx="56" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="54" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <circle cx="46" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="64" cy="43" r="4" fill="#1e1e32"/>
+    <circle cx="48" cy="40" r="2.2" fill="white"/>
+    <circle cx="65.5" cy="41.5" r="1.5" fill="white"/>
+    <path d="M50 56 Q55 60 60 56" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
+    <rect x="38" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="56" cy="69" r="4" fill="#fbbf24"/>
+    <text x="56" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 2,0: Idle Right -->
   <g transform="translate(256,0)">
-    <ellipse cx="68" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="70" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="72" cy="48" r="24" fill="url(#fur)"/>
-    <ellipse cx="56" cy="32" rx="8" ry="14" fill="url(#furDark)" transform="rotate(-5,56,32)"/>
-    <ellipse cx="92" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(20,92,30)"/>
-    <ellipse cx="92" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(20,92,32)"/>
-    <!-- Eyes looking right -->
-    <circle cx="65" cy="46" r="4" fill="#1e1e32"/>
-    <circle cx="82" cy="46" r="5" fill="#1e1e32"/>
-    <circle cx="67" cy="44" r="1.5" fill="white"/>
-    <circle cx="84" cy="44" r="2" fill="white"/>
-    <ellipse cx="74" cy="56" rx="4" ry="3" fill="#4c1d95"/>
-    <path d="M70 59 Q74 63 78 59" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <rect x="50" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="76" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="55" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="81" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <path d="M36 80 Q23 65 30 55" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M40 74 Q26 62 30 50 Q32 44 38 46" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="68" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="70" cy="84" rx="15" ry="12" fill="url(#belly)"/>
+    <rect x="54" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="76" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="59" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="81" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <!-- Head turned right -->
+    <ellipse cx="72" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="96" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-20,96,50)"/>
+    <ellipse cx="96" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-20,96,52)"/>
+    <ellipse cx="72" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="74" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <circle cx="64" cy="43" r="4" fill="#1e1e32"/>
+    <circle cx="82" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="62.5" cy="41.5" r="1.5" fill="white"/>
+    <circle cx="84" cy="40" r="2.2" fill="white"/>
+    <path d="M68 56 Q73 60 78 56" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
+    <rect x="54" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="72" cy="69" r="4" fill="#fbbf24"/>
+    <text x="72" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
-  <!-- Frame 3,0: Sit Front -->
+  <!-- Frame 3,0: Sitting Front -->
   <g transform="translate(384,0)">
-    <ellipse cx="64" cy="88" rx="30" ry="20" fill="url(#fur)"/>
-    <ellipse cx="64" cy="90" rx="20" ry="12" fill="url(#belly)"/>
-    <circle cx="64" cy="52" r="24" fill="url(#fur)"/>
-    <ellipse cx="44" cy="34" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-15,44,34)"/>
-    <ellipse cx="84" cy="34" rx="10" ry="16" fill="url(#furDark)" transform="rotate(15,84,34)"/>
-    <ellipse cx="44" cy="36" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-15,44,36)"/>
-    <ellipse cx="84" cy="36" rx="6" ry="10" fill="#c4b5fd" transform="rotate(15,84,36)"/>
-    <circle cx="54" cy="50" r="5" fill="#1e1e32"/>
-    <circle cx="74" cy="50" r="5" fill="#1e1e32"/>
-    <circle cx="56" cy="48" r="2" fill="white"/>
-    <circle cx="76" cy="48" r="2" fill="white"/>
-    <ellipse cx="64" cy="60" rx="4" ry="3" fill="#4c1d95"/>
-    <path d="M60 63 Q64 67 68 63" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <!-- Sitting legs (front paws visible) -->
-    <ellipse cx="48" cy="104" rx="10" ry="6" fill="url(#fur)"/>
-    <ellipse cx="80" cy="104" rx="10" ry="6" fill="url(#fur)"/>
-    <ellipse cx="48" cy="106" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="80" cy="106" rx="7" ry="4" fill="url(#furDark)"/>
-    <path d="M92 84 Q108 72 102 60" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M88 68 Q102 56 100 44 Q98 38 92 40" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Sitting body (more upright) -->
+    <ellipse cx="64" cy="84" rx="24" ry="20" fill="url(#fur)"/>
+    <ellipse cx="64" cy="88" rx="15" ry="12" fill="url(#belly)"/>
+    <!-- Sitting legs (tucked) -->
+    <ellipse cx="48" cy="102" rx="10" ry="7" fill="url(#fur)"/>
+    <ellipse cx="80" cy="102" rx="10" ry="7" fill="url(#fur)"/>
+    <!-- Front paws visible -->
+    <ellipse cx="52" cy="108" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="76" cy="108" rx="7" ry="5" fill="url(#furDark)"/>
+    <!-- Head -->
+    <ellipse cx="64" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="40" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(15,40,50)"/>
+    <ellipse cx="88" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-15,88,50)"/>
+    <ellipse cx="40" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(15,40,52)"/>
+    <ellipse cx="88" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-15,88,52)"/>
+    <ellipse cx="64" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <circle cx="53" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="75" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="55" cy="40" r="2.2" fill="white"/>
+    <circle cx="77" cy="40" r="2.2" fill="white"/>
+    <path d="M59 56 Q64 60 69 56" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
+    <rect x="46" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="69" r="4" fill="#fbbf24"/>
+    <text x="64" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 4,0: Blink -->
   <g transform="translate(512,0)">
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <ellipse cx="44" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-15,44,30)"/>
-    <ellipse cx="84" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(15,84,30)"/>
-    <ellipse cx="44" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-15,44,32)"/>
-    <ellipse cx="84" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(15,84,32)"/>
-    <!-- Closed eyes -->
-    <path d="M49 46 Q54 50 59 46" stroke="#1e1e32" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M69 46 Q74 50 79 46" stroke="#1e1e32" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <ellipse cx="64" cy="56" rx="4" ry="3" fill="#4c1d95"/>
-    <path d="M60 59 Q64 63 68 59" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <rect x="46" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <path d="M92 80 Q105 65 98 55" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M88 72 Q102 60 98 48 Q96 42 90 44" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="40" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(15,40,50)"/>
+    <ellipse cx="88" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-15,88,50)"/>
+    <ellipse cx="40" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(15,40,52)"/>
+    <ellipse cx="88" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-15,88,52)"/>
+    <ellipse cx="64" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <!-- Closed eyes (blink) -->
+    <path d="M48 42 Q53 45 58 42" stroke="#1e1e32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M70 42 Q75 45 80 42" stroke="#1e1e32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M59 56 Q64 60 69 56" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
+    <rect x="46" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="69" r="4" fill="#fbbf24"/>
+    <text x="64" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
-  <!-- ═══ ROW 2: EMOTIONS ═══ -->
+  <!-- ═══ ROW 2: EMOTIONS (y=128) ═══ -->
 
   <!-- Frame 0,1: Happy -->
   <g transform="translate(0,128)">
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <ellipse cx="44" cy="28" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-20,44,28)"/>
-    <ellipse cx="84" cy="28" rx="10" ry="16" fill="url(#furDark)" transform="rotate(20,84,28)"/>
-    <ellipse cx="44" cy="30" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-20,44,30)"/>
-    <ellipse cx="84" cy="30" rx="6" ry="10" fill="#c4b5fd" transform="rotate(20,84,30)"/>
-    <!-- Happy eyes (curved up) -->
-    <path d="M49 44 Q54 40 59 44" stroke="#1e1e32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path d="M69 44 Q74 40 79 44" stroke="#1e1e32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <!-- Rosy cheeks -->
-    <circle cx="46" cy="53" r="5" fill="#f9a8d4" opacity="0.4"/>
-    <circle cx="82" cy="53" r="5" fill="#f9a8d4" opacity="0.4"/>
-    <ellipse cx="64" cy="56" rx="4" ry="3" fill="#4c1d95"/>
-    <!-- Big smile -->
-    <path d="M55 58 Q64 68 73 58" stroke="#4c1d95" stroke-width="2" fill="none"/>
-    <rect x="46" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <!-- Wagging tail (up) -->
-    <path d="M92 78 Q110 55 100 42" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Wagging tail -->
+    <path d="M88 72 Q106 54 100 42 Q97 36 92 40" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="40" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(15,40,50)"/>
+    <ellipse cx="88" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-15,88,50)"/>
+    <ellipse cx="40" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(15,40,52)"/>
+    <ellipse cx="88" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-15,88,52)"/>
+    <ellipse cx="64" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <!-- Happy squint eyes -->
+    <path d="M48 42 Q53 38 58 42" stroke="#1e1e32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M70 42 Q75 38 80 42" stroke="#1e1e32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <!-- Big smile with tongue -->
+    <path d="M56 55 Q64 63 72 55" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
+    <ellipse cx="64" cy="60" rx="5" ry="4" fill="#f9a8d4"/>
+    <!-- Blush -->
+    <circle cx="46" cy="50" r="4" fill="#f9a8d4" opacity="0.3"/>
+    <circle cx="82" cy="50" r="4" fill="#f9a8d4" opacity="0.3"/>
+    <rect x="46" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="69" r="4" fill="#fbbf24"/>
+    <text x="64" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 1,1: Excited -->
   <g transform="translate(128,128)">
-    <!-- Bounced up slightly -->
-    <ellipse cx="64" cy="78" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="82" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="44" r="24" fill="url(#fur)"/>
-    <ellipse cx="44" cy="26" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-25,44,26)"/>
-    <ellipse cx="84" cy="26" rx="10" ry="16" fill="url(#furDark)" transform="rotate(25,84,26)"/>
-    <ellipse cx="44" cy="28" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-25,44,28)"/>
-    <ellipse cx="84" cy="28" rx="6" ry="10" fill="#c4b5fd" transform="rotate(25,84,28)"/>
-    <!-- Star eyes -->
-    <text x="49" y="46" fill="#fbbf24" font-size="12" text-anchor="middle">★</text>
-    <text x="79" y="46" fill="#fbbf24" font-size="12" text-anchor="middle">★</text>
-    <circle cx="46" cy="51" r="5" fill="#f9a8d4" opacity="0.5"/>
-    <circle cx="82" cy="51" r="5" fill="#f9a8d4" opacity="0.5"/>
-    <ellipse cx="64" cy="52" rx="4" ry="3" fill="#4c1d95"/>
-    <ellipse cx="64" cy="57" rx="8" ry="5" fill="#4c1d95"/>
-    <ellipse cx="64" cy="56" rx="6" ry="3" fill="#c4b5fd"/>
-    <rect x="46" y="98" width="10" height="14" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="14" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="112" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="112" rx="7" ry="4" fill="url(#furDark)"/>
-    <path d="M92 74 Q115 48 104 35" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M88 68 Q108 50 102 38 Q99 32 94 36" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Bouncing body (slightly up) -->
+    <ellipse cx="64" cy="76" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="80" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="90" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="90" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="108" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="108" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="42" rx="24" ry="22" fill="url(#fur)"/>
+    <!-- Perked up ears -->
+    <ellipse cx="40" cy="44" rx="10" ry="18" fill="url(#furDark)" transform="rotate(10,40,44)"/>
+    <ellipse cx="88" cy="44" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-10,88,44)"/>
+    <ellipse cx="40" cy="46" rx="6" ry="12" fill="url(#earInner)" transform="rotate(10,40,46)"/>
+    <ellipse cx="88" cy="46" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-10,88,46)"/>
+    <ellipse cx="64" cy="50" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="46" rx="4" ry="3.5" fill="#2d1065"/>
+    <!-- Big sparkly eyes -->
+    <circle cx="53" cy="38" r="6.5" fill="#1e1e32"/>
+    <circle cx="75" cy="38" r="6.5" fill="#1e1e32"/>
+    <circle cx="55.5" cy="36" r="2.5" fill="white"/>
+    <circle cx="77.5" cy="36" r="2.5" fill="white"/>
+    <circle cx="51" cy="40" r="1.2" fill="white"/>
+    <circle cx="73" cy="40" r="1.2" fill="white"/>
+    <!-- Excited open mouth -->
+    <ellipse cx="64" cy="55" rx="7" ry="5" fill="#4c1d95"/>
+    <ellipse cx="64" cy="57" rx="5" ry="3" fill="#f9a8d4"/>
     <!-- Sparkles -->
-    <text x="24" y="36" fill="#fbbf24" font-size="10">✦</text>
-    <text x="100" y="30" fill="#22d3ee" font-size="8">✦</text>
-    <text x="108" y="50" fill="#fbbf24" font-size="6">✦</text>
+    <text x="28" y="26" font-size="10" fill="#fbbf24">✦</text>
+    <text x="96" y="26" font-size="8" fill="#fbbf24">✦</text>
+    <rect x="46" y="58" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="65" r="4" fill="#fbbf24"/>
+    <text x="64" y="67" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 2,1: Mad -->
   <g transform="translate(256,128)">
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <ellipse cx="44" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-5,44,30)"/>
-    <ellipse cx="84" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(5,84,30)"/>
-    <ellipse cx="44" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-5,44,32)"/>
-    <ellipse cx="84" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(5,84,32)"/>
-    <!-- Angry eyebrows -->
-    <line x1="48" y1="38" x2="58" y2="41" stroke="#4c1d95" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="80" y1="38" x2="70" y2="41" stroke="#4c1d95" stroke-width="2.5" stroke-linecap="round"/>
-    <circle cx="54" cy="47" r="4.5" fill="#1e1e32"/>
-    <circle cx="74" cy="47" r="4.5" fill="#1e1e32"/>
-    <circle cx="55.5" cy="45.5" r="1.5" fill="white"/>
-    <circle cx="75.5" cy="45.5" r="1.5" fill="white"/>
-    <ellipse cx="64" cy="56" rx="4" ry="3" fill="#4c1d95"/>
-    <!-- Pouty mouth -->
-    <path d="M57 62 Q64 58 71 62" stroke="#4c1d95" stroke-width="2" fill="none"/>
-    <!-- Cheeks flushed -->
-    <circle cx="46" cy="54" r="5" fill="#f87171" opacity="0.3"/>
-    <circle cx="82" cy="54" r="5" fill="#f87171" opacity="0.3"/>
-    <rect x="46" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <!-- Stiff tail (down) -->
-    <path d="M92 84 Q100 90 96 100" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
-    <!-- Steam puffs -->
-    <text x="28" y="32" fill="#f87171" font-size="10" opacity="0.6">💢</text>
+    <path d="M88 72 Q96 64 94 56 Q93 52 90 54" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="40" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(15,40,50)"/>
+    <ellipse cx="88" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-15,88,50)"/>
+    <ellipse cx="40" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(15,40,52)"/>
+    <ellipse cx="88" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-15,88,52)"/>
+    <ellipse cx="64" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <!-- Angry eyes with brows -->
+    <circle cx="53" cy="42" r="5" fill="#1e1e32"/>
+    <circle cx="75" cy="42" r="5" fill="#1e1e32"/>
+    <circle cx="55" cy="40.5" r="1.8" fill="white"/>
+    <circle cx="77" cy="40.5" r="1.8" fill="white"/>
+    <line x1="47" y1="35" x2="57" y2="38" stroke="#4c1d95" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="81" y1="35" x2="71" y2="38" stroke="#4c1d95" stroke-width="2.5" stroke-linecap="round"/>
+    <!-- Frown -->
+    <path d="M58 58 Q64 54 70 58" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
+    <!-- Anger mark -->
+    <g transform="translate(86,26)">
+      <line x1="0" y1="0" x2="8" y2="8" stroke="#ef4444" stroke-width="2"/>
+      <line x1="8" y1="0" x2="0" y2="8" stroke="#ef4444" stroke-width="2"/>
+    </g>
+    <rect x="46" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="69" r="4" fill="#fbbf24"/>
+    <text x="64" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 3,1: Sad -->
   <g transform="translate(384,128)">
-    <ellipse cx="64" cy="84" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="88" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="50" r="24" fill="url(#fur)"/>
-    <!-- Droopy ears -->
-    <ellipse cx="42" cy="36" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-35,42,36)"/>
-    <ellipse cx="86" cy="36" rx="10" ry="16" fill="url(#furDark)" transform="rotate(35,86,36)"/>
-    <ellipse cx="42" cy="38" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-35,42,38)"/>
-    <ellipse cx="86" cy="38" rx="6" ry="10" fill="#c4b5fd" transform="rotate(35,86,38)"/>
-    <!-- Sad eyes -->
-    <circle cx="54" cy="48" r="5" fill="#1e1e32"/>
-    <circle cx="74" cy="48" r="5" fill="#1e1e32"/>
-    <circle cx="56" cy="46" r="2" fill="white"/>
-    <circle cx="76" cy="46" r="2" fill="white"/>
-    <!-- Sad eyebrows -->
-    <line x1="48" y1="42" x2="58" y2="40" stroke="#4c1d95" stroke-width="2" stroke-linecap="round"/>
-    <line x1="80" y1="42" x2="70" y2="40" stroke="#4c1d95" stroke-width="2" stroke-linecap="round"/>
+    <!-- Drooping tail -->
+    <path d="M88 82 Q96 88 94 96" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="82" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="86" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="96" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="96" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="114" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="114" rx="7" ry="5" fill="url(#furDark)"/>
+    <!-- Slightly lowered head -->
+    <ellipse cx="64" cy="50" rx="24" ry="22" fill="url(#fur)"/>
+    <!-- Extra droopy ears -->
+    <ellipse cx="38" cy="56" rx="10" ry="18" fill="url(#furDark)" transform="rotate(25,38,56)"/>
+    <ellipse cx="90" cy="56" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-25,90,56)"/>
+    <ellipse cx="38" cy="58" rx="6" ry="12" fill="url(#earInner)" transform="rotate(25,38,58)"/>
+    <ellipse cx="90" cy="58" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-25,90,58)"/>
+    <ellipse cx="64" cy="58" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="54" rx="4" ry="3.5" fill="#2d1065"/>
+    <!-- Sad puppy eyes -->
+    <circle cx="53" cy="46" r="6" fill="#1e1e32"/>
+    <circle cx="75" cy="46" r="6" fill="#1e1e32"/>
+    <circle cx="55" cy="44" r="2.5" fill="white"/>
+    <circle cx="77" cy="44" r="2.5" fill="white"/>
+    <circle cx="52" cy="47" r="1.2" fill="white" opacity="0.5"/>
+    <circle cx="74" cy="47" r="1.2" fill="white" opacity="0.5"/>
+    <!-- Sad brows -->
+    <line x1="47" y1="38" x2="57" y2="40" stroke="#4c1d95" stroke-width="2" stroke-linecap="round"/>
+    <line x1="81" y1="38" x2="71" y2="40" stroke="#4c1d95" stroke-width="2" stroke-linecap="round"/>
+    <!-- Sad mouth -->
+    <path d="M58 62 Q64 58 70 62" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
     <!-- Tear -->
-    <circle cx="80" cy="54" r="2" fill="#93c5fd" opacity="0.7"/>
-    <ellipse cx="64" cy="58" rx="4" ry="3" fill="#4c1d95"/>
-    <path d="M58 62 Q64 58 70 62" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <rect x="46" y="100" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="100" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="116" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="116" rx="7" ry="4" fill="url(#furDark)"/>
-    <path d="M92 82 Q100 92 94 100" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="80" cy="52" rx="2" ry="3" fill="#93c5fd" opacity="0.7"/>
+    <rect x="46" y="66" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="73" r="4" fill="#fbbf24"/>
+    <text x="64" y="75" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 4,1: Confused -->
   <g transform="translate(512,128)">
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <!-- One ear up one down -->
-    <ellipse cx="44" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-15,44,30)"/>
-    <ellipse cx="86" cy="36" rx="10" ry="16" fill="url(#furDark)" transform="rotate(30,86,36)"/>
-    <ellipse cx="44" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-15,44,32)"/>
-    <ellipse cx="86" cy="38" rx="6" ry="10" fill="#c4b5fd" transform="rotate(30,86,38)"/>
-    <!-- Confused eyes (different sizes) -->
-    <circle cx="54" cy="46" r="6" fill="#1e1e32"/>
-    <circle cx="74" cy="46" r="4" fill="#1e1e32"/>
-    <circle cx="56" cy="44" r="2" fill="white"/>
-    <circle cx="75.5" cy="44.5" r="1.5" fill="white"/>
-    <ellipse cx="64" cy="56" rx="4" ry="3" fill="#4c1d95"/>
-    <!-- Wavy mouth -->
-    <path d="M57 60 Q60 63 64 60 Q68 57 71 60" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <rect x="46" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <path d="M92 80 Q105 65 98 55" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M88 72 Q102 60 98 48 Q96 42 90 44" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <!-- Tilted head -->
+    <g transform="rotate(-8,64,46)">
+      <ellipse cx="64" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+      <ellipse cx="40" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(15,40,50)"/>
+      <ellipse cx="88" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-15,88,50)"/>
+      <ellipse cx="40" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(15,40,52)"/>
+      <ellipse cx="88" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-15,88,52)"/>
+      <ellipse cx="64" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+      <ellipse cx="64" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+      <!-- Confused uneven eyes -->
+      <circle cx="53" cy="42" r="5.5" fill="#1e1e32"/>
+      <circle cx="75" cy="42" r="4.5" fill="#1e1e32"/>
+      <circle cx="55" cy="40" r="2" fill="white"/>
+      <circle cx="77" cy="40.5" r="1.5" fill="white"/>
+      <path d="M59 56 Q64 58 69 56" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
+    </g>
     <!-- Question mark -->
-    <text x="96" y="32" fill="#fbbf24" font-family="Inter, sans-serif" font-size="16" font-weight="700">?</text>
+    <text x="92" y="28" font-size="16" font-weight="bold" fill="#fbbf24">?</text>
+    <rect x="46" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="69" r="4" fill="#fbbf24"/>
+    <text x="64" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
-  <!-- ═══ ROW 3: ACTIONS ═══ -->
+  <!-- ═══ ROW 3: ACTIONS (y=256) ═══ -->
 
   <!-- Frame 0,2: Bark -->
   <g transform="translate(0,256)">
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <ellipse cx="44" cy="28" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-20,44,28)"/>
-    <ellipse cx="84" cy="28" rx="10" ry="16" fill="url(#furDark)" transform="rotate(20,84,28)"/>
-    <ellipse cx="44" cy="30" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-20,44,30)"/>
-    <ellipse cx="84" cy="30" rx="6" ry="10" fill="#c4b5fd" transform="rotate(20,84,30)"/>
-    <circle cx="54" cy="44" r="5" fill="#1e1e32"/>
-    <circle cx="74" cy="44" r="5" fill="#1e1e32"/>
-    <circle cx="56" cy="42" r="2" fill="white"/>
-    <circle cx="76" cy="42" r="2" fill="white"/>
-    <ellipse cx="64" cy="54" rx="4" ry="3" fill="#4c1d95"/>
-    <!-- Open mouth (barking) -->
-    <ellipse cx="64" cy="62" rx="10" ry="7" fill="#4c1d95"/>
-    <ellipse cx="64" cy="60" rx="8" ry="4" fill="#c4b5fd"/>
-    <!-- Sound waves -->
-    <path d="M88 42 Q96 42 96 36" stroke="#a78bfa" stroke-width="1.5" fill="none" opacity="0.6"/>
-    <path d="M92 48 Q102 48 102 40" stroke="#a78bfa" stroke-width="1.5" fill="none" opacity="0.4"/>
-    <path d="M94 54 Q106 54 106 44" stroke="#a78bfa" stroke-width="1.5" fill="none" opacity="0.2"/>
-    <rect x="46" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <path d="M92 78 Q110 55 100 42" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M88 72 Q104 58 100 46 Q98 40 92 42" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="44" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="40" cy="46" rx="10" ry="18" fill="url(#furDark)" transform="rotate(10,40,46)"/>
+    <ellipse cx="88" cy="46" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-10,88,46)"/>
+    <ellipse cx="40" cy="48" rx="6" ry="12" fill="url(#earInner)" transform="rotate(10,40,48)"/>
+    <ellipse cx="88" cy="48" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-10,88,48)"/>
+    <ellipse cx="64" cy="52" rx="12" ry="10" fill="#ede9fe"/>
+    <ellipse cx="64" cy="48" rx="4" ry="3.5" fill="#2d1065"/>
+    <circle cx="53" cy="40" r="5" fill="#1e1e32"/>
+    <circle cx="75" cy="40" r="5" fill="#1e1e32"/>
+    <circle cx="55" cy="38" r="2" fill="white"/>
+    <circle cx="77" cy="38" r="2" fill="white"/>
+    <!-- Open mouth barking -->
+    <ellipse cx="64" cy="56" rx="8" ry="6" fill="#4c1d95"/>
+    <ellipse cx="64" cy="58" rx="5" ry="3" fill="#f9a8d4"/>
+    <!-- Bark lines -->
+    <line x1="80" y1="44" x2="90" y2="40" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/>
+    <line x1="82" y1="50" x2="94" y2="50" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/>
+    <line x1="80" y1="56" x2="90" y2="60" stroke="#7c3aed" stroke-width="2" stroke-linecap="round"/>
+    <rect x="46" y="60" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="67" r="4" fill="#fbbf24"/>
+    <text x="64" y="69" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
-  <!-- Frame 1,2: Alert (notification) -->
+  <!-- Frame 1,2: Alert -->
   <g transform="translate(128,256)">
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <!-- Perked ears -->
-    <ellipse cx="44" cy="26" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-10,44,26)"/>
-    <ellipse cx="84" cy="26" rx="10" ry="18" fill="url(#furDark)" transform="rotate(10,84,26)"/>
-    <ellipse cx="44" cy="28" rx="6" ry="12" fill="#c4b5fd" transform="rotate(-10,44,28)"/>
-    <ellipse cx="84" cy="28" rx="6" ry="12" fill="#c4b5fd" transform="rotate(10,84,28)"/>
-    <!-- Wide eyes -->
-    <circle cx="54" cy="46" r="6" fill="#1e1e32"/>
-    <circle cx="74" cy="46" r="6" fill="#1e1e32"/>
-    <circle cx="56" cy="43" r="2.5" fill="white"/>
-    <circle cx="76" cy="43" r="2.5" fill="white"/>
-    <ellipse cx="64" cy="56" rx="4" ry="3" fill="#4c1d95"/>
-    <path d="M60 59 Q64 62 68 59" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <!-- Alert bubble -->
-    <circle cx="100" cy="26" r="12" fill="#fbbf24"/>
-    <text x="100" y="31" fill="#4c1d95" font-family="Inter, sans-serif" font-size="14" font-weight="700" text-anchor="middle">!</text>
-    <rect x="46" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <path d="M92 78 Q112 58 104 45" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Straight up tail -->
+    <path d="M84 72 Q88 50 86 38" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="44" rx="24" ry="22" fill="url(#fur)"/>
+    <!-- Alert upright ears -->
+    <ellipse cx="42" cy="28" rx="9" ry="16" fill="url(#furDark)" transform="rotate(-5,42,28)"/>
+    <ellipse cx="86" cy="28" rx="9" ry="16" fill="url(#furDark)" transform="rotate(5,86,28)"/>
+    <ellipse cx="42" cy="30" rx="5" ry="10" fill="url(#earInner)" transform="rotate(-5,42,30)"/>
+    <ellipse cx="86" cy="30" rx="5" ry="10" fill="url(#earInner)" transform="rotate(5,86,30)"/>
+    <ellipse cx="64" cy="52" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="48" rx="4" ry="3.5" fill="#2d1065"/>
+    <!-- Wide alert eyes -->
+    <circle cx="53" cy="40" r="6.5" fill="#1e1e32"/>
+    <circle cx="75" cy="40" r="6.5" fill="#1e1e32"/>
+    <circle cx="55.5" cy="38" r="2.5" fill="white"/>
+    <circle cx="77.5" cy="38" r="2.5" fill="white"/>
+    <path d="M59 55 Q64 57 69 55" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
+    <!-- Alert symbol -->
+    <text x="96" y="26" font-size="14" font-weight="bold" fill="#fbbf24">!</text>
+    <rect x="46" y="60" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="67" r="4" fill="#fbbf24"/>
+    <text x="64" y="69" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 2,2: Success -->
   <g transform="translate(256,256)">
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <ellipse cx="44" cy="28" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-20,44,28)"/>
-    <ellipse cx="84" cy="28" rx="10" ry="16" fill="url(#furDark)" transform="rotate(20,84,28)"/>
-    <ellipse cx="44" cy="30" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-20,44,30)"/>
-    <ellipse cx="84" cy="30" rx="6" ry="10" fill="#c4b5fd" transform="rotate(20,84,30)"/>
+    <path d="M88 72 Q106 54 100 42 Q97 36 92 40" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="40" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(15,40,50)"/>
+    <ellipse cx="88" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-15,88,50)"/>
+    <ellipse cx="40" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(15,40,52)"/>
+    <ellipse cx="88" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-15,88,52)"/>
+    <ellipse cx="64" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
     <!-- Happy squint eyes -->
-    <path d="M49 44 Q54 40 59 44" stroke="#1e1e32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path d="M69 44 Q74 40 79 44" stroke="#1e1e32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <circle cx="46" cy="53" r="5" fill="#f9a8d4" opacity="0.4"/>
-    <circle cx="82" cy="53" r="5" fill="#f9a8d4" opacity="0.4"/>
-    <ellipse cx="64" cy="56" rx="4" ry="3" fill="#4c1d95"/>
-    <path d="M55 58 Q64 68 73 58" stroke="#4c1d95" stroke-width="2" fill="none"/>
-    <!-- Checkmark bubble -->
-    <circle cx="100" cy="26" r="12" fill="#34d399"/>
-    <path d="M93 26 L98 31 L107 22" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <rect x="46" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <path d="M92 76 Q112 50 102 38" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M48 42 Q53 38 58 42" stroke="#1e1e32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M70 42 Q75 38 80 42" stroke="#1e1e32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M57 55 Q64 62 71 55" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
+    <!-- Checkmark -->
+    <circle cx="92" cy="24" r="10" fill="#22c55e" opacity="0.9"/>
+    <path d="M86 24 L90 28 L98 20" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="46" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="69" r="4" fill="#fbbf24"/>
+    <text x="64" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 3,2: Error -->
   <g transform="translate(384,256)">
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <ellipse cx="44" cy="32" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-30,44,32)"/>
-    <ellipse cx="84" cy="32" rx="10" ry="16" fill="url(#furDark)" transform="rotate(30,84,32)"/>
-    <ellipse cx="44" cy="34" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-30,44,34)"/>
-    <ellipse cx="84" cy="34" rx="6" ry="10" fill="#c4b5fd" transform="rotate(30,84,34)"/>
+    <path d="M88 82 Q94 86 92 94" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="40" cy="52" rx="10" ry="18" fill="url(#furDark)" transform="rotate(20,40,52)"/>
+    <ellipse cx="88" cy="52" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-20,88,52)"/>
+    <ellipse cx="40" cy="54" rx="6" ry="12" fill="url(#earInner)" transform="rotate(20,40,54)"/>
+    <ellipse cx="88" cy="54" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-20,88,54)"/>
+    <ellipse cx="64" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
     <!-- Worried eyes -->
-    <circle cx="54" cy="46" r="5" fill="#1e1e32"/>
-    <circle cx="74" cy="46" r="5" fill="#1e1e32"/>
-    <circle cx="55" cy="44" r="2" fill="white"/>
-    <circle cx="75" cy="44" r="2" fill="white"/>
-    <!-- Sad brows -->
-    <line x1="48" y1="39" x2="58" y2="37" stroke="#4c1d95" stroke-width="2" stroke-linecap="round"/>
-    <line x1="80" y1="39" x2="70" y2="37" stroke="#4c1d95" stroke-width="2" stroke-linecap="round"/>
-    <ellipse cx="64" cy="56" rx="4" ry="3" fill="#4c1d95"/>
-    <path d="M58 62 Q64 58 70 62" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <!-- Error bubble -->
-    <circle cx="100" cy="26" r="12" fill="#f87171"/>
-    <text x="100" y="32" fill="white" font-family="Inter, sans-serif" font-size="16" font-weight="700" text-anchor="middle">✕</text>
-    <rect x="46" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <path d="M92 84 Q100 92 94 100" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <circle cx="53" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="75" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="54" cy="40" r="2" fill="white"/>
+    <circle cx="76" cy="40" r="2" fill="white"/>
+    <line x1="48" y1="36" x2="56" y2="38" stroke="#4c1d95" stroke-width="2" stroke-linecap="round"/>
+    <line x1="80" y1="36" x2="72" y2="38" stroke="#4c1d95" stroke-width="2" stroke-linecap="round"/>
+    <!-- Small worried mouth -->
+    <ellipse cx="64" cy="57" rx="4" ry="3" fill="#4c1d95"/>
+    <!-- Error X -->
+    <circle cx="92" cy="24" r="10" fill="#ef4444" opacity="0.9"/>
+    <line x1="87" y1="19" x2="97" y2="29" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="97" y1="19" x2="87" y2="29" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+    <rect x="46" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="69" r="4" fill="#fbbf24"/>
+    <text x="64" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 4,2: Thinking -->
   <g transform="translate(512,256)">
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <ellipse cx="44" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-15,44,30)"/>
-    <ellipse cx="84" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(15,84,30)"/>
-    <ellipse cx="44" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-15,44,32)"/>
-    <ellipse cx="84" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(15,84,32)"/>
-    <!-- Looking up eyes -->
-    <circle cx="54" cy="44" r="5" fill="#1e1e32"/>
-    <circle cx="74" cy="44" r="5" fill="#1e1e32"/>
-    <circle cx="55" cy="41" r="2" fill="white"/>
-    <circle cx="75" cy="41" r="2" fill="white"/>
-    <ellipse cx="64" cy="56" rx="4" ry="3" fill="#4c1d95"/>
-    <path d="M60 60 Q64 63 68 60" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
+    <path d="M88 72 Q102 60 98 48 Q96 42 90 44" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="40" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(15,40,50)"/>
+    <ellipse cx="88" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-15,88,50)"/>
+    <ellipse cx="40" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(15,40,52)"/>
+    <ellipse cx="88" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-15,88,52)"/>
+    <ellipse cx="64" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <!-- Looking up thinking eyes -->
+    <circle cx="53" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="75" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="56" cy="39" r="2.2" fill="white"/>
+    <circle cx="78" cy="39" r="2.2" fill="white"/>
+    <path d="M59 56 Q64 58 69 56" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
     <!-- Thought bubbles -->
-    <circle cx="96" cy="34" r="4" fill="#a8a4b8" opacity="0.4"/>
-    <circle cx="104" cy="24" r="6" fill="#a8a4b8" opacity="0.4"/>
-    <circle cx="114" cy="14" r="8" fill="#a8a4b8" opacity="0.4"/>
-    <text x="114" y="18" fill="#6b6880" font-size="10" text-anchor="middle">...</text>
-    <rect x="46" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <path d="M92 80 Q105 65 98 55" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <circle cx="88" cy="36" r="3" fill="white" opacity="0.6"/>
+    <circle cx="94" cy="28" r="4" fill="white" opacity="0.6"/>
+    <circle cx="98" cy="18" r="6" fill="white" opacity="0.6"/>
+    <rect x="46" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="69" r="4" fill="#fbbf24"/>
+    <text x="64" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
-  <!-- ═══ ROW 4: MOVEMENT ═══ -->
+  <!-- ═══ ROW 4: MOVEMENT (y=384) ═══ -->
 
   <!-- Frame 0,3: Walk Left 1 -->
   <g transform="translate(0,384)">
-    <ellipse cx="60" cy="80" rx="28" ry="22" fill="url(#fur)"/>
-    <ellipse cx="58" cy="84" rx="18" ry="12" fill="url(#belly)"/>
-    <circle cx="54" cy="48" r="22" fill="url(#fur)"/>
-    <ellipse cx="36" cy="30" rx="9" ry="15" fill="url(#furDark)" transform="rotate(-20,36,30)"/>
-    <ellipse cx="70" cy="32" rx="7" ry="13" fill="url(#furDark)" transform="rotate(5,70,32)"/>
-    <ellipse cx="36" cy="32" rx="5" ry="9" fill="#c4b5fd" transform="rotate(-20,36,32)"/>
-    <circle cx="46" cy="46" r="4" fill="#1e1e32"/>
-    <circle cx="62" cy="46" r="3.5" fill="#1e1e32"/>
-    <circle cx="44" cy="44" r="1.5" fill="white"/>
-    <circle cx="60.5" cy="44.5" r="1.5" fill="white"/>
-    <ellipse cx="52" cy="54" rx="3.5" ry="2.5" fill="#4c1d95"/>
-    <path d="M48 57 Q52 60 56 57" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <!-- Walking legs (step 1: left forward, right back) -->
-    <rect x="36" y="94" width="9" height="18" rx="4.5" fill="url(#fur)" transform="rotate(15,40,94)"/>
-    <rect x="66" y="94" width="9" height="18" rx="4.5" fill="url(#fur)" transform="rotate(-10,70,94)"/>
-    <ellipse cx="43" cy="114" rx="6" ry="3.5" fill="url(#furDark)"/>
-    <ellipse cx="68" cy="112" rx="6" ry="3.5" fill="url(#furDark)"/>
-    <path d="M86 78 Q99 63 93 53" stroke="url(#fur)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M82 72 Q96 62 94 52 Q92 46 88 48" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="58" cy="78" rx="26" ry="20" fill="url(#fur)"/>
+    <ellipse cx="56" cy="82" rx="15" ry="12" fill="url(#belly)"/>
+    <!-- Walking legs spread -->
+    <rect x="38" y="92" width="10" height="18" rx="5" fill="url(#fur)" transform="rotate(12,43,92)"/>
+    <rect x="62" y="92" width="10" height="18" rx="5" fill="url(#fur)" transform="rotate(-8,67,92)"/>
+    <ellipse cx="41" cy="111" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="70" cy="110" rx="7" ry="5" fill="url(#furDark)"/>
+    <!-- Head facing left -->
+    <ellipse cx="52" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="28" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(20,28,50)"/>
+    <ellipse cx="28" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(20,28,52)"/>
+    <ellipse cx="52" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="50" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <circle cx="42" cy="42" r="5" fill="#1e1e32"/>
+    <circle cx="60" cy="43" r="4" fill="#1e1e32"/>
+    <circle cx="44" cy="40" r="2" fill="white"/>
+    <circle cx="61.5" cy="41.5" r="1.5" fill="white"/>
+    <path d="M46 56 Q51 59 56 56" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
+    <rect x="34" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="52" cy="69" r="4" fill="#fbbf24"/>
+    <text x="52" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 1,3: Walk Left 2 -->
   <g transform="translate(128,384)">
-    <ellipse cx="56" cy="80" rx="28" ry="22" fill="url(#fur)"/>
-    <ellipse cx="54" cy="84" rx="18" ry="12" fill="url(#belly)"/>
-    <circle cx="50" cy="48" r="22" fill="url(#fur)"/>
-    <ellipse cx="32" cy="30" rx="9" ry="15" fill="url(#furDark)" transform="rotate(-20,32,30)"/>
-    <ellipse cx="66" cy="32" rx="7" ry="13" fill="url(#furDark)" transform="rotate(5,66,32)"/>
-    <ellipse cx="32" cy="32" rx="5" ry="9" fill="#c4b5fd" transform="rotate(-20,32,32)"/>
-    <circle cx="42" cy="46" r="4" fill="#1e1e32"/>
-    <circle cx="58" cy="46" r="3.5" fill="#1e1e32"/>
-    <circle cx="40" cy="44" r="1.5" fill="white"/>
-    <circle cx="56.5" cy="44.5" r="1.5" fill="white"/>
-    <ellipse cx="48" cy="54" rx="3.5" ry="2.5" fill="#4c1d95"/>
-    <path d="M44 57 Q48 60 52 57" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <!-- Walking legs (step 2: right forward, left back) -->
-    <rect x="38" y="94" width="9" height="18" rx="4.5" fill="url(#fur)" transform="rotate(-10,42,94)"/>
-    <rect x="64" y="94" width="9" height="18" rx="4.5" fill="url(#fur)" transform="rotate(15,68,94)"/>
-    <ellipse cx="40" cy="112" rx="6" ry="3.5" fill="url(#furDark)"/>
-    <ellipse cx="72" cy="114" rx="6" ry="3.5" fill="url(#furDark)"/>
-    <path d="M82 78 Q95 63 89 53" stroke="url(#fur)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M82 72 Q96 62 94 52 Q92 46 88 48" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="58" cy="78" rx="26" ry="20" fill="url(#fur)"/>
+    <ellipse cx="56" cy="82" rx="15" ry="12" fill="url(#belly)"/>
+    <!-- Walking legs together -->
+    <rect x="42" y="92" width="10" height="18" rx="5" fill="url(#fur)" transform="rotate(-8,47,92)"/>
+    <rect x="58" y="92" width="10" height="18" rx="5" fill="url(#fur)" transform="rotate(12,63,92)"/>
+    <ellipse cx="44" cy="110" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="66" cy="111" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="52" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="28" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(20,28,50)"/>
+    <ellipse cx="28" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(20,28,52)"/>
+    <ellipse cx="52" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="50" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <circle cx="42" cy="42" r="5" fill="#1e1e32"/>
+    <circle cx="60" cy="43" r="4" fill="#1e1e32"/>
+    <circle cx="44" cy="40" r="2" fill="white"/>
+    <circle cx="61.5" cy="41.5" r="1.5" fill="white"/>
+    <path d="M46 56 Q51 59 56 56" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
+    <rect x="34" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="52" cy="69" r="4" fill="#fbbf24"/>
+    <text x="52" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 2,3: Walk Right 1 -->
   <g transform="translate(256,384)">
-    <ellipse cx="68" cy="80" rx="28" ry="22" fill="url(#fur)"/>
-    <ellipse cx="70" cy="84" rx="18" ry="12" fill="url(#belly)"/>
-    <circle cx="74" cy="48" r="22" fill="url(#fur)"/>
-    <ellipse cx="58" cy="32" rx="7" ry="13" fill="url(#furDark)" transform="rotate(-5,58,32)"/>
-    <ellipse cx="92" cy="30" rx="9" ry="15" fill="url(#furDark)" transform="rotate(20,92,30)"/>
-    <ellipse cx="92" cy="32" rx="5" ry="9" fill="#c4b5fd" transform="rotate(20,92,32)"/>
-    <circle cx="66" cy="46" r="3.5" fill="#1e1e32"/>
-    <circle cx="82" cy="46" r="4" fill="#1e1e32"/>
-    <circle cx="67.5" cy="44.5" r="1.5" fill="white"/>
-    <circle cx="84" cy="44" r="1.5" fill="white"/>
-    <ellipse cx="76" cy="54" rx="3.5" ry="2.5" fill="#4c1d95"/>
-    <path d="M72 57 Q76 60 80 57" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <rect x="54" y="94" width="9" height="18" rx="4.5" fill="url(#fur)" transform="rotate(10,58,94)"/>
-    <rect x="80" y="94" width="9" height="18" rx="4.5" fill="url(#fur)" transform="rotate(-15,84,94)"/>
-    <ellipse cx="60" cy="112" rx="6" ry="3.5" fill="url(#furDark)"/>
-    <ellipse cx="86" cy="114" rx="6" ry="3.5" fill="url(#furDark)"/>
-    <path d="M40" stroke="url(#fur)" stroke-width="5" fill="none" stroke-linecap="round" d="M42 78 Q29 63 35 53"/>
+    <path d="M46 72 Q32 62 34 52 Q36 46 40 48" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="70" cy="78" rx="26" ry="20" fill="url(#fur)"/>
+    <ellipse cx="72" cy="82" rx="15" ry="12" fill="url(#belly)"/>
+    <rect x="56" y="92" width="10" height="18" rx="5" fill="url(#fur)" transform="rotate(-12,61,92)"/>
+    <rect x="78" y="92" width="10" height="18" rx="5" fill="url(#fur)" transform="rotate(8,83,92)"/>
+    <ellipse cx="58" cy="111" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="87" cy="110" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="76" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="100" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-20,100,50)"/>
+    <ellipse cx="100" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-20,100,52)"/>
+    <ellipse cx="76" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="78" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <circle cx="68" cy="43" r="4" fill="#1e1e32"/>
+    <circle cx="86" cy="42" r="5" fill="#1e1e32"/>
+    <circle cx="66.5" cy="41.5" r="1.5" fill="white"/>
+    <circle cx="88" cy="40" r="2" fill="white"/>
+    <path d="M72 56 Q77 59 82 56" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
+    <rect x="58" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="76" cy="69" r="4" fill="#fbbf24"/>
+    <text x="76" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 3,3: Walk Right 2 -->
   <g transform="translate(384,384)">
-    <ellipse cx="72" cy="80" rx="28" ry="22" fill="url(#fur)"/>
-    <ellipse cx="74" cy="84" rx="18" ry="12" fill="url(#belly)"/>
-    <circle cx="78" cy="48" r="22" fill="url(#fur)"/>
-    <ellipse cx="62" cy="32" rx="7" ry="13" fill="url(#furDark)" transform="rotate(-5,62,32)"/>
-    <ellipse cx="96" cy="30" rx="9" ry="15" fill="url(#furDark)" transform="rotate(20,96,30)"/>
-    <ellipse cx="96" cy="32" rx="5" ry="9" fill="#c4b5fd" transform="rotate(20,96,32)"/>
-    <circle cx="70" cy="46" r="3.5" fill="#1e1e32"/>
-    <circle cx="86" cy="46" r="4" fill="#1e1e32"/>
-    <circle cx="71.5" cy="44.5" r="1.5" fill="white"/>
-    <circle cx="88" cy="44" r="1.5" fill="white"/>
-    <ellipse cx="80" cy="54" rx="3.5" ry="2.5" fill="#4c1d95"/>
-    <path d="M76 57 Q80 60 84 57" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <rect x="58" y="94" width="9" height="18" rx="4.5" fill="url(#fur)" transform="rotate(-15,62,94)"/>
-    <rect x="84" y="94" width="9" height="18" rx="4.5" fill="url(#fur)" transform="rotate(10,88,94)"/>
-    <ellipse cx="56" cy="114" rx="6" ry="3.5" fill="url(#furDark)"/>
-    <ellipse cx="90" cy="112" rx="6" ry="3.5" fill="url(#furDark)"/>
-    <path d="M46 78 Q33 63 39 53" stroke="url(#fur)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M46 72 Q32 62 34 52 Q36 46 40 48" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="70" cy="78" rx="26" ry="20" fill="url(#fur)"/>
+    <ellipse cx="72" cy="82" rx="15" ry="12" fill="url(#belly)"/>
+    <rect x="60" y="92" width="10" height="18" rx="5" fill="url(#fur)" transform="rotate(8,65,92)"/>
+    <rect x="74" y="92" width="10" height="18" rx="5" fill="url(#fur)" transform="rotate(-12,79,92)"/>
+    <ellipse cx="64" cy="110" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="82" cy="111" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="76" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="100" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-20,100,50)"/>
+    <ellipse cx="100" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-20,100,52)"/>
+    <ellipse cx="76" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="78" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <circle cx="68" cy="43" r="4" fill="#1e1e32"/>
+    <circle cx="86" cy="42" r="5" fill="#1e1e32"/>
+    <circle cx="66.5" cy="41.5" r="1.5" fill="white"/>
+    <circle cx="88" cy="40" r="2" fill="white"/>
+    <path d="M72 56 Q77 59 82 56" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
+    <rect x="58" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="76" cy="69" r="4" fill="#fbbf24"/>
+    <text x="76" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 4,3: Jump -->
   <g transform="translate(512,384)">
-    <!-- Shadow on ground -->
-    <ellipse cx="64" cy="116" rx="20" ry="4" fill="rgba(0,0,0,0.2)"/>
-    <!-- Body lifted up -->
-    <ellipse cx="64" cy="62" rx="28" ry="22" fill="url(#fur)"/>
-    <ellipse cx="64" cy="66" rx="18" ry="12" fill="url(#belly)"/>
-    <circle cx="64" cy="30" r="22" fill="url(#fur)"/>
-    <ellipse cx="46" cy="14" rx="9" ry="15" fill="url(#furDark)" transform="rotate(-20,46,14)"/>
-    <ellipse cx="82" cy="14" rx="9" ry="15" fill="url(#furDark)" transform="rotate(20,82,14)"/>
-    <ellipse cx="46" cy="16" rx="5" ry="9" fill="#c4b5fd" transform="rotate(-20,46,16)"/>
-    <ellipse cx="82" cy="16" rx="5" ry="9" fill="#c4b5fd" transform="rotate(20,82,16)"/>
-    <!-- Excited eyes -->
-    <path d="M49 28 Q54 24 59 28" stroke="#1e1e32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <path d="M69 28 Q74 24 79 28" stroke="#1e1e32" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-    <circle cx="46" cy="35" r="4" fill="#f9a8d4" opacity="0.4"/>
-    <circle cx="82" cy="35" r="4" fill="#f9a8d4" opacity="0.4"/>
-    <ellipse cx="64" cy="38" rx="3.5" ry="2.5" fill="#4c1d95"/>
-    <path d="M56 40 Q64 48 72 40" stroke="#4c1d95" stroke-width="2" fill="none"/>
-    <!-- Tucked legs -->
-    <rect x="44" y="78" width="9" height="12" rx="4.5" fill="url(#fur)" transform="rotate(-15,48,78)"/>
-    <rect x="72" y="78" width="9" height="12" rx="4.5" fill="url(#fur)" transform="rotate(15,76,78)"/>
-    <ellipse cx="42" cy="90" rx="6" ry="3.5" fill="url(#furDark)"/>
-    <ellipse cx="82" cy="90" rx="6" ry="3.5" fill="url(#furDark)"/>
-    <path d="M90 58 Q108 38 100 26" stroke="url(#fur)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <!-- Tail up high -->
+    <path d="M88 56 Q106 40 100 28 Q97 22 92 26" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Body higher up -->
+    <ellipse cx="64" cy="66" rx="26" ry="20" fill="url(#fur)"/>
+    <ellipse cx="64" cy="70" rx="16" ry="12" fill="url(#belly)"/>
+    <!-- Legs tucked up -->
+    <rect x="46" y="78" width="10" height="14" rx="5" fill="url(#fur)" transform="rotate(15,51,78)"/>
+    <rect x="72" y="78" width="10" height="14" rx="5" fill="url(#fur)" transform="rotate(-15,77,78)"/>
+    <ellipse cx="49" cy="93" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="79" cy="93" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="34" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="40" cy="34" rx="10" ry="18" fill="url(#furDark)" transform="rotate(8,40,34)"/>
+    <ellipse cx="88" cy="34" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-8,88,34)"/>
+    <ellipse cx="40" cy="36" rx="6" ry="12" fill="url(#earInner)" transform="rotate(8,40,36)"/>
+    <ellipse cx="88" cy="36" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-8,88,36)"/>
+    <ellipse cx="64" cy="42" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="38" rx="4" ry="3.5" fill="#2d1065"/>
+    <circle cx="53" cy="30" r="5.5" fill="#1e1e32"/>
+    <circle cx="75" cy="30" r="5.5" fill="#1e1e32"/>
+    <circle cx="55" cy="28" r="2.2" fill="white"/>
+    <circle cx="77" cy="28" r="2.2" fill="white"/>
+    <path d="M57 44 Q64 49 71 44" stroke="#4c1d95" stroke-width="1.3" fill="none"/>
+    <!-- Jump shadow -->
+    <ellipse cx="64" cy="118" rx="20" ry="4" fill="#1e1e32" opacity="0.15"/>
+    <rect x="46" y="50" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="57" r="4" fill="#fbbf24"/>
+    <text x="64" y="59" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
-  <!-- ═══ ROW 5: SPECIAL ═══ -->
+  <!-- ═══ ROW 5: SPECIAL (y=512) ═══ -->
 
   <!-- Frame 0,4: Sleep -->
   <g transform="translate(0,512)">
     <!-- Curled up body -->
-    <ellipse cx="64" cy="90" rx="34" ry="22" fill="url(#fur)"/>
-    <ellipse cx="64" cy="92" rx="24" ry="14" fill="url(#belly)"/>
-    <circle cx="52" cy="72" r="20" fill="url(#fur)"/>
-    <!-- Droopy ears flat -->
-    <ellipse cx="36" cy="60" rx="8" ry="14" fill="url(#furDark)" transform="rotate(-40,36,60)"/>
-    <ellipse cx="68" cy="62" rx="7" ry="12" fill="url(#furDark)" transform="rotate(30,68,62)"/>
-    <ellipse cx="36" cy="62" rx="5" ry="9" fill="#c4b5fd" transform="rotate(-40,36,62)"/>
-    <!-- Sleeping eyes -->
-    <path d="M42 70 Q47 74 52 70" stroke="#1e1e32" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M55 70 Q60 74 65 70" stroke="#1e1e32" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <ellipse cx="52" cy="78" rx="3" ry="2" fill="#4c1d95"/>
+    <ellipse cx="64" cy="88" rx="30" ry="20" fill="url(#fur)"/>
+    <ellipse cx="64" cy="92" rx="20" ry="12" fill="url(#belly)"/>
+    <!-- Tucked paws -->
+    <ellipse cx="48" cy="100" rx="8" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="80" cy="100" rx="8" ry="5" fill="url(#furDark)"/>
+    <!-- Curled tail wrapping around -->
+    <path d="M90 84 Q102 76 98 88 Q96 96 88 96" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <!-- Resting head -->
+    <ellipse cx="54" cy="72" rx="22" ry="18" fill="url(#fur)"/>
+    <!-- Floppy ears relaxed -->
+    <ellipse cx="34" cy="76" rx="10" ry="16" fill="url(#furDark)" transform="rotate(25,34,76)"/>
+    <ellipse cx="34" cy="78" rx="6" ry="10" fill="url(#earInner)" transform="rotate(25,34,78)"/>
+    <ellipse cx="54" cy="78" rx="10" ry="7" fill="#ede9fe"/>
+    <ellipse cx="52" cy="76" rx="3.5" ry="3" fill="#2d1065"/>
+    <!-- Closed sleeping eyes -->
+    <path d="M42 68 Q47 72 52 68" stroke="#1e1e32" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M56 69 Q61 73 66 69" stroke="#1e1e32" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M49 80 Q53 82 57 80" stroke="#4c1d95" stroke-width="1" fill="none"/>
     <!-- Zzz -->
-    <text x="78" y="54" fill="#a78bfa" font-family="Inter, sans-serif" font-size="10" font-weight="700" opacity="0.5">z</text>
-    <text x="88" y="44" fill="#a78bfa" font-family="Inter, sans-serif" font-size="13" font-weight="700" opacity="0.4">z</text>
-    <text x="100" y="32" fill="#a78bfa" font-family="Inter, sans-serif" font-size="16" font-weight="700" opacity="0.3">z</text>
-    <!-- Tail curled around -->
-    <path d="M92 90 Q108 80 104 68 Q100 60 88 65" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
-    <!-- Paws tucked -->
-    <ellipse cx="40" cy="102" rx="8" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="68" cy="102" rx="8" ry="4" fill="url(#furDark)"/>
+    <text x="76" y="56" font-size="10" font-weight="bold" fill="#a78bfa" opacity="0.6">z</text>
+    <text x="84" y="46" font-size="13" font-weight="bold" fill="#a78bfa" opacity="0.4">z</text>
+    <text x="94" y="34" font-size="16" font-weight="bold" fill="#a78bfa" opacity="0.3">z</text>
+    <rect x="38" y="86" width="32" height="4" rx="2" fill="url(#collar)"/>
+    <circle cx="54" cy="92" r="3.5" fill="#fbbf24"/>
   </g>
 
   <!-- Frame 1,4: Wag 1 (tail right) -->
   <g transform="translate(128,512)">
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <ellipse cx="44" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-15,44,30)"/>
-    <ellipse cx="84" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(15,84,30)"/>
-    <ellipse cx="44" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-15,44,32)"/>
-    <ellipse cx="84" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(15,84,32)"/>
-    <circle cx="54" cy="46" r="5" fill="#1e1e32"/>
-    <circle cx="74" cy="46" r="5" fill="#1e1e32"/>
-    <circle cx="56" cy="44" r="2" fill="white"/>
-    <circle cx="76" cy="44" r="2" fill="white"/>
-    <ellipse cx="64" cy="56" rx="4" ry="3" fill="#4c1d95"/>
-    <path d="M60 59 Q64 63 68 59" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <rect x="46" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <!-- Tail wagging right -->
-    <path d="M92 78 Q112 58 108 48" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M88 72 Q108 56 104 44 Q101 38 96 42" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="40" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(15,40,50)"/>
+    <ellipse cx="88" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-15,88,50)"/>
+    <ellipse cx="40" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(15,40,52)"/>
+    <ellipse cx="88" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-15,88,52)"/>
+    <ellipse cx="64" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <circle cx="53" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="75" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="55" cy="40" r="2.2" fill="white"/>
+    <circle cx="77" cy="40" r="2.2" fill="white"/>
+    <path d="M57 55 Q64 61 71 55" stroke="#4c1d95" stroke-width="1.3" fill="none"/>
+    <ellipse cx="64" cy="59" rx="4" ry="3" fill="#f9a8d4"/>
+    <rect x="46" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="69" r="4" fill="#fbbf24"/>
+    <text x="64" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 2,4: Wag 2 (tail left) -->
   <g transform="translate(256,512)">
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <ellipse cx="44" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-15,44,30)"/>
-    <ellipse cx="84" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(15,84,30)"/>
-    <ellipse cx="44" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-15,44,32)"/>
-    <ellipse cx="84" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(15,84,32)"/>
-    <circle cx="54" cy="46" r="5" fill="#1e1e32"/>
-    <circle cx="74" cy="46" r="5" fill="#1e1e32"/>
-    <circle cx="56" cy="44" r="2" fill="white"/>
-    <circle cx="76" cy="44" r="2" fill="white"/>
-    <ellipse cx="64" cy="56" rx="4" ry="3" fill="#4c1d95"/>
-    <path d="M60 59 Q64 63 68 59" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <rect x="46" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <!-- Tail wagging left -->
-    <path d="M92 78 Q98 62 88 52" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M88 72 Q96 62 90 50 Q87 44 84 48" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="40" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(15,40,50)"/>
+    <ellipse cx="88" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-15,88,50)"/>
+    <ellipse cx="40" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(15,40,52)"/>
+    <ellipse cx="88" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-15,88,52)"/>
+    <ellipse cx="64" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
+    <circle cx="53" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="75" cy="42" r="5.5" fill="#1e1e32"/>
+    <circle cx="55" cy="40" r="2.2" fill="white"/>
+    <circle cx="77" cy="40" r="2.2" fill="white"/>
+    <path d="M57 55 Q64 61 71 55" stroke="#4c1d95" stroke-width="1.3" fill="none"/>
+    <ellipse cx="64" cy="59" rx="4" ry="3" fill="#f9a8d4"/>
+    <rect x="46" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="69" r="4" fill="#fbbf24"/>
+    <text x="64" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
-  <!-- Frame 3,4: Notification (holding letter) -->
+  <!-- Frame 3,4: Notification -->
   <g transform="translate(384,512)">
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <ellipse cx="44" cy="26" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-10,44,26)"/>
-    <ellipse cx="84" cy="26" rx="10" ry="18" fill="url(#furDark)" transform="rotate(10,84,26)"/>
-    <ellipse cx="44" cy="28" rx="6" ry="12" fill="#c4b5fd" transform="rotate(-10,44,28)"/>
-    <ellipse cx="84" cy="28" rx="6" ry="12" fill="#c4b5fd" transform="rotate(10,84,28)"/>
-    <circle cx="54" cy="46" r="5" fill="#1e1e32"/>
-    <circle cx="74" cy="46" r="5" fill="#1e1e32"/>
-    <circle cx="56" cy="44" r="2.5" fill="white"/>
-    <circle cx="76" cy="44" r="2.5" fill="white"/>
-    <ellipse cx="64" cy="56" rx="4" ry="3" fill="#4c1d95"/>
-    <path d="M57 59 Q64 66 71 59" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
-    <!-- Paw holding up a notification -->
-    <rect x="36" y="88" width="9" height="18" rx="4.5" fill="url(#fur)" transform="rotate(30,40,88)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <!-- Notification card -->
-    <rect x="12" y="72" width="36" height="26" rx="4" fill="#13131f" stroke="#7c3aed" stroke-width="1.5"/>
-    <rect x="16" y="78" width="18" height="3" rx="1.5" fill="#a78bfa"/>
-    <rect x="16" y="84" width="28" height="2" rx="1" fill="#6b6880"/>
-    <rect x="16" y="89" width="22" height="2" rx="1" fill="#6b6880"/>
-    <!-- Notification dot -->
-    <circle cx="46" cy="72" r="5" fill="#f87171"/>
-    <text x="46" y="75" fill="white" font-size="7" font-weight="700" text-anchor="middle">1</text>
-    <path d="M92 78 Q110 55 100 42" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M88 72 Q102 60 98 48 Q96 42 90 44" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="44" rx="24" ry="22" fill="url(#fur)"/>
+    <!-- Alert ears (one perked) -->
+    <ellipse cx="42" cy="28" rx="9" ry="16" fill="url(#furDark)" transform="rotate(-5,42,28)"/>
+    <ellipse cx="86" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-15,86,50)"/>
+    <ellipse cx="42" cy="30" rx="5" ry="10" fill="url(#earInner)" transform="rotate(-5,42,30)"/>
+    <ellipse cx="86" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-15,86,52)"/>
+    <ellipse cx="64" cy="52" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="48" rx="4" ry="3.5" fill="#2d1065"/>
+    <circle cx="53" cy="40" r="5.5" fill="#1e1e32"/>
+    <circle cx="75" cy="40" r="5.5" fill="#1e1e32"/>
+    <circle cx="55" cy="38" r="2.2" fill="white"/>
+    <circle cx="77" cy="38" r="2.2" fill="white"/>
+    <path d="M59 54 Q64 57 69 54" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
+    <!-- Notification bubble -->
+    <rect x="80" y="14" width="34" height="20" rx="6" fill="white" stroke="#7c3aed" stroke-width="1.5"/>
+    <path d="M86 34 L82 38 L90 34" fill="white" stroke="#7c3aed" stroke-width="1.5"/>
+    <circle cx="90" cy="24" r="2.5" fill="#7c3aed"/>
+    <circle cx="97" cy="24" r="2.5" fill="#7c3aed"/>
+    <circle cx="104" cy="24" r="2.5" fill="#7c3aed"/>
+    <rect x="46" y="60" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="67" r="4" fill="#fbbf24"/>
+    <text x="64" y="69" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
 
   <!-- Frame 4,4: Love -->
   <g transform="translate(512,512)">
-    <ellipse cx="64" cy="82" rx="28" ry="24" fill="url(#fur)"/>
-    <ellipse cx="64" cy="86" rx="18" ry="14" fill="url(#belly)"/>
-    <circle cx="64" cy="48" r="24" fill="url(#fur)"/>
-    <ellipse cx="44" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(-15,44,30)"/>
-    <ellipse cx="84" cy="30" rx="10" ry="16" fill="url(#furDark)" transform="rotate(15,84,30)"/>
-    <ellipse cx="44" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(-15,44,32)"/>
-    <ellipse cx="84" cy="32" rx="6" ry="10" fill="#c4b5fd" transform="rotate(15,84,32)"/>
+    <path d="M88 72 Q106 54 100 42 Q97 36 92 40" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <ellipse cx="64" cy="80" rx="26" ry="22" fill="url(#fur)"/>
+    <ellipse cx="64" cy="84" rx="16" ry="13" fill="url(#belly)"/>
+    <rect x="48" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <rect x="70" y="94" width="10" height="18" rx="5" fill="url(#fur)"/>
+    <ellipse cx="53" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="75" cy="112" rx="7" ry="5" fill="url(#furDark)"/>
+    <ellipse cx="64" cy="46" rx="24" ry="22" fill="url(#fur)"/>
+    <ellipse cx="40" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(15,40,50)"/>
+    <ellipse cx="88" cy="50" rx="10" ry="18" fill="url(#furDark)" transform="rotate(-15,88,50)"/>
+    <ellipse cx="40" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(15,40,52)"/>
+    <ellipse cx="88" cy="52" rx="6" ry="12" fill="url(#earInner)" transform="rotate(-15,88,52)"/>
+    <ellipse cx="64" cy="54" rx="12" ry="9" fill="#ede9fe"/>
+    <ellipse cx="64" cy="50" rx="4" ry="3.5" fill="#2d1065"/>
     <!-- Heart eyes -->
-    <text x="54" y="50" fill="#f472b6" font-size="14" text-anchor="middle">♥</text>
-    <text x="74" y="50" fill="#f472b6" font-size="14" text-anchor="middle">♥</text>
-    <circle cx="46" cy="55" r="5" fill="#f9a8d4" opacity="0.4"/>
-    <circle cx="82" cy="55" r="5" fill="#f9a8d4" opacity="0.4"/>
-    <ellipse cx="64" cy="58" rx="4" ry="3" fill="#4c1d95"/>
-    <path d="M56 60 Q64 68 72 60" stroke="#4c1d95" stroke-width="2" fill="none"/>
+    <path d="M48 40 C48 36 52 34 53 38 C54 34 58 36 58 40 C58 44 53 47 53 47 C53 47 48 44 48 40Z" fill="#ef4444"/>
+    <path d="M70 40 C70 36 74 34 75 38 C76 34 80 36 80 40 C80 44 75 47 75 47 C75 47 70 44 70 40Z" fill="#ef4444"/>
+    <path d="M57 55 Q64 62 71 55" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
     <!-- Floating hearts -->
-    <text x="24" y="30" fill="#f472b6" font-size="10" opacity="0.6">♥</text>
-    <text x="100" y="24" fill="#f472b6" font-size="8" opacity="0.4">♥</text>
-    <text x="108" y="44" fill="#f472b6" font-size="12" opacity="0.5">♥</text>
-    <rect x="46" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <rect x="72" y="98" width="10" height="16" rx="5" fill="url(#fur)"/>
-    <ellipse cx="51" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <ellipse cx="77" cy="114" rx="7" ry="4" fill="url(#furDark)"/>
-    <path d="M92 76 Q112 50 102 38" stroke="url(#fur)" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M28 28 C28 25 31 23.5 31.5 26.5 C32 23.5 35 25 35 28 C35 31 31.5 33 31.5 33 C31.5 33 28 31 28 28Z" fill="#f472b6" opacity="0.6"/>
+    <path d="M92 20 C92 17 95 15.5 95.5 18.5 C96 15.5 99 17 99 20 C99 23 95.5 25 95.5 25 C95.5 25 92 23 92 20Z" fill="#f472b6" opacity="0.4"/>
+    <!-- Blush -->
+    <circle cx="46" cy="50" r="5" fill="#f9a8d4" opacity="0.35"/>
+    <circle cx="82" cy="50" r="5" fill="#f9a8d4" opacity="0.35"/>
+    <rect x="46" y="62" width="36" height="5" rx="2.5" fill="url(#collar)"/>
+    <circle cx="64" cy="69" r="4" fill="#fbbf24"/>
+    <text x="64" y="71" text-anchor="middle" font-size="5" font-weight="bold" fill="#7c3aed">P</text>
   </g>
+
 </svg>

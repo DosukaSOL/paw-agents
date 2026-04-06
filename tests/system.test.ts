@@ -616,7 +616,7 @@ describe('Chat Commands', () => {
     const handler = new CommandHandler(mockAgent as any);
     const result = handler.handle('user1', '/version');
     expect(result.handled).toBe(true);
-    expect(result.response).toContain('v3.0.0');
+    expect(result.response).toContain('v3.2.0');
   });
 
   test('handles /status command', () => {

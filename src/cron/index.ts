@@ -70,7 +70,8 @@ export class CronEngine {
     const unit = match[2].toLowerCase();
 
     const multipliers: Record<string, number> = { s: 1000, m: 60_000, h: 3_600_000, d: 86_400_000 };
-    return value * (multipliers[unit] ?? 60_000);
+    const ms = value * (multipliers[unit] ?? 60_000);
+    return Math.max(1000, ms); // Minimum 1 second to prevent DoS
   }
 
   // Schedule a task using setInterval

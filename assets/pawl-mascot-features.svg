@@ -47,12 +47,14 @@
     <ellipse cx="40" cy="58" rx="22" ry="19" fill="url(#fur)"/>
     <ellipse cx="40" cy="61" rx="14" ry="11" fill="url(#belly)"/>
     <!-- Head -->
-    <circle cx="40" cy="30" r="20" fill="url(#fur)"/>
-    <!-- Ears -->
-    <ellipse cx="24" cy="14" rx="8" ry="14" fill="url(#furDark)" transform="rotate(-18,24,14)"/>
-    <ellipse cx="56" cy="14" rx="8" ry="14" fill="url(#furDark)" transform="rotate(18,56,14)"/>
-    <ellipse cx="24" cy="16" rx="5" ry="9" fill="#c4b5fd" transform="rotate(-18,24,16)"/>
-    <ellipse cx="56" cy="16" rx="5" ry="9" fill="#c4b5fd" transform="rotate(18,56,16)"/>
+    <ellipse cx="40" cy="30" rx="20" ry="18" fill="url(#fur)"/>
+    <!-- Floppy ears (drooping down like a real dog) -->
+    <ellipse cx="20" cy="34" rx="8" ry="14" fill="url(#furDark)" transform="rotate(12,20,34)"/>
+    <ellipse cx="60" cy="34" rx="8" ry="14" fill="url(#furDark)" transform="rotate(-12,60,34)"/>
+    <ellipse cx="20" cy="36" rx="5" ry="9" fill="#c4b5fd" transform="rotate(12,20,36)"/>
+    <ellipse cx="60" cy="36" rx="5" ry="9" fill="#c4b5fd" transform="rotate(-12,60,36)"/>
+    <!-- Snout -->
+    <ellipse cx="40" cy="36" rx="10" ry="7" fill="#ede9fe"/>
     <!-- Eyes -->
     <circle cx="32" cy="28" r="4.5" fill="#1e1e32"/>
     <circle cx="48" cy="28" r="4.5" fill="#1e1e32"/>
@@ -61,10 +63,14 @@
     <!-- Rosy cheeks -->
     <circle cx="24" cy="34" r="4" fill="#f9a8d4" opacity="0.35"/>
     <circle cx="56" cy="34" r="4" fill="#f9a8d4" opacity="0.35"/>
-    <!-- Nose -->
-    <ellipse cx="40" cy="36" rx="3.5" ry="2.5" fill="#4c1d95"/>
+    <!-- Nose on snout -->
+    <ellipse cx="40" cy="33" rx="3.5" ry="2.5" fill="#2d1065"/>
     <!-- Happy mouth -->
     <path d="M34 38 Q40 46 46 38" stroke="#4c1d95" stroke-width="1.8" fill="none"/>
+    <!-- Collar -->
+    <rect x="26" y="44" width="28" height="4" rx="2" fill="url(#fur)" stroke="#6d28d9" stroke-width="0.5"/>
+    <circle cx="40" cy="50" r="3" fill="#fbbf24"/>
+    <text x="40" y="52" text-anchor="middle" font-size="4" font-weight="bold" fill="#7c3aed">P</text>
     <!-- Legs -->
     <rect x="24" y="72" width="8" height="14" rx="4" fill="url(#fur)"/>
     <rect x="48" y="72" width="8" height="14" rx="4" fill="url(#fur)"/>
@@ -94,19 +100,26 @@
   <!-- Row 1 -->
   <g transform="translate(80, 490)">
     <rect width="320" height="100" rx="12" fill="#13131f" stroke="rgba(124,58,237,0.12)" stroke-width="0.5"/>
-    <!-- Mini Pawl - happy -->
+    <!-- Mini Pawl - happy (floppy-eared dog) -->
     <g transform="translate(24, 18)">
       <ellipse cx="20" cy="40" rx="14" ry="12" fill="url(#fur)"/>
       <ellipse cx="20" cy="42" rx="9" ry="7" fill="url(#belly)"/>
-      <circle cx="20" cy="22" r="12" fill="url(#fur)"/>
-      <ellipse cx="12" cy="14" rx="5" ry="8" fill="url(#furDark)" transform="rotate(-18,12,14)"/>
-      <ellipse cx="28" cy="14" rx="5" ry="8" fill="url(#furDark)" transform="rotate(18,28,14)"/>
+      <ellipse cx="20" cy="22" rx="12" ry="10" fill="url(#fur)"/>
+      <!-- Floppy ears -->
+      <ellipse cx="10" cy="26" rx="5" ry="9" fill="url(#furDark)" transform="rotate(10,10,26)"/>
+      <ellipse cx="30" cy="26" rx="5" ry="9" fill="url(#furDark)" transform="rotate(-10,30,26)"/>
+      <!-- Snout -->
+      <ellipse cx="20" cy="27" rx="7" ry="5" fill="#ede9fe"/>
       <path d="M15 20 Q18 17 21 20" stroke="#1e1e32" stroke-width="1.5" fill="none" stroke-linecap="round"/>
       <path d="M19 20 Q22 17 25 20" stroke="#1e1e32" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-      <ellipse cx="20" cy="27" rx="2.5" ry="2" fill="#4c1d95"/>
+      <!-- Nose on snout -->
+      <ellipse cx="20" cy="25" rx="2.5" ry="2" fill="#2d1065"/>
       <path d="M16 28 Q20 34 24 28" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
       <circle cx="10" cy="25" r="3" fill="#f9a8d4" opacity="0.4"/>
       <circle cx="30" cy="25" r="3" fill="#f9a8d4" opacity="0.4"/>
+      <!-- Collar -->
+      <rect x="10" y="30" width="20" height="3" rx="1.5" fill="#7c3aed"/>
+      <circle cx="20" cy="34" r="2" fill="#fbbf24"/>
     </g>
     <text x="84" y="42" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="#f0eef5">Click Reactions</text>
     <text x="84" y="60" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">Click Pawl for a random emotion —</text>
@@ -115,23 +128,27 @@
 
   <g transform="translate(440, 490)">
     <rect width="320" height="100" rx="12" fill="#13131f" stroke="rgba(124,58,237,0.12)" stroke-width="0.5"/>
-    <!-- Mini Pawl - bark with notification -->
+    <!-- Mini Pawl - bark with notification (floppy-eared dog) -->
     <g transform="translate(24, 18)">
       <ellipse cx="20" cy="40" rx="14" ry="12" fill="url(#fur)"/>
       <ellipse cx="20" cy="42" rx="9" ry="7" fill="url(#belly)"/>
-      <circle cx="20" cy="22" r="12" fill="url(#fur)"/>
-      <ellipse cx="12" cy="14" rx="5" ry="8" fill="url(#furDark)" transform="rotate(-18,12,14)"/>
-      <ellipse cx="28" cy="14" rx="5" ry="8" fill="url(#furDark)" transform="rotate(18,28,14)"/>
+      <ellipse cx="20" cy="22" rx="12" ry="10" fill="url(#fur)"/>
+      <ellipse cx="10" cy="26" rx="5" ry="9" fill="url(#furDark)" transform="rotate(10,10,26)"/>
+      <ellipse cx="30" cy="26" rx="5" ry="9" fill="url(#furDark)" transform="rotate(-10,30,26)"/>
+      <ellipse cx="20" cy="27" rx="7" ry="5" fill="#ede9fe"/>
       <circle cx="16" cy="20" r="3" fill="#1e1e32"/>
       <circle cx="24" cy="20" r="3" fill="#1e1e32"/>
       <circle cx="17" cy="19" r="1.2" fill="white"/>
       <circle cx="25" cy="19" r="1.2" fill="white"/>
-      <ellipse cx="20" cy="26" rx="2.5" ry="2" fill="#4c1d95"/>
+      <ellipse cx="20" cy="25" rx="2.5" ry="2" fill="#2d1065"/>
       <ellipse cx="20" cy="31" rx="6" ry="4" fill="#4c1d95"/>
       <ellipse cx="20" cy="30" rx="4.5" ry="2.5" fill="#c4b5fd"/>
       <!-- Sound waves -->
       <path d="M32 18 Q38 18 38 14" stroke="#a78bfa" stroke-width="1" fill="none" opacity="0.5"/>
       <path d="M34 22 Q42 22 42 16" stroke="#a78bfa" stroke-width="1" fill="none" opacity="0.3"/>
+      <!-- Collar -->
+      <rect x="10" y="30" width="20" height="3" rx="1.5" fill="#7c3aed"/>
+      <circle cx="20" cy="34" r="2" fill="#fbbf24"/>
     </g>
     <text x="84" y="42" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="#f0eef5">Smart Notifications</text>
     <text x="84" y="60" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">Pawl barks with text bubbles for builds,</text>
@@ -140,17 +157,23 @@
 
   <g transform="translate(800, 490)">
     <rect width="320" height="100" rx="12" fill="#13131f" stroke="rgba(124,58,237,0.12)" stroke-width="0.5"/>
-    <!-- Mini Pawl - walking -->
+    <!-- Mini Pawl - walking (floppy-eared dog) -->
     <g transform="translate(24, 18)">
       <ellipse cx="18" cy="38" rx="14" ry="12" fill="url(#fur)"/>
       <ellipse cx="17" cy="40" rx="9" ry="7" fill="url(#belly)"/>
-      <circle cx="16" cy="22" r="12" fill="url(#fur)"/>
-      <ellipse cx="8" cy="14" rx="5" ry="8" fill="url(#furDark)" transform="rotate(-18,8,14)"/>
-      <ellipse cx="26" cy="16" rx="4" ry="7" fill="url(#furDark)" transform="rotate(5,26,16)"/>
+      <ellipse cx="16" cy="22" rx="12" ry="10" fill="url(#fur)"/>
+      <!-- Floppy ears -->
+      <ellipse cx="6" cy="26" rx="5" ry="9" fill="url(#furDark)" transform="rotate(15,6,26)"/>
+      <ellipse cx="26" cy="26" rx="4" ry="8" fill="url(#furDark)" transform="rotate(-10,26,26)"/>
+      <!-- Snout -->
+      <ellipse cx="14" cy="26" rx="7" ry="5" fill="#ede9fe"/>
       <circle cx="12" cy="20" r="2.5" fill="#1e1e32"/>
       <circle cx="20" cy="20" r="2" fill="#1e1e32"/>
-      <ellipse cx="14" cy="26" rx="2.5" ry="2" fill="#4c1d95"/>
+      <ellipse cx="14" cy="24" rx="2.5" ry="2" fill="#2d1065"/>
       <path d="M11 28 Q14 31 17 28" stroke="#4c1d95" stroke-width="1" fill="none"/>
+      <!-- Collar -->
+      <rect x="6" y="30" width="20" height="3" rx="1.5" fill="#7c3aed"/>
+      <circle cx="16" cy="34" r="2" fill="#fbbf24"/>
       <!-- Walking legs -->
       <rect x="8" y="46" width="5" height="10" rx="2.5" fill="url(#fur)" transform="rotate(12,10,46)"/>
       <rect x="24" y="46" width="5" height="10" rx="2.5" fill="url(#fur)" transform="rotate(-8,26,46)"/>
@@ -163,12 +186,16 @@
   <!-- Row 2 -->
   <g transform="translate(80, 610)">
     <rect width="320" height="100" rx="12" fill="#13131f" stroke="rgba(124,58,237,0.12)" stroke-width="0.5"/>
-    <!-- Mini Pawl - sleeping -->
+    <!-- Mini Pawl - sleeping (floppy-eared dog curled up) -->
     <g transform="translate(24, 22)">
       <ellipse cx="20" cy="38" rx="18" ry="12" fill="url(#fur)"/>
       <ellipse cx="20" cy="40" rx="12" ry="7" fill="url(#belly)"/>
-      <circle cx="14" cy="28" r="10" fill="url(#fur)"/>
-      <ellipse cx="6" cy="22" rx="4" ry="7" fill="url(#furDark)" transform="rotate(-30,6,22)"/>
+      <ellipse cx="14" cy="28" rx="10" ry="8" fill="url(#fur)"/>
+      <!-- Floppy ear relaxed -->
+      <ellipse cx="6" cy="30" rx="4" ry="7" fill="url(#furDark)" transform="rotate(25,6,30)"/>
+      <!-- Snout -->
+      <ellipse cx="14" cy="32" rx="6" ry="4" fill="#ede9fe"/>
+      <ellipse cx="14" cy="30" rx="2" ry="1.5" fill="#2d1065"/>
       <path d="M9 26 Q12 29 15 26" stroke="#1e1e32" stroke-width="1.2" fill="none" stroke-linecap="round"/>
       <path d="M15 26 Q18 29 21 26" stroke="#1e1e32" stroke-width="1.2" fill="none" stroke-linecap="round"/>
       <text x="30" y="20" fill="#a78bfa" font-family="Inter" font-size="7" font-weight="700" opacity="0.5">z</text>

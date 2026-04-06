@@ -215,9 +215,9 @@ export class ExecutionEngine {
         throw new Error('API calls must use HTTPS');
       }
 
-      // Sandbox: block internal/private IPs
-      const hostname = new URL(url).hostname;
-      if (hostname === 'localhost' || hostname.startsWith('127.') || hostname.startsWith('10.') || hostname.startsWith('192.168.')) {
+      // Sandbox: block internal/private IPs (comprehensive SSRF protection)
+      const hostname = new URL(url).hostname.replace(/^\[|\]$/g, ''); // strip IPv6 brackets
+      if (this.isBlockedHost(hostname)) {
         throw new Error('API calls to internal addresses are blocked');
       }
 
@@ -237,8 +237,8 @@ export class ExecutionEngine {
     this.registerTool('http_get', async (params) => {
       const url = params.url as string;
       if (!url.startsWith('https://')) throw new Error('HTTP calls must use HTTPS');
-      const hostname = new URL(url).hostname;
-      if (['localhost', '127.0.0.1', '0.0.0.0'].includes(hostname) || hostname.startsWith('10.') || hostname.startsWith('192.168.')) {
+      const hostname = new URL(url).hostname.replace(/^\[|\]$/g, '');
+      if (this.isBlockedHost(hostname)) {
         throw new Error('Blocked: internal address');
       }
       const response = await fetch(url, {
@@ -250,8 +250,8 @@ export class ExecutionEngine {
     this.registerTool('http_post', async (params) => {
       const url = params.url as string;
       if (!url.startsWith('https://')) throw new Error('HTTP calls must use HTTPS');
-      const hostname = new URL(url).hostname;
-      if (['localhost', '127.0.0.1', '0.0.0.0'].includes(hostname) || hostname.startsWith('10.') || hostname.startsWith('192.168.')) {
+      const hostname = new URL(url).hostname.replace(/^\[|\]$/g, '');
+      if (this.isBlockedHost(hostname)) {
         throw new Error('Blocked: internal address');
       }
       const response = await fetch(url, {
@@ -270,12 +270,31 @@ export class ExecutionEngine {
       if (!resolved.startsWith(SANDBOX_ROOT)) {
         throw new Error('File access denied: path traversal blocked');
       }
-      return resolved;
+      // Resolve symlinks to prevent sandbox escape
+      try {
+        const real = fs.realpathSync(resolved);
+        if (!real.startsWith(SANDBOX_ROOT)) {
+          throw new Error('File access denied: symlink target outside sandbox');
+        }
+        return real;
+      } catch (err) {
+        // File may not exist yet (for writes) — just check the dir portion
+        const dir = path.dirname(resolved);
+        if (fs.existsSync(dir)) {
+          const realDir = fs.realpathSync(dir);
+          if (!realDir.startsWith(SANDBOX_ROOT)) {
+            throw new Error('File access denied: symlink target outside sandbox');
+          }
+        }
+        return resolved;
+      }
     };
 
     this.registerTool('file_read', async (params) => {
       const safePath = resolveSafe(params.path as string);
       if (!fs.existsSync(safePath)) throw new Error(`File not found: ${params.path}`);
+      const stat = fs.statSync(safePath);
+      if (stat.size > 5_000_000) throw new Error('File too large (5MB max)');
       const content = fs.readFileSync(safePath, 'utf-8');
       return { path: params.path, content, size: content.length };
     });
@@ -529,5 +548,26 @@ export class ExecutionEngine {
 
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  // ─── Comprehensive hostname blocking for SSRF prevention ───
+  private isBlockedHost(hostname: string): boolean {
+    const lower = hostname.toLowerCase();
+    // Loopback and special addresses
+    if (lower === 'localhost' || lower === '0.0.0.0' || lower === '::1' || lower === '[::]') return true;
+    // IPv4 private ranges
+    if (/^127\./.test(lower)) return true;           // 127.0.0.0/8
+    if (/^10\./.test(lower)) return true;             // 10.0.0.0/8
+    if (/^192\.168\./.test(lower)) return true;       // 192.168.0.0/16
+    if (/^172\.(1[6-9]|2\d|3[01])\./.test(lower)) return true; // 172.16.0.0/12
+    if (/^169\.254\./.test(lower)) return true;       // Link-local / cloud metadata
+    // IPv6 loopback and link-local
+    if (/^fe80[:%]/.test(lower) || lower.startsWith('fe80:')) return true;
+    if (/^::ffff:(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(lower)) return true;
+    // Decimal IP encoding (2130706433 = 127.0.0.1)
+    if (/^\d+$/.test(lower)) return true;
+    // Block octal/hex IP formats
+    if (/^0x[0-9a-f]+$/i.test(lower)) return true;
+    return false;
   }
 }

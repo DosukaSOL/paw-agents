@@ -7,6 +7,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { v4 as uuid } from 'uuid';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { timingSafeEqual } from 'crypto';
 import { config } from '../core/config';
 import { GatewayClient, GatewayMessage, ChannelType } from '../core/types';
 import { PawAgent } from '../agent/loop';
@@ -34,9 +35,12 @@ export class PawGateway {
     // HTTP server for health checks + webhook endpoints
     this.httpServer = createServer((req: IncomingMessage, res: ServerResponse) => {
       // CORS headers
-      const origin = req.headers.origin ?? '*';
-      if (corsOrigins.includes('*') || corsOrigins.includes(origin)) {
+      const origin = req.headers.origin ?? '';
+      if (corsOrigins.includes('*')) {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+      } else if (origin && corsOrigins.includes(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Vary', 'Origin');
       }
       res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
       res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -51,7 +55,7 @@ export class PawGateway {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           status: 'ok',
-          version: '3.0.0',
+          version: '3.2.0',
           clients: this.clients.size,
           uptime: process.uptime(),
         }));
@@ -101,7 +105,7 @@ export class PawGateway {
     });
 
     // WebSocket server
-    this.wss = new WebSocketServer({ server: this.httpServer });
+    this.wss = new WebSocketServer({ server: this.httpServer, maxPayload: 65536 });
 
     this.wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
       const clientId = uuid();
@@ -134,7 +138,7 @@ export class PawGateway {
 
           // Handle auth — accept auth_token on any message type
           if (!client.authenticated) {
-            if (msg.auth_token === config.gateway.authToken) {
+            if (this.safeCompare(msg.auth_token ?? '', config.gateway.authToken)) {
               client.authenticated = true;
               this.sendToClient(clientId, {
                 type: 'event',
@@ -285,7 +289,7 @@ export class PawGateway {
 
     if (webhookSecret) {
       const providedSecret = authHeader?.replace(/^Bearer\s+/i, '') ?? querySecret;
-      if (providedSecret !== webhookSecret) {
+      if (!this.safeCompare(providedSecret ?? '', webhookSecret)) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Unauthorized' }));
         return;
@@ -293,8 +297,21 @@ export class PawGateway {
     }
 
     let body = '';
-    req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+    const MAX_BODY_SIZE = 1_048_576; // 1MB
+    let exceeded = false;
+    req.on('data', (chunk: Buffer) => {
+      body += chunk.toString();
+      if (body.length > MAX_BODY_SIZE) {
+        exceeded = true;
+        req.destroy();
+      }
+    });
     req.on('end', async () => {
+      if (exceeded) {
+        res.writeHead(413, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Request body too large' }));
+        return;
+      }
       try {
         const data = JSON.parse(body);
         const webhookId = req.url?.split('/webhook/')[1]?.split('?')[0] ?? '';
@@ -327,5 +344,18 @@ export class PawGateway {
       channels.add(client.info.channel);
     }
     return Array.from(channels);
+  }
+
+  // ─── Timing-safe string comparison ───
+  private safeCompare(a: string, b: string): boolean {
+    if (!a || !b) return false;
+    const bufA = Buffer.from(a);
+    const bufB = Buffer.from(b);
+    if (bufA.length !== bufB.length) {
+      // Compare against self to prevent timing leaks on length difference
+      timingSafeEqual(bufA, bufA);
+      return false;
+    }
+    return timingSafeEqual(bufA, bufB);
   }
 }

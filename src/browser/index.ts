@@ -31,7 +31,7 @@ interface BrowserPage {
   url(): string;
   screenshot(opts?: { encoding?: string; fullPage?: boolean }): Promise<string | Buffer>;
   select(selector: string, ...values: string[]): Promise<string[]>;
-  $eval(selector: string, fn: (el: any) => string): Promise<string>;
+  $eval(selector: string, fn: (el: any, ...args: any[]) => string, ...args: any[]): Promise<string>;
   $$eval(selector: string, fn: (els: any[]) => unknown): Promise<unknown>;
   close(): Promise<void>;
   content(): Promise<string>;
@@ -52,6 +52,11 @@ const BLOCKED_PATTERNS = [
   /10\.\d+\.\d+\.\d+/,
   /192\.168\./,
   /0\.0\.0\.0/,
+  /172\.(1[6-9]|2\d|3[01])\.\d+\.\d+/,
+  /169\.254\./,
+  /\[::1\]/,
+  /\[::ffff:/i,
+  /\[fe80:/i,
 ];
 
 export class BrowserEngine {
@@ -138,7 +143,7 @@ export class BrowserEngine {
           if (!action.selector) throw new Error('extract requires a selector');
           await page.waitForSelector(action.selector, { timeout: action.timeout ?? 5000 });
           const data = action.attribute
-            ? await page.$eval(action.selector, (el: any) => el.textContent)
+            ? await page.$eval(action.selector, (el: any, attr: string) => el.getAttribute(attr), action.attribute as any)
             : await page.$$eval(action.selector, (els: any[]) => els.map(e => e.textContent));
           return { success: true, data };
         }

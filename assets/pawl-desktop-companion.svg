@@ -110,22 +110,29 @@
       <polygon points="20,-12 30,-12 25,-4" fill="#13131f"/>
     </g>
     
-    <!-- Pawl dog (success pose) -->
+    <!-- Pawl dog (success pose — floppy-eared dog with collar) -->
     <ellipse cx="30" cy="52" rx="22" ry="19" fill="url(#fur)"/>
     <ellipse cx="30" cy="55" rx="14" ry="11" fill="url(#belly)"/>
-    <circle cx="30" cy="24" r="19" fill="url(#fur)"/>
-    <!-- Ears perked up -->
-    <ellipse cx="14" cy="8" rx="8" ry="13" fill="url(#furDark)" transform="rotate(-20,14,8)"/>
-    <ellipse cx="46" cy="8" rx="8" ry="13" fill="url(#furDark)" transform="rotate(20,46,8)"/>
-    <ellipse cx="14" cy="10" rx="5" ry="8" fill="#c4b5fd" transform="rotate(-20,14,10)"/>
-    <ellipse cx="46" cy="10" rx="5" ry="8" fill="#c4b5fd" transform="rotate(20,46,10)"/>
+    <ellipse cx="30" cy="24" rx="19" ry="17" fill="url(#fur)"/>
+    <!-- Floppy ears (drooping down) -->
+    <ellipse cx="12" cy="28" rx="8" ry="14" fill="url(#furDark)" transform="rotate(12,12,28)"/>
+    <ellipse cx="48" cy="28" rx="8" ry="14" fill="url(#furDark)" transform="rotate(-12,48,28)"/>
+    <ellipse cx="12" cy="30" rx="5" ry="9" fill="#c4b5fd" transform="rotate(12,12,30)"/>
+    <ellipse cx="48" cy="30" rx="5" ry="9" fill="#c4b5fd" transform="rotate(-12,48,30)"/>
+    <!-- Snout -->
+    <ellipse cx="30" cy="30" rx="10" ry="7" fill="#ede9fe"/>
     <!-- Happy squint eyes -->
     <path d="M21 22 Q25 18 29 22" stroke="#1e1e32" stroke-width="2" fill="none" stroke-linecap="round"/>
     <path d="M31 22 Q35 18 39 22" stroke="#1e1e32" stroke-width="2" fill="none" stroke-linecap="round"/>
     <circle cx="18" cy="29" r="4" fill="#f9a8d4" opacity="0.4"/>
     <circle cx="42" cy="29" r="4" fill="#f9a8d4" opacity="0.4"/>
-    <ellipse cx="30" cy="30" rx="3" ry="2.5" fill="#4c1d95"/>
+    <!-- Nose on snout -->
+    <ellipse cx="30" cy="27" rx="3" ry="2.5" fill="#2d1065"/>
     <path d="M24 32 Q30 40 36 32" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
+    <!-- Collar -->
+    <rect x="14" y="38" width="32" height="4" rx="2" fill="url(#fur)" stroke="#6d28d9" stroke-width="0.5"/>
+    <circle cx="30" cy="43" r="3" fill="#fbbf24"/>
+    <text x="30" y="45" text-anchor="middle" font-size="4" font-weight="bold" fill="#7c3aed">P</text>
     <!-- Legs -->
     <rect x="14" y="65" width="8" height="13" rx="4" fill="url(#fur)"/>
     <rect x="38" y="65" width="8" height="13" rx="4" fill="url(#fur)"/>

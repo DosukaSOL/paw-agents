@@ -59,6 +59,9 @@ export class RAGEngine {
     this.storePath = path.resolve(storePath ?? config.intelligence.ragStorePath);
     this.chunkSize = config.intelligence.ragChunkSize;
     this.chunkOverlap = config.intelligence.ragChunkOverlap;
+    if (this.chunkOverlap >= this.chunkSize) {
+      throw new Error('RAG chunkOverlap must be less than chunkSize');
+    }
     this.ensureDir();
     this.load();
   }
@@ -108,9 +111,15 @@ export class RAGEngine {
   indexFile(filePath: string, metadata: Record<string, unknown> = {}): RAGDocument | null {
     const resolved = path.resolve(filePath);
 
-    // Safety: only allow text-based files
+    // Safety: restrict file reads to the working directory (no arbitrary path traversal)
+    const safeBase = path.resolve(process.cwd());
+    if (!resolved.startsWith(safeBase + path.sep) && resolved !== safeBase) {
+      throw new Error('File access denied: path must be within the project directory');
+    }
+
+    // Safety: only allow text-based files — .env excluded to prevent secret exfiltration
     const ext = path.extname(resolved).toLowerCase();
-    const allowedExts = ['.txt', '.md', '.json', '.csv', '.ts', '.js', '.py', '.yaml', '.yml', '.toml', '.env', '.html', '.css', '.sol', '.rs'];
+    const allowedExts = ['.txt', '.md', '.json', '.csv', '.ts', '.js', '.py', '.yaml', '.yml', '.toml', '.html', '.css', '.sol', '.rs'];
     if (!allowedExts.includes(ext)) {
       throw new Error(`Unsupported file type: ${ext}. Allowed: ${allowedExts.join(', ')}`);
     }

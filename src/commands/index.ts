@@ -301,7 +301,7 @@ export class CommandHandler {
 
   private cmdVersion(): string {
     return [
-      '🐾 *PAW Agents v3.1.0*',
+      '🐾 *PAW Agents v3.2.0*',
       '',
       'Purp Autonomous Workers',
       'The operating system for autonomous AI agents.',

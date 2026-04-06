@@ -162,7 +162,7 @@ export class ValidationEngine {
 
         // Validate slippage is within bounds
         const slippage = Number(step.params.slippage_bps ?? 0);
-        if (slippage > 500) {
+        if (!Number.isFinite(slippage) || slippage > 500) {
           errors.push({
             code: 'DEFI_EXCESSIVE_SLIPPAGE',
             field: `plan[${step.step}].params.slippage_bps`,
@@ -180,7 +180,14 @@ export class ValidationEngine {
 
         // Validate swap amounts
         const amount = Number(step.params.amount ?? 0);
-        if (amount > 0) {
+        if (!Number.isFinite(amount)) {
+          errors.push({
+            code: 'DEFI_INVALID_AMOUNT',
+            field: `plan[${step.step}].params.amount`,
+            message: 'DeFi swap amount is not a valid number',
+            severity: 'fatal',
+          });
+        } else if (amount > 0) {
           if (amount > this.policy.max_transaction_lamports) {
             errors.push({
               code: 'DEFI_EXCEEDS_MAX_SWAP',
@@ -233,7 +240,10 @@ export class ValidationEngine {
   // ─── Helpers ───
   private extractLamports(params: Record<string, unknown>): number {
     for (const key of ['lamports', 'amount', 'value']) {
-      if (typeof params[key] === 'number') return params[key] as number;
+      if (params[key] !== undefined && params[key] !== null) {
+        const v = Number(params[key]);
+        if (Number.isFinite(v)) return v;
+      }
     }
     return 0;
   }

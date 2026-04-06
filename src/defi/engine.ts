@@ -87,9 +87,9 @@ export class DeFiEngine {
       protocol: this.detectPrimaryProtocol(routePlan),
       input_mint: inputMint,
       output_mint: outputMint,
-      input_amount: Number(data.inAmount),
-      output_amount: Number(data.outAmount),
-      price_impact_pct: Number(data.priceImpactPct ?? 0),
+      input_amount: this.safeNumber(data.inAmount, 'inAmount'),
+      output_amount: this.safeNumber(data.outAmount, 'outAmount'),
+      price_impact_pct: this.safeNumber(data.priceImpactPct ?? 0, 'priceImpactPct'),
       fee_amount: this.calculateTotalFees(routePlan),
       fee_mint: inputMint,
       route_plan: routePlan,
@@ -420,6 +420,11 @@ export class DeFiEngine {
       throw new Error('Swap amount must be an integer (in smallest token unit)');
     }
 
+    // Prevent precision loss for large amounts
+    if (params.amount > Number.MAX_SAFE_INTEGER) {
+      throw new Error('Swap amount exceeds safe integer limit — use smaller amounts');
+    }
+
     // Slippage bounds (hard cap — cannot be overridden)
     if (params.slippage_bps < 1 || params.slippage_bps > ABSOLUTE_MAX_SLIPPAGE_BPS) {
       throw new Error(`Slippage must be between 1 and ${ABSOLUTE_MAX_SLIPPAGE_BPS} bps (0.01% to ${ABSOLUTE_MAX_SLIPPAGE_BPS / 100}%)`);
@@ -534,5 +539,14 @@ export class DeFiEngine {
   // ─── Expose safety config for validation engine ───
   getSafetyConfig(): DeFiSafetyConfig {
     return { ...this.safety };
+  }
+
+  // ─── Safe number parsing — rejects NaN to prevent safety check bypass ───
+  private safeNumber(value: unknown, fieldName: string): number {
+    const num = Number(value);
+    if (!Number.isFinite(num)) {
+      throw new Error(`Invalid numeric value for ${fieldName}: ${String(value)}`);
+    }
+    return num;
   }
 }

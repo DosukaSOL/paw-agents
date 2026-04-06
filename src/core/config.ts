@@ -14,6 +14,30 @@ function optionalBool(key: string, fallback: boolean): boolean {
   return val === 'true' || val === '1';
 }
 
+function safeParseInt(key: string, fallback: number, min?: number, max?: number): number {
+  const raw = process.env[key];
+  if (!raw) return fallback;
+  const val = parseInt(raw, 10);
+  if (isNaN(val)) {
+    console.warn(`[Config] Invalid integer for ${key}: "${raw}", using default ${fallback}`);
+    return fallback;
+  }
+  if (min !== undefined && val < min) return min;
+  if (max !== undefined && val > max) return max;
+  return val;
+}
+
+function safeParseFloat(key: string, fallback: number): number {
+  const raw = process.env[key];
+  if (!raw) return fallback;
+  const val = parseFloat(raw);
+  if (isNaN(val) || !isFinite(val)) {
+    console.warn(`[Config] Invalid number for ${key}: "${raw}", using default ${fallback}`);
+    return fallback;
+  }
+  return val;
+}
+
 export const config = {
   // ─── Agent Mode ───
   agent: {
@@ -23,7 +47,7 @@ export const config = {
     // When true, risky actions still require confirmation even in autonomous mode.
     confirmHighRisk: optionalBool('CONFIRM_HIGH_RISK', true),
     // Max conversation history per session
-    maxHistoryLength: parseInt(optionalEnv('MAX_HISTORY_LENGTH', '50'), 10),
+    maxHistoryLength: safeParseInt('MAX_HISTORY_LENGTH', 50, 1, 1000),
     // Thinking level: off, low, medium, high
     thinkingLevel: optionalEnv('THINKING_LEVEL', 'medium'),
   },
@@ -55,9 +79,9 @@ export const config = {
   },
   email: {
     imapHost: optionalEnv('EMAIL_IMAP_HOST', ''),
-    imapPort: parseInt(optionalEnv('EMAIL_IMAP_PORT', '993'), 10),
+    imapPort: safeParseInt('EMAIL_IMAP_PORT', 993, 1, 65535),
     smtpHost: optionalEnv('EMAIL_SMTP_HOST', ''),
-    smtpPort: parseInt(optionalEnv('EMAIL_SMTP_PORT', '587'), 10),
+    smtpPort: safeParseInt('EMAIL_SMTP_PORT', 587, 1, 65535),
     user: optionalEnv('EMAIL_USER', ''),
     password: optionalEnv('EMAIL_PASSWORD', ''),
   },
@@ -84,7 +108,7 @@ export const config = {
   },
   // ─── Gateway ───
   gateway: {
-    port: parseInt(optionalEnv('GATEWAY_PORT', '18789'), 10),
+    port: safeParseInt('GATEWAY_PORT', 18789, 1, 65535),
     host: optionalEnv('GATEWAY_HOST', '127.0.0.1'),
     authToken: optionalEnv('GATEWAY_AUTH_TOKEN', ''),
     corsOrigins: optionalEnv('GATEWAY_CORS_ORIGINS', '*').split(','),
@@ -118,9 +142,9 @@ export const config = {
   },
   // ─── Solana ───
   solana: {
-    rpcUrl: optionalEnv('SOLANA_RPC_URL', 'https://api.mainnet-beta.solana.com'),
+    rpcUrl: optionalEnv('SOLANA_RPC_URL', 'https://api.devnet.solana.com'),
     walletEncryptionKey: optionalEnv('SOLANA_WALLET_ENCRYPTION_KEY', ''),
-    network: optionalEnv('SOLANA_NETWORK', 'mainnet-beta'),
+    network: optionalEnv('SOLANA_NETWORK', 'devnet'),
   },
   // ─── Purp ───
   purp: {
@@ -130,11 +154,11 @@ export const config = {
   },
   // ─── DeFi ───
   defi: {
-    maxSlippageBps: parseInt(optionalEnv('DEFI_MAX_SLIPPAGE_BPS', '100'), 10),
-    maxPriceImpactPct: parseFloat(optionalEnv('DEFI_MAX_PRICE_IMPACT_PCT', '3')),
-    maxSwapLamports: parseInt(optionalEnv('DEFI_MAX_SWAP_LAMPORTS', '5000000000'), 10),
-    maxRoutLegs: parseInt(optionalEnv('DEFI_MAX_ROUTE_LEGS', '4'), 10),
-    minOutputRatio: parseFloat(optionalEnv('DEFI_MIN_OUTPUT_RATIO', '0.95')),
+    maxSlippageBps: safeParseInt('DEFI_MAX_SLIPPAGE_BPS', 100, 1, 500),
+    maxPriceImpactPct: safeParseFloat('DEFI_MAX_PRICE_IMPACT_PCT', 3),
+    maxSwapLamports: safeParseInt('DEFI_MAX_SWAP_LAMPORTS', 5000000000),
+    maxRoutLegs: safeParseInt('DEFI_MAX_ROUTE_LEGS', 4, 1, 5),
+    minOutputRatio: safeParseFloat('DEFI_MIN_OUTPUT_RATIO', 0.95),
     blockedMints: optionalEnv('DEFI_BLOCKED_MINTS', '').split(',').filter(Boolean),
   },
   // ─── Intelligence ───
@@ -142,42 +166,42 @@ export const config = {
     // User profiling
     profilingEnabled: optionalBool('PROFILING_ENABLED', true),
     profileStorePath: optionalEnv('PROFILE_STORE_PATH', './data/profiles'),
-    maxBehaviorPatterns: parseInt(optionalEnv('MAX_BEHAVIOR_PATTERNS', '100'), 10),
+    maxBehaviorPatterns: safeParseInt('MAX_BEHAVIOR_PATTERNS', 100, 1),
     // RAG
     ragEnabled: optionalBool('RAG_ENABLED', true),
     ragStorePath: optionalEnv('RAG_STORE_PATH', './data/rag'),
-    ragChunkSize: parseInt(optionalEnv('RAG_CHUNK_SIZE', '512'), 10),
-    ragChunkOverlap: parseInt(optionalEnv('RAG_CHUNK_OVERLAP', '64'), 10),
-    ragMaxResults: parseInt(optionalEnv('RAG_MAX_RESULTS', '5'), 10),
-    ragMinScore: parseFloat(optionalEnv('RAG_MIN_SCORE', '0.15')),
+    ragChunkSize: safeParseInt('RAG_CHUNK_SIZE', 512, 1),
+    ragChunkOverlap: safeParseInt('RAG_CHUNK_OVERLAP', 64, 0),
+    ragMaxResults: safeParseInt('RAG_MAX_RESULTS', 5, 1),
+    ragMinScore: safeParseFloat('RAG_MIN_SCORE', 0.15),
     // Smart model routing
     smartRoutingEnabled: optionalBool('SMART_ROUTING_ENABLED', true),
     performanceStorePath: optionalEnv('PERFORMANCE_STORE_PATH', './data/model-perf'),
     // Fast path
     fastPathEnabled: optionalBool('FAST_PATH_ENABLED', true),
     fastPathProvider: optionalEnv('FAST_PATH_PROVIDER', 'groq'),
-    fastPathMaxTokens: parseInt(optionalEnv('FAST_PATH_MAX_TOKENS', '1024'), 10),
+    fastPathMaxTokens: safeParseInt('FAST_PATH_MAX_TOKENS', 1024, 1),
     // Conversation branching
     branchingEnabled: optionalBool('BRANCHING_ENABLED', true),
-    maxBranchesPerUser: parseInt(optionalEnv('MAX_BRANCHES_PER_USER', '20'), 10),
+    maxBranchesPerUser: safeParseInt('MAX_BRANCHES_PER_USER', 20, 1),
     branchStorePath: optionalEnv('BRANCH_STORE_PATH', './data/branches'),
   },
   // ─── Security ───
   security: {
-    maxTransactionLamports: parseInt(optionalEnv('MAX_TRANSACTION_LAMPORTS', '1000000000'), 10),
-    requireConfirmationAboveSol: parseFloat(optionalEnv('REQUIRE_CONFIRMATION_ABOVE_SOL', '1.0')),
-    rateLimitPerMinute: parseInt(optionalEnv('RATE_LIMIT_PER_MINUTE', '30'), 10),
+    maxTransactionLamports: safeParseInt('MAX_TRANSACTION_LAMPORTS', 1000000000, 0),
+    requireConfirmationAboveSol: safeParseFloat('REQUIRE_CONFIRMATION_ABOVE_SOL', 1.0),
+    rateLimitPerMinute: safeParseInt('RATE_LIMIT_PER_MINUTE', 30, 1),
     sandboxMode: optionalEnv('SANDBOX_MODE', 'strict'),
   },
   // ─── Clawtrace ───
   clawtrace: {
     logDir: optionalEnv('CLAWTRACE_LOG_DIR', './logs/clawtrace'),
-    retentionDays: parseInt(optionalEnv('CLAWTRACE_RETENTION_DAYS', '90'), 10),
+    retentionDays: safeParseInt('CLAWTRACE_RETENTION_DAYS', 90, 1),
   },
   // ─── Cron ───
   cron: {
     enabled: optionalBool('CRON_ENABLED', true),
-    maxTasks: parseInt(optionalEnv('CRON_MAX_TASKS', '50'), 10),
+    maxTasks: safeParseInt('CRON_MAX_TASKS', 50, 1),
   },
   env: optionalEnv('NODE_ENV', 'production'),
   logLevel: optionalEnv('LOG_LEVEL', 'info'),

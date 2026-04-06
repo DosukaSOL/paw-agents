@@ -28,7 +28,7 @@
   <a href="#quick-start">Quick Start</a> ·
   <a href="#features">Features</a> ·
   <a href="#channels">Channels</a> ·
-  <a href="#autonomous-mode">Agent Modes</a> ·
+  <a href="#agent-modes">Agent Modes</a> ·
   <a href="#intelligence--memory">Intelligence</a> ·
   <a href="#apps--companions">Apps</a> ·
   <a href="#purp-scl">Purp SCL</a> ·
@@ -37,27 +37,11 @@
   <a href="docs/ARCHITECTURE.md">Architecture</a>
 </p>
 
-<p align="center">
-  <a href="https://core.telegram.org/bots/api"><img src="https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram" /></a>
-  <a href="https://discord.com/developers/applications"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" /></a>
-  <a href="https://api.slack.com/apps"><img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white" alt="Slack" /></a>
-  <a href="https://developers.facebook.com/docs/whatsapp/cloud-api"><img src="https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" alt="WhatsApp" /></a>
-  <a href="https://nodemailer.com/about/"><img src="https://img.shields.io/badge/Email-EA4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Email" /></a>
-  <a href="https://www.twilio.com/docs/sms"><img src="https://img.shields.io/badge/SMS-FF6600?style=for-the-badge&logo=twilio&logoColor=white" alt="SMS" /></a>
-  <a href="#channels"><img src="https://img.shields.io/badge/WebChat-000000?style=for-the-badge&logo=socketdotio&logoColor=white" alt="WebChat" /></a>
-  <a href="#channels"><img src="https://img.shields.io/badge/Webhooks-FF4088?style=for-the-badge&logo=webhooks&logoColor=white" alt="Webhooks" /></a>
-  <a href="#channels"><img src="https://img.shields.io/badge/LINE-00C300?style=for-the-badge&logo=line&logoColor=white" alt="LINE" /></a>
-  <a href="#channels"><img src="https://img.shields.io/badge/Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white" alt="Reddit" /></a>
-  <a href="#channels"><img src="https://img.shields.io/badge/Matrix-000000?style=for-the-badge&logo=element&logoColor=white" alt="Matrix" /></a>
-</p>
-
 ---
 
 ## What is PAW?
 
-**PAW** stands for **Programmable Autonomous Workers**.
-
-**PAW Agents** is a production-grade autonomous AI agent framework that converts natural language into safe, validated, traceable actions across **APIs**, **browsers**, **files**, **workflows**, **blockchains**, and **external tools**. It comes with native Solana support and the [Purp SCL](https://github.com/DosukaSOL/purp-scl) smart contract language built in.
+**PAW Agents** is a production-grade autonomous AI agent framework that converts natural language into safe, validated, traceable actions across **APIs**, **browsers**, **files**, **workflows**, **blockchains**, and **external tools**. Native Solana support and [Purp SCL](https://github.com/DosukaSOL/purp-scl) smart contract language built in.
 
 Every action follows a strict six-stage pipeline:
 
@@ -67,22 +51,9 @@ Every action follows a strict six-stage pipeline:
 
 ```
 You : "Send 0.5 SOL to GkXn..."
-PAW : ⚠️ This action requires confirmation:
-      Intent: Transfer 0.5 SOL
-      Steps:
-        1. Validate recipient address
-        2. Check sender balance
-        3. Simulate transaction
-        4. Execute transfer
-      Risk score: 35/100
-      Reply "yes" to confirm.
+PAW : ⚠️ Confirmation required — Intent: Transfer 0.5 SOL (risk: 35/100). Reply "yes".
 You : "yes"
-PAW : ✅ Done: Transfer 0.5 SOL
-        ✓ Step 1: Address validated
-        ✓ Step 2: Balance sufficient
-        ✓ Step 3: Simulation passed
-        ✓ Step 4: Transfer complete (sig: 4xR7...)
-      ⏱ Completed in 2340ms
+PAW : ✅ Done — Transfer 0.5 SOL → sig: 4xR7... (2340ms)
 ```
 
 ---
@@ -94,115 +65,96 @@ PAW : ✅ Done: Transfer 0.5 SOL
 git clone https://github.com/DosukaSOL/paw-agents.git
 cd paw-agents
 npm install
-cp .env.example .env   # Edit with your tokens and API keys
+cp .env.example .env   # Add your API keys and tokens
 npm run build
 npm start
 ```
 
-### Requirements
-- **Node.js 20+**
-- At least one AI API key (OpenAI, Anthropic, Google AI, Mistral, DeepSeek, or Groq)
-- At least one channel token (Telegram, Discord, Slack, LINE, Reddit, Matrix, or use WebChat)
+**Requirements:** Node.js 20+ · At least one AI API key · At least one channel token (or use WebChat)
 
 ---
 
 <a id="features"></a>
-## Feature Overview
+## Features
 
 | Category | Capabilities |
 |----------|-------------|
-| **Agent Modes** | Supervised / Autonomous / Free — three modes per user. Free mode requires 2 safety warning layers. |
+| **Agent Modes** | Supervised / Autonomous / Free — per-user with 2-layer safety gate for Free |
 | **Channels** | Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat, Webhooks, LINE, Reddit, Matrix |
-| **Models** | OpenAI (GPT-4o), Anthropic (Claude), Google (Gemma 3), Mistral, DeepSeek, Groq (Llama) with automatic failover |
-| **Blockchain** | Native Solana support: transfers, balances, SPL tokens, tx simulation, composable DeFi |
-| **Purp SCL** | v1.1.0 parser, Anchor Rust codegen, TypeScript SDK + IDL generation |
-| **Browser** | Puppeteer-based automation: navigate, click, type, extract, screenshot |
-| **Multi-Agent** | Agent registry, capability routing, task delegation, multi-step orchestration |
-| **Vector Memory** | Persistent semantic memory with cosine similarity search |
-| **MCP** | Model Context Protocol client — connect to external MCP tool servers |
-| **Workflows** | DAG-based workflow engine: triggers → conditions → actions |
-| **On-Chain Registry** | Agent identity verification with PDA-derived keys (Solana) |
-| **Token Gate** | SPL token-gated access control with tiered permissions |
-| **Tx Simulation** | Full dry-run sandbox with balance change analysis + warning detection |
-| **Intelligence** | User profiling, RAG over documents, smart model routing, fast path, conversation branching |
-| **Apps** | CLI companion, Electron desktop, React Native mobile, VS Code extension, browser extension |
-| **Tools** | 45+ built-in tools: HTTP, file, data, browser, memory, MCP, workflows, DeFi, RAG, profiling |
-| **Safety** | Prompt injection (15+ patterns), rate limiting, risk scoring, URL sandboxing |
+| **Models** | OpenAI, Anthropic, Google AI, Mistral, DeepSeek, Groq — automatic failover |
+| **Blockchain** | Native Solana: transfers, balances, SPL tokens, tx simulation, composable DeFi |
+| **Purp SCL** | v1.1 parser → Anchor Rust codegen → TypeScript SDK + IDL |
+| **Browser** | Puppeteer: navigate, click, type, extract, screenshot |
+| **Multi-Agent** | Registry, capability routing, task delegation |
+| **Intelligence** | User profiling, RAG, smart model routing, fast path, conversation branching |
+| **Memory** | Persistent vector memory with cosine similarity search |
+| **MCP** | Model Context Protocol client for external tool servers |
+| **Workflows** | DAG engine: triggers → conditions → actions |
+| **Apps** | CLI, Electron desktop, React Native mobile, VS Code extension, browser extension |
+| **Tools** | 45+ built-in tools across 13 categories |
+| **Safety** | Prompt injection defense, rate limiting, risk scoring, URL sandboxing, tx simulation |
 | **Keys** | AES-256-GCM encryption, Ed25519 signing, zeroed after use |
-| **Logging** | Clawtrace JSONL audit trail, auto-redacted secrets |
+| **Logging** | Clawtrace JSONL audit trail with auto-redacted secrets |
 | **Recovery** | Self-healing: diagnose → fix → retry → escalate |
-| **Gateway** | WebSocket control plane with auth, health checks, broadcast |
-| **Commands** | `/mode`, `/status`, `/skills`, `/config`, `/help`, `/new`, `/version` |
-| **Dashboard** | Real-time web dashboard with chat, status cards, action log, mode toggle |
-| **Extensibility** | Skill files (`.skill.md`), custom tool registration, MCP servers, plugin-ready |
+| **Dashboard** | Real-time web UI: chat, status, logs, mode toggle, session persistence |
 
 ---
 
 <a id="channels"></a>
-## Multi-Channel Support
+## Channels
 
-PAW connects to users wherever they are. Configure one or all:
+| Channel | Setup | Protocol |
+|---------|-------|----------|
+| **Telegram** | `TELEGRAM_BOT_TOKEN` | Telegraf (long polling) |
+| **Discord** | `DISCORD_BOT_TOKEN` | discord.js (gateway) |
+| **Slack** | `SLACK_BOT_TOKEN` + `SLACK_APP_TOKEN` | Bolt (socket mode) |
+| **WhatsApp** | QR code pairing | Baileys (multi-device) |
+| **Email** | IMAP/SMTP config | nodemailer + IMAP polling |
+| **SMS** | Twilio credentials | Twilio REST API + webhooks |
+| **WebChat** | Built-in via Gateway | WebSocket |
+| **Webhooks** | `POST /webhook/:id` | HTTP |
+| **LINE** | `LINE_CHANNEL_ACCESS_TOKEN` | LINE Messaging API |
+| **Reddit** | `REDDIT_CLIENT_ID` + credentials | Reddit API (OAuth2) |
+| **Matrix** | `MATRIX_HOMESERVER_URL` + token | Matrix Client-Server API |
 
-| | Channel | Setup | Protocol |
-|--|---------|-------|----------|
-| <img src="https://img.shields.io/badge/-26A5E4?style=flat-square&logo=telegram&logoColor=white" /> | **Telegram** | `TELEGRAM_BOT_TOKEN` | Telegraf (long polling) |
-| <img src="https://img.shields.io/badge/-5865F2?style=flat-square&logo=discord&logoColor=white" /> | **Discord** | `DISCORD_BOT_TOKEN` | discord.js (gateway) |
-| <img src="https://img.shields.io/badge/-4A154B?style=flat-square&logo=slack&logoColor=white" /> | **Slack** | `SLACK_BOT_TOKEN` + `SLACK_APP_TOKEN` | Bolt (socket mode) |
-| <img src="https://img.shields.io/badge/-25D366?style=flat-square&logo=whatsapp&logoColor=white" /> | **WhatsApp** | QR code pairing | Baileys (multi-device) |
-| <img src="https://img.shields.io/badge/-EA4335?style=flat-square&logo=gmail&logoColor=white" /> | **Email** | IMAP/SMTP config | nodemailer + IMAP polling |
-| <img src="https://img.shields.io/badge/-FF6600?style=flat-square&logo=twilio&logoColor=white" /> | **SMS** | Twilio credentials | Twilio REST API + webhooks |
-| <img src="https://img.shields.io/badge/-000000?style=flat-square&logo=socketdotio&logoColor=white" /> | **WebChat** | Built-in via Gateway | WebSocket |
-| <img src="https://img.shields.io/badge/-FF4088?style=flat-square&logo=webhooks&logoColor=white" /> | **Webhooks** | `POST /webhook/:id` | HTTP |
-| <img src="https://img.shields.io/badge/-00C300?style=flat-square&logo=line&logoColor=white" /> | **LINE** | `LINE_CHANNEL_ACCESS_TOKEN` + `LINE_CHANNEL_SECRET` | LINE Messaging API (webhook) |
-| <img src="https://img.shields.io/badge/-FF4500?style=flat-square&logo=reddit&logoColor=white" /> | **Reddit** | `REDDIT_CLIENT_ID` + credentials | Reddit API (OAuth2 polling) |
-| <img src="https://img.shields.io/badge/-000000?style=flat-square&logo=element&logoColor=white" /> | **Matrix** | `MATRIX_HOMESERVER_URL` + `MATRIX_ACCESS_TOKEN` | Matrix Client-Server API (sync) |
-
-All channels share the same agent brain, tools, and safety pipeline. Channel adapters are loaded dynamically — install only what you need.
+All channels share the same agent brain, tools, and safety pipeline.
 
 ---
 
-<a id="autonomous-mode"></a>
+<a id="agent-modes"></a>
 ## Agent Modes
 
-PAW offers **three execution modes**. The validation pipeline is **always active** — but the confirmation gate is configurable.
+| Mode | Behavior | Confirmation |
+|------|----------|--------------|
+| **Supervised** | Every action requires explicit user confirmation | Always |
+| **Autonomous** | Low/medium risk auto-executes; high risk asks | Smart |
+| **Free** | Full autonomy — no confirmation gates | Never |
+
+Free Mode requires passing **two consecutive warning layers** before activation. The full validation pipeline (schema, safety, simulation, logging) runs in **every mode** — only the confirmation gate changes.
 
 <p align="center">
-  <img src="assets/paw-modes-graphic.jpeg" alt="PAW Agent Modes" width="800" />
+  <img src="assets/paw-modes-graphic.jpeg" alt="PAW Modes" width="800" />
 </p>
 
-### Free Mode — Two-Layer Safety Gate
+---
 
-Free Mode gives the agent **full autonomy** over all actions — including irreversible ones like transfers, deletions, and deployments. To prevent accidental activation, Free Mode requires passing **two consecutive warning layers**:
+## How It Works
 
-1. **Warning Layer 1**: Explains what Free Mode grants access to (device, APIs, blockchain, files, browser sessions, accounts). Advises using Supervised or Autonomous mode instead.
-2. **Warning Layer 2**: Final warning. User must accept full responsibility for all actions. Strongly recommends staying on Autonomous mode instead.
-
-Only after explicitly confirming both layers can Free Mode be activated. The dashboard enforces this with a two-step modal flow.
-
-> ⚠️ **We strongly recommend Supervised or Autonomous mode for most users.** Autonomous mode already auto-executes low and medium risk actions while keeping critical safety gates active.
-
-**What's always enforced regardless of mode:**
-- Schema validation
-- Forbidden action blocking
-- Transaction simulation
-- Prompt injection detection
-- Rate limiting
-- Full Clawtrace logging
-
-```env
-AGENT_MODE=supervised        # Default mode for new users (supervised | autonomous | free)
-REQUIRE_VALIDATION=true      # Can't be turned off — safety always on
-CONFIRM_HIGH_RISK=true       # Confirm high-risk even in autonomous mode
 ```
+INTENT → PLAN → VALIDATE → EXECUTE → VERIFY → LOG
+```
+
+- **LLM = reasoning only.** Generates structured JSON plans, never executes.
+- **System = execution only.** Runs validated plans, never reasons.
+- **Everything is logged.** Full Clawtrace audit trail with auto-redacted secrets.
+- **Self-healing.** Failures → diagnose → fix → retry → escalate.
 
 ---
 
 <a id="purp-scl"></a>
-## Purp SCL v1.1 Integration
+## Purp SCL v1.1
 
-PAW ships with a built-in [Purp Smart Contract Language](https://github.com/DosukaSOL/purp-scl) integration — letting agents compile, validate, and deploy Solana programs without leaving the chat:
-
-### Native `.purp` Syntax
+Built-in [Purp Smart Contract Language](https://github.com/DosukaSOL/purp-scl) integration — compile, validate, and deploy Solana programs from chat:
 
 ```purp
 program TokenVault {
@@ -211,7 +163,6 @@ program TokenVault {
 account VaultState {
   owner: pubkey
   balance: u64
-  is_locked: bool
 }
 
 instruction Deposit {
@@ -223,470 +174,127 @@ instruction Deposit {
   body:
     require(amount > 0, InsufficientFunds)
     vault_state.balance += amount
-    emit(DepositMade, { depositor: depositor.key, amount: amount })
-}
-
-event DepositMade {
-  depositor: pubkey
-  amount: u64
-}
-
-error VaultErrors {
-  InsufficientFunds = "Not enough funds"
-  Unauthorized = "Only the owner can do this"
 }
 ```
 
-### Compiler Pipeline
-
-```
-.purp source → Parse → Validate → Anchor Rust → TypeScript SDK
-```
-
-- **Types**: `u8`–`u128`, `i8`–`i128`, `f32`, `f64`, `bool`, `string`, `pubkey`, `bytes`
-- **Blocks**: `program`, `account`, `instruction`, `event`, `error`, `client`, `frontend`
-- **v1.1 Syntax**: `pub instruction name(params) { body }` with inline params, `**`, `??`, `...` spread
-- **Attributes**: `#[mut]`, `#[signer]`, `#[init]` for account declarations
-- **Context Structs**: Auto-generated `<InstructionName>Context` pattern
-- **Output**: Anchor-compatible Rust + ready-to-use TypeScript SDK
-- **Backward compatible** with legacy JSON Purp format and v0.3 block syntax
-
-### Purp.toml Support
-
-```toml
-[package]
-name = "my-dapp"
-version = "0.1.0"
-
-[dependencies]
-spl-token = "0.4"
-```
+**Pipeline:** `.purp` source → Parse → Validate → Anchor Rust → TypeScript SDK + IDL
 
 ---
 
-## Composable DeFi Execution Layer
+## Composable DeFi
 
-PAW ships with a composable DeFi execution layer for Solana — multi-DEX swap routing, token balance management, and position tracking. Every DeFi operation goes through the same six-stage pipeline as everything else.
+Multi-DEX swap routing via Jupiter with strict safety limits:
 
-### How It Works
+| Check | Limit |
+|-------|-------|
+| Max slippage | 5% (hard cap) |
+| Max price impact | 10% |
+| Max route legs | 5 hops |
+| Max swap amount | 100 SOL |
+| Min output ratio | 90% |
+| Quote expiry | 15 seconds |
 
-1. **Quote** — Fetch the optimal swap route across Jupiter's DEX aggregator (Raydium, Orca, and more)
-2. **Simulate** — Dry-run the swap: check balances, validate slippage, verify price impact, cap route legs
-3. **Validate** — Full pipeline validation: schema, safety policy, risk scoring, DeFi-specific checks
-4. **Execute** — Submit the transaction on-chain (pre-signed, simulated before broadcast)
-5. **Confirm** — Wait for on-chain confirmation, verify output matches expected result
-6. **Log** — Clawtrace audit trail with full route, amounts, and fees logged
-
-### Safety Guarantees
-
-| Check | Limit | Enforcement |
-|-------|-------|-------------|
-| Max slippage | 5% (500 bps) | Hard cap — cannot be overridden |
-| Max price impact | 10% | Hard cap — blocks swap if exceeded |
-| Max route legs | 5 hops | Prevents deep routing exploits |
-| Min output ratio | 90% | Rejects swaps with extreme loss |
-| Max swap amount | 100 SOL | Hard ceiling per swap |
-| Balance check | Pre-execution | Fails before broadcast if insufficient |
-| Blocked tokens | Configurable | Block specific mints via environment |
-| Quote expiry | 15 seconds | Stale quotes are never executed |
-
-### All Three Modes
-
-DeFi operations work in every agent mode:
-
-- **Supervised** — You confirm every swap before it executes
-- **Autonomous** — Small swaps auto-execute; large or high-impact swaps ask for confirmation
-- **Free** — Full autonomy; validation pipeline still enforces all safety limits
-
-### Supported Tokens
-
-SOL, USDC, USDT, RAY, ORCA, MNDE, JUP, BONK, WIF — plus any valid SPL token mint address.
-
-### Environment Variables
-
-```env
-DEFI_MAX_SLIPPAGE_BPS=100          # Default max slippage (1%)
-DEFI_MAX_PRICE_IMPACT_PCT=3        # Default max price impact
-DEFI_MAX_SWAP_LAMPORTS=5000000000  # Default max swap (5 SOL)
-DEFI_MAX_ROUTE_LEGS=4              # Default max route hops
-DEFI_MIN_OUTPUT_RATIO=0.95         # Default min output ratio
-DEFI_BLOCKED_MINTS=                # Comma-separated blocked mints
-```
+Every DeFi operation passes through the full pipeline — quote → simulate → validate → execute → confirm → log.
 
 ---
 
-## How It Works
+<a id="intelligence--memory"></a>
+## Intelligence & Memory
 
-```
-┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐   ┌──────────┐
-│  INTENT  │ → │   PLAN   │ → │ VALIDATE │ → │ EXECUTE  │ → │  VERIFY  │ → │   LOG    │
-│          │   │          │   │          │   │          │   │          │   │          │
-│ Sanitize │   │ LLM gen  │   │ Schema   │   │ Tools    │   │ Confirm  │   │ Claw-    │
-│ Rate lim │   │ Strict   │   │ Safety   │   │ APIs     │   │ Heal     │   │ trace    │
-│ Inject   │   │ JSON     │   │ Simulate │   │ Browser  │   │ Report   │   │ Redact   │
-└──────────┘   └──────────┘   └──────────┘   └──────────┘   └──────────┘   └──────────┘
-```
-
-### Key Principles
-- **LLM = reasoning only.** Generates plans, never executes code.
-- **System = execution only.** Runs validated plans, never reasons.
-- **Everything is logged.** Full Clawtrace audit trail.
-- **Self-healing.** Failures → diagnose → fix → retry → escalate.
+| Feature | Description |
+|---------|-------------|
+| **User Profiling** | Long-term preference learning per user — task patterns, risk tolerance, topics |
+| **RAG** | Index documents, search with TF-IDF embeddings locally — no external API |
+| **Smart Routing** | Classify tasks and pick the best model based on performance data |
+| **Fast Path** | Simple tasks → fast provider (Groq/Llama) for sub-second responses |
+| **Branching** | Branch conversations, explore alternatives, rollback to any point |
 
 ---
 
 <a id="safety"></a>
-## Safety Guarantees
+## Safety
 
 | Layer | Protection |
 |-------|-----------|
 | **Input** | HTML stripping, injection detection (15+ patterns), length limits |
-| **Planning** | LLM never executes — produces strict JSON only |
+| **Planning** | LLM generates strict JSON only — never executes |
 | **Validation** | Schema + logic + safety policy + blockchain simulation |
 | **Keys** | AES-256-GCM encrypted at rest, zeroed after use, never logged |
-| **Execution** | Sandboxed — Purp whitelist, file sandbox, HTTPS-only APIs, blocked internal IPs |
-| **Blockchain** | Simulation before every transaction, risk scoring, confirmation gate |
-| **DeFi** | Slippage caps, price impact limits, route depth limits, balance pre-checks, quote expiry |
+| **Execution** | Sandboxed — file sandbox, HTTPS-only APIs, blocked internal IPs |
+| **Blockchain** | Simulation before every tx, risk scoring, confirmation gate |
+| **DeFi** | Slippage caps, price impact limits, route depth limits, balance checks |
 | **Logging** | All secrets auto-redacted from Clawtrace |
 | **Recovery** | Self-healing: diagnose → fix → retry → escalate |
-| **Rate Limit** | Per-user token bucket with configurable limits |
 
 See [Security Model](docs/SECURITY.md) for the full threat model.
 
 ---
 
-## Intelligence & Memory
-
-PAW v3.2+ includes a full intelligence layer that learns from usage and adapts to each user.
-
-### User Profiling
-
-Long-term preference learning per user. PAW tracks task patterns, tool usage, risk tolerance, and preferred topics — then uses these to personalize LLM system prompts automatically.
-
-```env
-PROFILING_ENABLED=true
-PROFILE_STORE_PATH=data/profiles
-MAX_BEHAVIOR_PATTERNS=100
-```
-
-### RAG (Retrieval-Augmented Generation)
-
-Index your documents and let PAW search them during conversations. Local TF-IDF embeddings — no external API needed.
-
-- Configurable chunk size and overlap
-- Cosine similarity search with score threshold
-- Automatic context injection into LLM prompts
-- File indexing with safety limits (1MB max, extension whitelist)
-
-```env
-RAG_ENABLED=true
-RAG_STORE_PATH=data/rag
-RAG_CHUNK_SIZE=512
-RAG_CHUNK_OVERLAP=64
-RAG_MAX_RESULTS=5
-RAG_MIN_SCORE=0.15
-```
-
-In-chat commands: `/rag index <path>` · `/rag search <query>` · `/rag list`
-
-### Smart Model Routing
-
-PAW classifies each task (simple Q&A, code generation, analysis, creative writing, etc.) and automatically picks the best model based on past performance data.
-
-```env
-SMART_ROUTING_ENABLED=true
-PERFORMANCE_STORE_PATH=data/performance
-```
-
-### Fast Path
-
-Simple tasks (greetings, factual lookups, quick math) are routed to a fast provider (Groq / Llama) for sub-second responses instead of waiting for a large model.
-
-```env
-FAST_PATH_ENABLED=true
-FAST_PATH_PROVIDER=groq
-FAST_PATH_MAX_TOKENS=1024
-```
-
-### Conversation Branching
-
-Branch conversations to explore alternatives, then switch or rollback.
-
-- Create branches from any point in the conversation
-- Switch between branches freely
-- Rollback to any message index
-- Up to 20 branches per user
-
-```env
-BRANCHING_ENABLED=true
-MAX_BRANCHES_PER_USER=20
-BRANCH_STORE_PATH=data/branches
-```
-
-In-chat commands: `/branch create <name>` · `/branch list` · `/branch switch <name>` · `/branch rollback <index>`
-
----
-
+<a id="apps--companions"></a>
 ## Apps & Companions
 
-PAW is available everywhere — not just chat channels.
-
-### CLI Companion
-
-Interactive terminal client with full agent access:
-
-<p align="center">
-  <img src="assets/paw-cli-companion.svg" alt="PAW CLI Companion" width="800" />
-</p>
-
+### CLI
 ```bash
-npx paw chat          # Interactive chat session
-npx paw status        # System health and settings
-npx paw deploy        # Deploy agent configuration
-npx paw models        # List available AI providers
+npx paw chat          # Interactive chat
+npx paw status        # System health
+npx paw deploy        # Deploy config
+npx paw models        # List AI providers
 ```
 
-In-chat commands: `/mode`, `/branch`, `/rag`, `/stats`, `/clear`, `/exit`
+### Desktop (Electron)
+Native app for macOS, Windows, Linux — system tray, dark theme, WebSocket chat.
 
-### Desktop App (Electron)
-
-Native desktop app for macOS, Windows, and Linux:
-
-<p align="center">
-  <img src="assets/paw-desktop-app.svg" alt="PAW Desktop App" width="800" />
-</p>
-
-```bash
-cd desktop && npm install && npm start
-```
-
-- System tray with quick access
-- WebSocket connection to PAW gateway
-- Dark theme matching PAW design system
-- Cross-platform builds via electron-builder
-
-### Mobile App (React Native)
-
-iOS and Android app with full chat interface:
-
-<p align="center">
-  <img src="assets/paw-mobile-app.svg" alt="PAW Mobile App" width="800" />
-</p>
-
-```bash
-cd mobile && npm install && npx react-native run-ios
-```
-
-- Real-time WebSocket chat
-- Auto-reconnect on network changes
-- Configurable gateway URL and auth token
-- Dark mode support
+### Mobile (React Native)
+iOS and Android — real-time chat, auto-reconnect, dark mode.
 
 ### VS Code Extension
-
-Chat with PAW directly from your editor:
-
-<p align="center">
-  <img src="assets/paw-vscode-extension.svg" alt="PAW VS Code Extension" width="800" />
-</p>
-
-- Sidebar chat panel
-- Right-click "Send to PAW" on selected code
-- Editor panel with full conversation view
-- Gateway URL and auth token in VS Code settings
+Sidebar chat panel + right-click "Send to PAW" on code.
 
 ### Browser Extension
-
-Chrome/Firefox extension (Manifest v3):
-
-<p align="center">
-  <img src="assets/paw-browser-extension.svg" alt="PAW Browser Extension" width="800" />
-</p>
-
-- Popup chat window from any webpage
-- Right-click context menu — send selected text to PAW
-- Floating 🐾 button on text selection
-- Settings panel for gateway configuration
+Chrome/Firefox — popup chat, right-click context menu, floating 🐾 selection button.
 
 ### 🐕 Pawl — Desktop Companion
 
-Meet **Pawl**, your friendly PAW desktop companion — a cute purple dog that lives right on your screen.
+**Pawl** is a cute purple dog that lives on your desktop. Click reactions, notification bubbles, walking, idle animations, sleep mode, sound effects, drag & drop — 25 sprite frames across 5 categories.
 
-<p align="center">
-  <img src="assets/pawl-mascot-features.svg" alt="Pawl Mascot Features" width="800" />
-</p>
-
-Pawl sits on your desktop as a transparent always-on-top widget and reacts to your work:
-
-<p align="center">
-  <img src="assets/pawl-desktop-companion.svg" alt="Pawl Desktop Companion" width="800" />
-</p>
-
-**What Pawl can do:**
-- **Click reactions** — Click Pawl for a random RNG emotion (happy, excited, mad, confused, love)
-- **Notification bubbles** — Barks with text bubbles for build completions, errors, bugs, and alerts
-- **Walk around** — Roams across your desktop between tasks
-- **Idle animations** — Blinks, looks around, wags tail
-- **Sleep mode** — Curls up and dozes off after 5 minutes of inactivity
-- **Sound effects** — Cute barks and yips via Web Audio API
-- **Double-click** — Opens the PAW app, or jumps straight to a notification
-- **Drag & drop** — Move Pawl anywhere on your screen
-- **25 sprite frames** — 5 idle states, 5 emotions, 5 actions, 5 movement, 5 special
-
-**Toggle from CLI:**
 ```bash
 paw companion on          # Enable Pawl
-paw companion off         # Disable Pawl
-paw companion status      # Show current settings
-paw companion config      # View all toggleable features
+paw companion off         # Disable
+paw companion status      # Settings
 ```
 
-**Toggle from Dashboard:** Use the 🐕 Pawl Companion section in the sidebar to flip individual features on/off.
+Toggle individual features from the Dashboard sidebar.
 
 ---
 
-## Built-in Tools (45+)
+## Multi-Model Support
 
-| Tool | Description | Safety |
-|------|------------|--------|
-| `solana_transfer` | Transfer SOL between wallets | Simulation + confirmation |
-| `solana_balance` | Check wallet balance | Read-only |
-| `defi_quote` | Get multi-DEX swap quote via Jupiter | Read-only, cached 15s |
-| `defi_swap` | Execute composable swap across DEXes | Simulation + slippage + price impact checks |
-| `defi_simulate` | Dry-run a swap without executing | Read-only simulation |
-| `defi_balance` | Check token balance (SOL + SPL) | Read-only |
-| `defi_positions` | List DeFi positions (LP, staking) | Read-only |
-| `defi_resolve_token` | Resolve token symbol to mint address | Read-only |
-| `api_call` / `http_get` / `http_post` | Call external APIs | HTTPS-only, no internal IPs |
-| `file_read` / `file_write` / `file_list` | File operations | Sandboxed to `data/` directory |
-| `data_transform` | JSON, base64, case transforms | Pure functions |
-| `data_filter` | Filter arrays by field/value | Pure functions |
-| `memory_set` / `memory_get` | Key-value memory store | In-process, scoped |
-| `browser_navigate` | Open URL in headless browser | URL sandbox, blocked internals |
-| `browser_click` / `browser_type` | Interact with page elements | CSS selector based |
-| `browser_extract` | Extract text from page | Read-only |
-| `browser_screenshot` | Take full-page screenshot | Base64 encoded |
-| `agent_delegate` | Delegate task to specific agent | Capability verified |
-| `agent_route` | Auto-route to best agent by intent | Scored matching |
-| `vector_store` | Store text with semantic embedding | Persistent, namespace-scoped |
-| `vector_search` | Similarity search across memories | Cosine similarity |
-| `mcp_connect` | Connect to MCP tool server | URL validated |
-| `mcp_invoke` | Call tool on MCP server | Server must be connected |
-| `mcp_list_tools` | List all MCP tools | Read-only |
-| `workflow_create` | Create DAG workflow | Cycle-validated |
-| `workflow_execute` | Execute workflow by ID | Per-step error handling |
-| `tx_simulate` | Simulate Solana transaction | Read-only dry run |
-| `system_time` | Current UTC time | Read-only |
-| `purp_compile` | Compile Purp SCL v1.1 programs | Validated output + IDL |
-| `rag_index` | Index documents for RAG search | File size + extension checks |
-| `rag_search` | Search indexed documents | Read-only similarity search |
-| `rag_list` | List all indexed documents | Read-only |
-| `branch_create` | Create conversation branch | Branch limit enforced |
-| `branch_list` | List conversation branches | Read-only |
-| `branch_switch` | Switch to a different branch | Branch must exist |
-| `branch_rollback` | Rollback branch to message index | Index validated |
-| `profile_get` | Get user profile and preferences | Read-only |
-| `profile_update` | Update user preferences | Validated fields only |
+| Provider | Models | Failover |
+|----------|--------|----------|
+| **OpenAI** | GPT-4o, GPT-4 Turbo | ✅ |
+| **Anthropic** | Claude Sonnet 4 | ✅ |
+| **Google AI** | Gemma 3 27B | ✅ |
+| **Mistral** | Mistral Large | ✅ |
+| **DeepSeek** | DeepSeek Chat / R1 | ✅ |
+| **Groq** | Llama 3.3 70B | ✅ |
 
-Register custom tools:
-```typescript
-agent.registerTool('my_tool', async (params) => {
-  return { result: 'done' };
-});
-```
+Configure one or many — PAW routes to your preferred provider and auto-fails over.
 
 ---
 
-## Chat Commands
-
-Available across all channels:
-
-| Command | Description |
-|---------|------------|
-| `/start` | Welcome message |
-| `/help` | Command reference |
-| `/mode [supervised\|autonomous\|free]` | View or switch agent mode |
-| `/status` | System health and current settings |
-| `/new` / `/reset` | Clear conversation |
-| `/skills` | List loaded skills |
-| `/config` | View your configuration |
-| `/version` | Version info |
-
----
-
-## WebSocket Gateway + Web Dashboard
-
-Real-time control plane for browser UIs and external integrations. Includes a built-in web dashboard.
+## Gateway & Dashboard
 
 ```
-ws://127.0.0.1:18789        # WebSocket
-http://127.0.0.1:18789      # Dashboard
+http://127.0.0.1:18789     # Dashboard + API
+ws://127.0.0.1:18789       # WebSocket
 ```
 
-### Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|------------|
-| `/` | GET | Web dashboard (real-time chat, status, logs) |
-| `/health` | GET | Health check + uptime |
-| `/api/status` | GET | Agent status, channels, mode |
-| `/webhook/:id` | POST | Trigger webhook actions |
-| `ws://` | WebSocket | Real-time agent communication |
-
-### Web Dashboard
-
-The built-in dashboard provides:
-- **Real-time chat** with the agent via WebSocket
-- **Status cards** showing agent status, mode, message count, uptime
-- **Action log** with color-coded phases (intake, planning, validation, execution)
-- **Mode toggle** buttons for supervised/autonomous switching
-- **Auto-reconnect** with periodic health polling
-
-### WebSocket Protocol
-
-```json
-// Send a message
-{ "type": "message", "channel": "webchat", "from": "user", "payload": "Check my balance" }
-
-// Set mode
-{ "type": "command", "payload": { "command": "set_mode", "mode": "autonomous" } }
-
-// Receive response
-{ "type": "response", "from": "agent", "payload": { "success": true, "message": "..." } }
-```
-
----
-
-## Skills
-
-Extend PAW with `.skill.md` files:
-
-```yaml
----
-metadata:
-  name: solana-balance
-  version: "1.0.0"
-  description: Check SOL balance of any wallet
-  category: blockchain
-
-capability:
-  purpose: Query Solana wallet balance
-  actions: [check_balance, get_balance]
-
-input_schema:
-  - name: address
-    type: string
-    required: true
-
-safety:
-  forbidden_actions: [transfer, sign_transaction]
-  rate_limit_per_minute: 60
----
-```
-
-Skills are validated at startup. Invalid skills are rejected entirely.
-
-See [skills/examples/](skills/examples/) for working examples.
+| Endpoint | Description |
+|----------|------------|
+| `/` | Web dashboard (chat, status, logs, mode toggle) |
+| `/health` | Health check + uptime |
+| `/api/status` | Agent status and mode |
+| `/webhook/:id` | Webhook triggers |
 
 ---
 
@@ -695,331 +303,55 @@ See [skills/examples/](skills/examples/) for working examples.
 ```
 paw-agents/
 ├── src/
-│   ├── index.ts                    # Entry point (multi-channel boot)
-│   ├── agent/
-│   │   ├── brain.ts                # LLM → structured plan
-│   │   └── loop.ts                 # Main agent orchestrator
-│   ├── core/
-│   │   ├── types.ts                # All type definitions
-│   │   └── config.ts               # Configuration loader
-│   ├── models/
-│   │   └── router.ts               # Multi-model with failover
-│   ├── gateway/
-│   │   └── index.ts                # WebSocket gateway + dashboard
-│   ├── dashboard/
-│   │   └── index.ts                # Web dashboard SPA (HTML)
-│   ├── browser/
-│   │   └── index.ts                # Puppeteer browser automation
-│   ├── orchestrator/
-│   │   └── index.ts                # Multi-agent orchestration
-│   ├── vector-memory/
-│   │   └── index.ts                # Persistent vector memory
-│   ├── mcp/
-│   │   └── index.ts                # MCP tool protocol client
-│   ├── workflow/
-│   │   └── index.ts                # DAG workflow engine
-│   ├── registry/
-│   │   └── index.ts                # On-chain agent registry
-│   ├── token-gate/
-│   │   └── index.ts                # SPL token-gated access
-│   ├── simulation/
-│   │   └── index.ts                # Transaction simulation sandbox
-│   ├── commands/
-│   │   └── index.ts                # Chat command handler
-│   ├── memory/
-│   │   └── index.ts                # Multi-scope memory system
-│   ├── cron/
-│   │   └── index.ts                # Cron scheduler + webhooks
-│   ├── skills/
-│   │   └── engine.ts               # Skill parser & validator
-│   ├── validation/
-│   │   └── engine.ts               # Plan validation & safety
-│   ├── execution/
-│   │   └── engine.ts               # Plan executor + 36+ tools
-│   ├── defi/
-│   │   └── engine.ts               # Composable DeFi execution layer
-│   ├── integrations/
-│   │   ├── telegram/bot.ts         # Telegram adapter
-│   │   ├── discord/adapter.ts      # Discord adapter
-│   │   ├── slack/adapter.ts        # Slack adapter
-│   │   ├── whatsapp/adapter.ts     # WhatsApp adapter
-│   │   ├── webchat/adapter.ts      # WebChat adapter
-│   │   ├── email/adapter.ts        # Email adapter (IMAP/SMTP)
-│   │   ├── sms/adapter.ts          # SMS adapter (Twilio)
-│   │   ├── line/adapter.ts         # LINE adapter (Messaging API)
-│   │   ├── reddit/adapter.ts       # Reddit adapter (OAuth2 API)
-│   │   ├── matrix/adapter.ts       # Matrix / Element adapter
-│   │   ├── solana/executor.ts      # Blockchain execution
-│   │   └── purp/engine.ts          # Purp SCL v1.1 engine
-│   ├── security/
-│   │   ├── sanitizer.ts            # Input sanitization
-│   │   ├── keystore.ts             # AES-256-GCM keys
-│   │   └── rate-limiter.ts         # Rate limiting
-│   ├── clawtrace/
-│   │   └── index.ts                # JSONL audit logger
-│   ├── intelligence/
-│   │   ├── profiler.ts             # User profiling & preference learning
-│   │   ├── rag.ts                  # RAG engine (indexing + search)
-│   │   ├── fast-path.ts            # Fast path router (task classification)
-│   │   └── branching.ts            # Conversation branching & rollback
-│   ├── cli/
-│   │   └── index.ts                # CLI companion (paw chat/deploy/status)
-│   ├── self-healing/
-│       └── index.ts                # Failure recovery
-├── desktop/                        # Electron desktop app
-│   ├── src/main.ts                 # Main process + system tray + Pawl init
-│   ├── src/companion.ts            # Pawl companion system (sprite, animations, IPC)
-│   ├── src/preload.ts              # Secure IPC bridge (PAW + Pawl APIs)
-│   ├── renderer/index.html         # Chat UI
-│   └── renderer/pawl.html          # Companion overlay (transparent widget)
-├── mobile/                         # React Native mobile app
-│   ├── App.tsx                     # Navigation + screens
-│   └── src/                        # Services + screens
+│   ├── index.ts                    # Entry point
+│   ├── agent/                      # Brain (LLM planning) + Loop (orchestrator)
+│   ├── core/                       # Types + config
+│   ├── models/                     # Multi-model router with failover
+│   ├── gateway/                    # WebSocket gateway + dashboard server
+│   ├── dashboard/                  # Web dashboard SPA
+│   ├── browser/                    # Puppeteer automation
+│   ├── orchestrator/               # Multi-agent coordination
+│   ├── vector-memory/              # Persistent vector memory
+│   ├── mcp/                        # MCP tool protocol client
+│   ├── workflow/                   # DAG workflow engine
+│   ├── registry/                   # On-chain agent registry
+│   ├── token-gate/                 # SPL token-gated access
+│   ├── simulation/                 # Transaction simulation sandbox
+│   ├── defi/                       # Composable DeFi execution
+│   ├── intelligence/               # Profiler, RAG, fast path, branching
+│   ├── integrations/               # 11 channel adapters + Solana + Purp
+│   ├── security/                   # Sanitizer, keystore, rate limiter
+│   ├── clawtrace/                  # JSONL audit logger
+│   ├── cli/                        # CLI companion
+│   └── self-healing/               # Failure recovery
+├── desktop/                        # Electron app + Pawl companion
+├── mobile/                         # React Native app
 ├── vscode-extension/               # VS Code extension
-│   └── src/extension.ts            # Chat panel + sidebar + commands
-├── browser-extension/              # Chrome/Firefox extension (Manifest v3)
-│   ├── background.js               # Service worker + WebSocket
-│   ├── popup.html / popup.js       # Chat popup
-│   └── content.js                  # Floating button on selection
-├── skills/examples/                # Example skill definitions
-├── tests/system.test.ts            # 79 tests across 18 suites
-├── docs/                           # Architecture, security, spec
-└── .env.example                    # Configuration template
+├── browser-extension/              # Chrome/Firefox extension
+├── skills/examples/                # Skill definitions
+├── tests/                          # 79 tests across 18 suites
+└── docs/                           # Architecture, security, spec
 ```
-
----
-
-## Multi-Model Support
-
-| Provider | Models | Failover |
-|----------|--------|----------|
-| **OpenAI** | GPT-4o, GPT-4 Turbo | ✅ Automatic |
-| **Anthropic** | Claude Sonnet 4 | ✅ Automatic |
-| **Google AI** | Gemma 3 27B | ✅ Automatic |
-| **Mistral** | Mistral Large | ✅ Automatic |
-| **DeepSeek** | DeepSeek Chat / R1 | ✅ Automatic |
-| **Groq** | Llama 3.3 70B (fast inference) | ✅ Automatic |
-
-Configure one or many — PAW routes to your preferred provider and auto-fails over to the next available.
-
-```env
-DEFAULT_MODEL_PROVIDER=openai
-OPENAI_API_KEY=sk-...
-ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_AI_API_KEY=AI...
-MISTRAL_API_KEY=...
-DEEPSEEK_API_KEY=sk-...
-GROQ_API_KEY=gsk_...
-```
-
----
-
-## Clawtrace Logging
-
-Every action is logged in structured JSONL with auto-redacted secrets:
-
-```json
-{
-  "trace_id": "abc-123",
-  "session_id": "sess-456",
-  "timestamp": "2026-04-06T12:00:00Z",
-  "phase": "execution",
-  "plan": { "intent": "Transfer 0.5 SOL" },
-  "execution": { "success": true, "duration_ms": 1200 },
-  "metadata": {}
-}
-```
-
----
-
-## Example Workflows
-
-### Check Balance
-```
-"What's the balance of GkXn5M4qR..."
-→ 1 step (read-only) → No confirmation → 12.5 SOL
-```
-
-### Transfer SOL
-```
-"Send 1 SOL to 7Yh2..."
-→ 4 steps → ⚠️ Confirmation (risk: 35) → Execute → Done
-```
-
-### Deploy Purp Contract
-```
-"Compile and deploy my token vault"
-→ Parse .purp → Validate → Generate Rust + SDK → Deploy → Done
-```
-
-### Schedule a Task
-```
-"Check SOL price every 5 minutes"
-→ Cron task created → Runs automatically → Results logged
-```
-
-### Autonomous Mode
-```
-/mode autonomous
-"Get the latest SOL price and save to a file"
-→ 2 steps (low risk) → Auto-executed → Done in 800ms
-```
-
----
-
-## Why PAW?
-
-| Feature | PAW Agents | Typical Agent Frameworks |
-|---------|-----------|-------------------------|
-| Validation pipeline | ✅ Always on | ❌ Execute directly |
-| 3 Agent Modes (Supervised, Autonomous, Free) | ✅ Per-user toggle + 2-layer safety gate for Free mode | ❌ One mode only |
-| Multi-channel | ✅ 11 channels | ⚠️ Usually 1 |
-| Browser automation | ✅ Puppeteer | ❌ |
-| Multi-agent orchestration | ✅ Registry, routing, delegation | ❌ |
-| Vector memory | ✅ Persistent semantic search | ❌ |
-| MCP tool protocol | ✅ Client for external servers | ❌ |
-| DAG workflows | ✅ Trigger → condition → action | ❌ |
-| Blockchain simulation | ✅ Before every tx | ❌ |
-| On-chain agent registry | ✅ PDA-derived identity | ❌ |
-| Token-gated access | ✅ SPL tiered permissions | ❌ |
-| Purp SCL integration | ✅ v1.1 compiler + IDL | ❌ |
-| Encrypted key management | ✅ AES-256-GCM | ❌ Plaintext keys |
-| Prompt injection defense | ✅ 15+ patterns | ❌ |
-| WebSocket gateway + dashboard | ✅ Real-time UI | ❌ |
-| Self-healing | ✅ Diagnose → fix → retry | ❌ Basic retry |
-| Full audit trail | ✅ Clawtrace | ⚠️ Minimal |
-| 79 automated tests | ✅ | ⚠️ Varies |
-
----
-
-## PAW Agents vs OpenClaw Agents
-
-[OpenClaw](https://github.com/openclaw) is a well-known agent framework. Here's how PAW differentiates — and where it goes further.
-
-### Architecture Philosophy
-
-**OpenClaw** follows a *channel-first* architecture: it connects to 25+ platforms and routes messages to a single execution backend. The LLM can directly trigger actions, and safety is handled through post-hoc guardrails.
-
-**PAW** follows a *safety-first* architecture: every action — without exception — passes through a six-stage pipeline (`INTENT → PLAN → VALIDATE → EXECUTE → VERIFY → LOG`). The LLM only generates structured plans; it never executes anything. This separation is enforced at the type system level, not by convention.
-
-### Head-to-Head Comparison
-
-| Capability | PAW Agents | OpenClaw Agents |
-|-----------|-----------|-----------------|
-| **Validation pipeline** | ✅ Mandatory 6-stage pipeline, always on | ⚠️ Optional guardrails, can be bypassed |
-| **LLM/Execution separation** | ✅ Strict — LLM plans, system executes | ❌ LLM can trigger actions directly |
-| **Agent modes** | ✅ 3 modes (Supervised, Autonomous, Free) with risk-aware gates + 2-layer safety for Free | ❌ Single execution mode |
-| **Blockchain simulation** | ✅ Dedicated simulator with dry-run sandbox | ⚠️ Available but not enforced |
-| **Transaction safety** | ✅ Simulate → warn → send pipeline | ❌ Direct send |
-| **Prompt injection defense** | ✅ 15+ detection patterns at input layer | ⚠️ Basic filtering |
-| **Key management** | ✅ AES-256-GCM encrypted, zeroed after use | ⚠️ Environment variables |
-| **Smart contract language** | ✅ Purp SCL v1.1 — `pub instruction`, `#[init]`, SDK + IDL gen | ❌ No integrated SCL |
-| **Browser automation** | ✅ Puppeteer — navigate, click, type, extract, screenshot | ✅ Puppeteer/Playwright |
-| **Multi-agent orchestration** | ✅ Registry, capability routing, delegation depth 3 | ❌ Single-agent only |
-| **Vector memory** | ✅ Persistent TF-IDF semantic search, scoped | ❌ No semantic memory |
-| **MCP tool protocol** | ✅ Client — discover & invoke external tool servers | ❌ No MCP support |
-| **DAG workflow engine** | ✅ Trigger → condition → action → parallel nodes | ❌ No workflow engine |
-| **On-chain agent registry** | ✅ PDA-derived identity, heartbeat, verify | ❌ No on-chain identity |
-| **Token-gated access** | ✅ SPL tiered permissions with caching | ❌ No token gating |
-| **Web dashboard** | ✅ Real-time SPA — chat, status, action log | ❌ No built-in UI |
-| **Audit trail** | ✅ Clawtrace — full JSONL with auto-redaction | ⚠️ Standard logging |
-| **Self-healing** | ✅ Diagnose → fix → retry → escalate | ⚠️ Basic retry logic |
-| **Risk scoring** | ✅ Per-action score with confirmation gates | ❌ No granular scoring |
-| **Channel support** | ✅ 11 channels (Discord, Telegram, Slack, WhatsApp, LINE, Reddit, Matrix, WebSocket, Web, Email, SMS) | ✅ 25+ channels |
-| **Companion apps** | ✅ CLI, Desktop, Mobile, VS Code, Browser extension | ✅ Mobile + desktop |
-| **Intelligence** | ✅ User profiling, RAG, smart routing, fast path, branching | ❌ No intelligence layer |
-| **Built-in tools** | ✅ 45+ tools across 13 categories | ⚠️ ~15 tools |
-| **Test coverage** | ✅ 79 tests across 18 suites | ⚠️ Varies by module |
-
-### Where PAW Wins
-
-1. **Safety is non-negotiable.** OpenClaw lets you skip guardrails for speed. PAW doesn't — the validation pipeline runs on every single action, in every mode — even Free mode. You can remove confirmation gates, but you can't turn off validation, simulation, or logging.
-
-2. **The LLM never touches execution.** In OpenClaw, the LLM can directly invoke tools and trigger side effects. In PAW, the LLM produces a JSON plan, the system validates it, and only then does execution happen. This eliminates an entire class of prompt injection attacks.
-
-3. **Three modes, not two.** PAW offers Supervised (confirm everything), Autonomous (smart confirmation — only critical risks), and Free (full autonomy with zero gates). Even Free mode still runs the full validation pipeline — it just removes the confirmation step. And Free mode can't be activated without passing two consecutive safety warning layers. OpenClaw gives you a binary choice: manual or automatic.
-
-4. **Purp SCL is a first-class citizen.** PAW can parse `.purp` files, validate them, compile to Anchor Rust, and generate TypeScript SDKs — all within the agent pipeline. OpenClaw has no smart contract language integration.
-
-5. **Every action is traceable.** Clawtrace logs every phase of every action with automatic secret redaction. If something goes wrong six months from now, you can reconstruct exactly what happened, what the LLM reasoned, and why the system made each decision.
-
-6. **Self-healing is intelligent.** When an action fails, PAW doesn't just retry blindly. It diagnoses the failure (network? insufficient funds? permission?), determines if it's recoverable, applies a fix strategy, and only escalates to the user when it genuinely can't recover.
-
-7. **Multi-agent orchestration is built in.** PAW can register, discover, delegate to, and coordinate multiple sub-agents with capability-based routing and depth limits. OpenClaw is single-agent only.
-
-8. **Semantic memory persists across sessions.** Vector memory with TF-IDF scoring, scoped by session/user/global, stored to disk. Agents remember what matters.
-
-9. **DAG workflows with conditions and parallelism.** Define complex multi-step automations with triggers, conditions, transforms, and parallel branches — no external workflow engine needed.
-
-10. **MCP connects to external tool ecosystems.** The MCP client discovers and invokes tools from any Model Context Protocol server, extending PAW's capabilities without writing code.
-
-11. **On-chain identity and token gating.** Agents register via PDA-derived identity on Solana. Access is controlled by SPL token tiers with cached permission checks.
-
-12. **Real-time dashboard out of the box.** A built-in SPA with WebSocket chat, status cards, action log, and mode toggle — no separate UI project needed.
-
-### Where OpenClaw Wins
-
-OpenClaw has broader **channel coverage** (25+ platforms vs PAW's 11). If you need coverage across niche platforms, OpenClaw has that today.
-
-### Bottom Line
-
-OpenClaw connects to more platforms. PAW does **everything else** better.
-
-Safety pipeline that never sleeps. LLM that never touches execution. Browser automation, multi-agent orchestration, semantic memory, DAG workflows, MCP integration, on-chain identity, token-gated access, transaction simulation, a real-time dashboard, Purp SCL, intelligence layer, companion apps — all built in, all tested (79 tests), all production-ready.
-
-If you want a **framework that maximizes capability, security, and extensibility for autonomous AI agents** — PAW is the clear choice.
 
 ---
 
 <a id="roadmap"></a>
 ## Roadmap
 
-### v3.1 — Channels & Reach
-- [x] <img src="https://img.shields.io/badge/-00C300?style=flat-square&logo=line&logoColor=white" height="16" /> LINE channel adapter
-- [x] <img src="https://img.shields.io/badge/-FF4500?style=flat-square&logo=reddit&logoColor=white" height="16" /> Reddit channel adapter
-- [x] <img src="https://img.shields.io/badge/-000000?style=flat-square&logo=element&logoColor=white" height="16" /> Matrix / Element channel adapter
-- [x] Custom webhook builder UI in dashboard
-- [x] <img src="https://img.shields.io/badge/-4285F4?style=flat-square&logo=google&logoColor=white" height="16" /> Google AI (Gemma 3) model provider
-- [x] <img src="https://img.shields.io/badge/-FF7000?style=flat-square&logo=mistral&logoColor=white" height="16" /> Mistral model provider
-- [x] <img src="https://img.shields.io/badge/-0A0A0A?style=flat-square&logo=deepseek&logoColor=white" height="16" /> DeepSeek model provider
-- [x] <img src="https://img.shields.io/badge/-F55036?style=flat-square&logo=groq&logoColor=white" height="16" /> Groq (Llama) model provider
+### ✅ v3.1 — Channels & Reach
+LINE, Reddit, Matrix adapters · Google AI, Mistral, DeepSeek, Groq providers
 
-### v3.2 — Apps & Companions
-- [x] <img src="https://img.shields.io/badge/-47848F?style=flat-square&logo=electron&logoColor=white" height="16" /> PAW Desktop app (Electron — macOS, Windows, Linux)
-- [x] <img src="https://img.shields.io/badge/-61DAFB?style=flat-square&logo=react&logoColor=black" height="16" /> PAW Mobile app (React Native — iOS, Android)
-- [x] <img src="https://img.shields.io/badge/-4D4D4D?style=flat-square&logo=gnometerminal&logoColor=white" height="16" /> PAW CLI companion (`paw chat`, `paw deploy`, `paw status`)
-- [x] <img src="https://img.shields.io/badge/-007ACC?style=flat-square&logo=visualstudiocode&logoColor=white" height="16" /> VS Code extension — chat with PAW from your editor
-- [x] <img src="https://img.shields.io/badge/-4285F4?style=flat-square&logo=googlechrome&logoColor=white" height="16" /> Browser extension — trigger PAW from any webpage
+### ✅ v3.2 — Apps & Companions
+Desktop (Electron) · Mobile (React Native) · CLI · VS Code extension · Browser extension · Pawl companion
 
-### v3.3 — Intelligence & Memory
-- [x] Long-term user profiling with preference learning
-- [x] RAG (Retrieval-Augmented Generation) over user documents
-- [x] Multi-model routing — pick the best model per task automatically
-- [x] Fine-tuned small models for common tasks (low-latency fast path)
-- [x] Conversation branching and rollback
+### ✅ v3.3 — Intelligence & Memory
+User profiling · RAG · Smart model routing · Fast path · Conversation branching
 
-### v3.4 — Platform & Scale
-- [ ] Multi-tenant mode — one deployment, many teams
-- [ ] Plugin marketplace — discover and install community skills
-- [ ] Workflow template library — pre-built automations
-- [ ] Horizontal scaling with Redis-backed message queue
-- [ ] OAuth2 / SSO authentication for dashboard
+### 🔜 v3.4 — Platform & Scale
+Multi-tenant · Plugin marketplace · Workflow templates · Horizontal scaling · OAuth2/SSO
 
-### v3.5 — Ecosystem
-- [ ] Additional blockchain support (Ethereum, Base, Sui)
-- [ ] Purp SCL v2 integration (frontend compilation, multi-file projects)
-- [ ] Agent-to-agent marketplace — agents discover and hire each other
-- [ ] Analytics dashboard — usage metrics, cost tracking, performance graphs
-- [ ] Public agent directory — share your PAW agent configs
-
-### Future
-- [ ] On-device inference for privacy-sensitive tasks
-- [ ] Formal verification of agent safety properties
-- [ ] Visual workflow builder (drag-and-drop)
-- [ ] Zapier / Make / n8n integration adapters
-- [ ] White-label / embedded mode for SaaS products
-
-Want to contribute to any of these? See [Contributing](#contributing).
+### 🔜 v3.5 — Ecosystem
+Ethereum/Base/Sui · Purp SCL v2 · Agent marketplace · Analytics dashboard · Public agent directory
 
 ---
 
@@ -1040,6 +372,5 @@ MIT
 
 <p align="center">
   <strong>PAW Agents v3.2 — Programmable Autonomous Workers</strong><br>
-  <em>The operating system for autonomous AI agents.</em><br><br>
-  Ships with native <a href="https://solana.com">Solana</a> support and the <a href="https://github.com/DosukaSOL/purp-scl">Purp SCL</a> smart contract language.
+  <em>The operating system for autonomous AI agents.</em>
 </p>

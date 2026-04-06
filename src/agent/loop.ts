@@ -30,10 +30,22 @@ export interface AgentResponse {
   error?: string;
 }
 
-// Pending confirmations stored per user
-const pendingConfirmations = new Map<string, { plan: AgentPlan; trace: Clawtrace }>();
+// Pending confirmations stored per user (with expiry to prevent memory leaks)
+const CONFIRMATION_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const pendingConfirmations = new Map<string, { plan: AgentPlan; trace: Clawtrace; created_at: number }>();
 
-// Per-user mode overrides (defaults to config)
+// Periodic cleanup of expired confirmations
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, val] of pendingConfirmations) {
+    if (now - val.created_at > CONFIRMATION_TTL_MS) {
+      pendingConfirmations.delete(key);
+    }
+  }
+}, 60_000).unref();
+
+// Per-user mode overrides (defaults to config) — cap at 10,000 entries
+const MAX_USER_MODES = 10_000;
 const userModes = new Map<string, AgentMode>();
 
 export class PawAgent {
@@ -79,6 +91,11 @@ export class PawAgent {
 
   // ─── Set user mode ───
   setUserMode(userId: string, mode: AgentMode): void {
+    if (userModes.size >= MAX_USER_MODES && !userModes.has(userId)) {
+      // Evict oldest entry (first inserted)
+      const oldest = userModes.keys().next().value;
+      if (oldest) userModes.delete(oldest);
+    }
     userModes.set(userId, mode);
   }
 
@@ -205,10 +222,22 @@ export class PawAgent {
           availableTools,
         );
       } catch (err) {
+        const errMsg = (err as Error).message;
         trace.log('planning', {
-          error: (err as Error).message,
+          error: errMsg,
           duration_ms: Date.now() - startTime,
         });
+
+        // Surface specific, actionable error messages to the user
+        if (errMsg.includes('No AI model providers available')) {
+          return {
+            success: false,
+            message: 'No AI model providers are configured. Please add at least one API key (e.g. OPENAI_API_KEY, ANTHROPIC_API_KEY) to your .env file, then restart the agent.',
+            error: 'NO_MODEL_CONFIGURED',
+            trace_id: trace.getSessionId(),
+          };
+        }
+
         return {
           success: false,
           message: 'I had trouble understanding that request. Could you rephrase it?',
@@ -256,7 +285,7 @@ export class PawAgent {
 
       // ═══ STEP 7: Confirmation gate ═══
       if (validation.requires_confirmation) {
-        pendingConfirmations.set(userId, { plan, trace });
+        pendingConfirmations.set(userId, { plan, trace, created_at: Date.now() });
 
         const summary = this.summarizePlan(plan, validation);
         const modeHint = userMode === 'free'

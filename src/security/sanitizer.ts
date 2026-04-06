@@ -44,6 +44,9 @@ export function sanitizeInput(raw: string): SanitizationResult {
   // Strip control characters (keep newlines, tabs)
   text = text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
 
+  // Normalize Unicode (NFKC) and strip zero-width characters to prevent injection bypass
+  text = text.normalize('NFKC').replace(/[\u200B-\u200F\u2028-\u202F\uFEFF\u00AD]/g, '');
+
   // Normalize whitespace
   text = text.replace(/\s+/g, ' ').trim();
 

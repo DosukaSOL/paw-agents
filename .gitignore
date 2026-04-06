@@ -1,8 +1,26 @@
 node_modules/
 dist/
 .env
+.env.*
+!.env.example
 logs/
 *.log
 .DS_Store
 dashboard-preview.html
 website/
+
+# Build outputs
+desktop/dist/
+vscode-extension/dist/
+mobile/dist/
+coverage/
+*.tgz
+
+# Security-sensitive files
+*.pem
+*.key
+*.cert
+*.p12
+
+# Session data
+data/
