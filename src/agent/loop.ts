@@ -16,6 +16,9 @@ import { sanitizeInput } from '../security/sanitizer';
 import { checkRateLimit } from '../security/rate-limiter';
 import { config } from '../core/config';
 import { AgentPlan, ExecutionResult, ValidationResult, AgentMode } from '../core/types';
+import { UserProfiler } from '../intelligence/profiler';
+import { RAGEngine } from '../intelligence/rag';
+import { ConversationBranching } from '../intelligence/branching';
 
 export interface AgentResponse {
   success: boolean;
@@ -42,6 +45,9 @@ export class PawAgent {
   private purp: PurpEngine;
   private healer: SelfHealingSystem;
   private router: ModelRouter;
+  private profiler: UserProfiler;
+  private rag: RAGEngine;
+  private branching: ConversationBranching;
 
   constructor() {
     this.router = new ModelRouter();
@@ -52,6 +58,9 @@ export class PawAgent {
     this.purp = new PurpEngine();
     this.executor = new ExecutionEngine(this.solana, this.purp);
     this.healer = new SelfHealingSystem();
+    this.profiler = new UserProfiler();
+    this.rag = new RAGEngine();
+    this.branching = new ConversationBranching();
 
     // Load skills
     const { loaded, errors } = this.skills.loadAll();
@@ -76,6 +85,12 @@ export class PawAgent {
   getUserMode(userId: string): AgentMode {
     return userModes.get(userId) ?? config.agent.mode;
   }
+
+  // ─── Expose intelligence modules ───
+  getProfiler(): UserProfiler { return this.profiler; }
+  getRAG(): RAGEngine { return this.rag; }
+  getBranching(): ConversationBranching { return this.branching; }
+  getRouter(): ModelRouter { return this.router; }
 
   // ─── Main agent loop ───
   async process(userId: string, rawMessage: string): Promise<AgentResponse> {
@@ -123,6 +138,28 @@ export class PawAgent {
 
       // ═══ STEP 4: Load relevant skills ═══
       const relevantSkills = this.skills.findSkillsForIntent(sanitized.sanitized);
+
+      // ═══ STEP 4b: RAG context augmentation ═══
+      let ragContext = '';
+      if (config.intelligence.ragEnabled) {
+        ragContext = this.rag.buildContext(sanitized.sanitized);
+      }
+
+      // ═══ STEP 4c: User personalization hints ═══
+      let personalizationHints = '';
+      if (config.intelligence.profilingEnabled) {
+        personalizationHints = this.profiler.getPersonalizationHints(userId);
+      }
+
+      // ═══ STEP 4d: Track message in conversation branching ═══
+      if (config.intelligence.branchingEnabled) {
+        this.branching.addMessage(userId, {
+          role: 'user',
+          content: sanitized.sanitized,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
       const availableTools = [
         'solana_transfer', 'solana_balance', 'api_call',
         'internal_log', 'internal_assert', 'internal_variable',
@@ -137,19 +174,33 @@ export class PawAgent {
         'mcp_connect', 'mcp_invoke', 'mcp_list_tools',
         'workflow_create', 'workflow_execute', 'workflow_list',
         'tx_simulate', 'tx_history',
+        'rag_index', 'rag_search', 'rag_list',
+        'branch_create', 'branch_list', 'branch_switch', 'branch_rollback',
+        'profile_get', 'profile_update',
       ];
 
       // ═══ STEP 5: Generate plan (LLM reasoning) ═══
+      // Augment the input with RAG context and personalization
+      const augmentedInput = [
+        sanitized.sanitized,
+        ragContext,
+        personalizationHints ? `\nUser context: ${personalizationHints}` : '',
+      ].filter(Boolean).join('\n');
+
       trace.log('planning', {
         input: sanitized.sanitized,
-        metadata: { skills: relevantSkills.map(s => s.metadata.name) },
+        metadata: {
+          skills: relevantSkills.map(s => s.metadata.name),
+          rag_augmented: ragContext.length > 0,
+          personalized: personalizationHints.length > 0,
+        },
         duration_ms: 0,
       });
 
       let plan: AgentPlan;
       try {
         plan = await this.brain.generatePlan(
-          sanitized.sanitized,
+          augmentedInput,
           relevantSkills,
           availableTools,
         );
@@ -344,9 +395,33 @@ export class PawAgent {
       duration_ms: Date.now() - startTime,
     });
 
+    // ═══ STEP 12: Record profile & branch ═══
+    const responseMsg = this.formatResult(plan, result);
+    const durationMs = Date.now() - startTime;
+
+    if (config.intelligence.profilingEnabled) {
+      this.profiler.recordInteraction('cli:default', {
+        intent: plan.intent,
+        tools_used: plan.tools,
+        risk_score: 0,
+        model_used: plan.metadata.model_used,
+        success: result.success,
+        duration_ms: durationMs,
+      });
+    }
+
+    if (config.intelligence.branchingEnabled) {
+      this.branching.addMessage('cli:default', {
+        role: 'agent',
+        content: responseMsg,
+        timestamp: new Date().toISOString(),
+        plan_id: plan.id,
+      });
+    }
+
     return {
       success: true,
-      message: this.formatResult(plan, result),
+      message: responseMsg,
       plan_id: plan.id,
       trace_id: trace.getSessionId(),
     };

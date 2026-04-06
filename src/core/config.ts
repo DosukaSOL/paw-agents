@@ -137,6 +137,31 @@ export const config = {
     minOutputRatio: parseFloat(optionalEnv('DEFI_MIN_OUTPUT_RATIO', '0.95')),
     blockedMints: optionalEnv('DEFI_BLOCKED_MINTS', '').split(',').filter(Boolean),
   },
+  // ─── Intelligence ───
+  intelligence: {
+    // User profiling
+    profilingEnabled: optionalBool('PROFILING_ENABLED', true),
+    profileStorePath: optionalEnv('PROFILE_STORE_PATH', './data/profiles'),
+    maxBehaviorPatterns: parseInt(optionalEnv('MAX_BEHAVIOR_PATTERNS', '100'), 10),
+    // RAG
+    ragEnabled: optionalBool('RAG_ENABLED', true),
+    ragStorePath: optionalEnv('RAG_STORE_PATH', './data/rag'),
+    ragChunkSize: parseInt(optionalEnv('RAG_CHUNK_SIZE', '512'), 10),
+    ragChunkOverlap: parseInt(optionalEnv('RAG_CHUNK_OVERLAP', '64'), 10),
+    ragMaxResults: parseInt(optionalEnv('RAG_MAX_RESULTS', '5'), 10),
+    ragMinScore: parseFloat(optionalEnv('RAG_MIN_SCORE', '0.15')),
+    // Smart model routing
+    smartRoutingEnabled: optionalBool('SMART_ROUTING_ENABLED', true),
+    performanceStorePath: optionalEnv('PERFORMANCE_STORE_PATH', './data/model-perf'),
+    // Fast path
+    fastPathEnabled: optionalBool('FAST_PATH_ENABLED', true),
+    fastPathProvider: optionalEnv('FAST_PATH_PROVIDER', 'groq'),
+    fastPathMaxTokens: parseInt(optionalEnv('FAST_PATH_MAX_TOKENS', '1024'), 10),
+    // Conversation branching
+    branchingEnabled: optionalBool('BRANCHING_ENABLED', true),
+    maxBranchesPerUser: parseInt(optionalEnv('MAX_BRANCHES_PER_USER', '20'), 10),
+    branchStorePath: optionalEnv('BRANCH_STORE_PATH', './data/branches'),
+  },
   // ─── Security ───
   security: {
     maxTransactionLamports: parseInt(optionalEnv('MAX_TRANSACTION_LAMPORTS', '1000000000'), 10),

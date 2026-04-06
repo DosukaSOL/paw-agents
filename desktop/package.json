@@ -1,0 +1,43 @@
+{
+  "name": "paw-desktop",
+  "version": "3.2.0",
+  "description": "PAW Agents Desktop — Chat with your AI agent from your desktop",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "electron dist/main.js",
+    "dev": "tsc && electron dist/main.js",
+    "package:mac": "electron-builder --mac",
+    "package:win": "electron-builder --win",
+    "package:linux": "electron-builder --linux"
+  },
+  "build": {
+    "appId": "ai.pawagents.desktop",
+    "productName": "PAW Agents",
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "target": ["dmg", "zip"]
+    },
+    "win": {
+      "target": ["nsis", "portable"]
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Development"
+    },
+    "files": [
+      "dist/**/*",
+      "renderer/**/*"
+    ]
+  },
+  "dependencies": {
+    "electron": "^33.0.0",
+    "ws": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.18.1",
+    "electron-builder": "^25.0.0",
+    "typescript": "^5.6.0"
+  }
+}

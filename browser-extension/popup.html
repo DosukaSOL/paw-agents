@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PAW Agents</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="header">
+    <span class="status-dot" id="statusDot"></span>
+    <span class="title">🐾 PAW Agents</span>
+  </div>
+
+  <div class="chat" id="chat">
+    <div class="msg agent">Send text from any webpage or chat here.</div>
+  </div>
+
+  <div class="input-area">
+    <input type="text" id="input" placeholder="Message PAW..." autocomplete="off" />
+    <button id="send">→</button>
+  </div>
+
+  <div class="footer">
+    <button id="settingsBtn" class="link-btn">Settings</button>
+  </div>
+
+  <div class="settings-panel" id="settingsPanel" style="display:none;">
+    <label>Gateway URL</label>
+    <input type="text" id="gatewayInput" placeholder="ws://127.0.0.1:18789" />
+    <label>Auth Token</label>
+    <input type="password" id="tokenInput" placeholder="Optional" />
+    <button id="saveSettings">Save & Reconnect</button>
+    <button id="closeSettings" class="link-btn">Close</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

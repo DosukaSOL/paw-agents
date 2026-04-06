@@ -1,8 +1,10 @@
 // ─── Model Router — Multi-Model Abstraction Layer ───
-// Supports multiple AI providers with dynamic selection and fallback.
+// Supports multiple AI providers with dynamic selection, fallback, and smart routing.
+// Smart routing picks the best model per task type automatically.
 
-import { ModelProvider, ModelConfig } from '../core/types';
+import { ModelProvider, ModelConfig, TaskType, ModelPerformanceRecord } from '../core/types';
 import { config } from '../core/config';
+import { FastPathRouter } from '../intelligence/fast-path';
 
 // ─── OpenAI Provider ───
 class OpenAIProvider implements ModelProvider {
@@ -256,9 +258,11 @@ class GroqProvider implements ModelProvider {
 export class ModelRouter {
   private providers: ModelProvider[] = [];
   private defaultProviderName: string;
+  private fastPath: FastPathRouter;
 
   constructor() {
     this.defaultProviderName = config.models.defaultProvider;
+    this.fastPath = new FastPathRouter();
 
     // Register providers
     if (config.models.openai.apiKey) {
@@ -335,5 +339,59 @@ export class ModelRouter {
 
   getAvailableProviders(): string[] {
     return this.providers.map(p => p.name);
+  }
+
+  // ─── Smart Routing: pick the best model for the task type ───
+  async smartGenerate(system: string, prompt: string, userInput: string): Promise<{ text: string; model_used: string; task_type: TaskType; latency_ms: number }> {
+    if (!config.intelligence.smartRoutingEnabled) {
+      const result = await this.generate(system, prompt);
+      return { ...result, task_type: 'complex_reasoning', latency_ms: 0 };
+    }
+
+    const startTime = Date.now();
+    const classification = this.fastPath.classifyTask(userInput);
+    const preferredProvider = classification.recommended_provider;
+
+    const result = await this.generate(system, prompt, preferredProvider);
+    const latencyMs = Date.now() - startTime;
+
+    // Record performance for learning
+    this.fastPath.recordPerformance({
+      provider: result.model_used.split('/')[0],
+      model: result.model_used.split('/')[1] ?? '',
+      task_type: classification.task_type,
+      latency_ms: latencyMs,
+      success: true,
+      quality_score: classification.confidence,
+      timestamp: new Date().toISOString(),
+    });
+
+    return {
+      text: result.text,
+      model_used: result.model_used,
+      task_type: classification.task_type,
+      latency_ms: latencyMs,
+    };
+  }
+
+  // ─── Check if fast path should be used ───
+  shouldUseFastPath(input: string): boolean {
+    return this.fastPath.shouldUseFastPath(input);
+  }
+
+  // ─── Get the fast path provider name ───
+  getFastPathProvider(): string {
+    return config.intelligence.fastPathProvider;
+  }
+
+  // ─── Get task classification without generating ───
+  classifyTask(input: string): { task_type: TaskType; provider: string } {
+    const c = this.fastPath.classifyTask(input);
+    return { task_type: c.task_type, provider: c.recommended_provider };
+  }
+
+  // ─── Get model performance stats ───
+  getPerformanceStats(): Record<string, { avg_latency_ms: number; success_rate: number; avg_quality: number; count: number }> {
+    return this.fastPath.getStats();
   }
 }

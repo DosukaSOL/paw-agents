@@ -388,6 +388,97 @@ export interface PurpProjectConfig {
   network: 'devnet' | 'testnet' | 'mainnet-beta';
 }
 
+// ─── Intelligence & Memory ───
+
+export interface UserProfile {
+  user_id: string;
+  preferences: UserPreferences;
+  behavior_patterns: BehaviorPattern[];
+  skill_usage: Record<string, number>;
+  model_preferences: Record<string, string>;
+  interaction_count: number;
+  first_seen: string;
+  last_seen: string;
+  avg_risk_tolerance: number;
+  topics_of_interest: string[];
+}
+
+export interface UserPreferences {
+  preferred_language: string;
+  verbosity: 'concise' | 'normal' | 'detailed';
+  confirmation_style: 'minimal' | 'detailed';
+  timezone?: string;
+  custom: Record<string, unknown>;
+}
+
+export interface BehaviorPattern {
+  pattern_type: string;
+  frequency: number;
+  last_observed: string;
+  confidence: number;
+}
+
+export interface RAGDocument {
+  id: string;
+  source: string;
+  content: string;
+  chunk_count: number;
+  metadata: Record<string, unknown>;
+  indexed_at: string;
+}
+
+export interface RAGChunk {
+  id: string;
+  document_id: string;
+  content: string;
+  embedding: number[];
+  position: number;
+  metadata: Record<string, unknown>;
+}
+
+export interface RAGSearchResult {
+  chunk: RAGChunk;
+  score: number;
+  document_source: string;
+}
+
+export type TaskType = 'code' | 'math' | 'creative' | 'analysis' | 'simple_qa' | 'complex_reasoning' | 'blockchain' | 'data_processing';
+
+export interface TaskClassification {
+  task_type: TaskType;
+  confidence: number;
+  complexity: 'simple' | 'moderate' | 'complex';
+  recommended_model: string;
+  recommended_provider: string;
+}
+
+export interface ConversationBranch {
+  branch_id: string;
+  parent_branch_id?: string;
+  branch_point_index: number;
+  messages: ConversationMessage[];
+  created_at: string;
+  label?: string;
+  is_active: boolean;
+}
+
+export interface ConversationTree {
+  user_id: string;
+  root_branch_id: string;
+  branches: Record<string, ConversationBranch>;
+  active_branch_id: string;
+}
+
+export interface ModelPerformanceRecord {
+  provider: string;
+  model: string;
+  task_type: TaskType;
+  latency_ms: number;
+  success: boolean;
+  quality_score: number;
+  timestamp: string;
+}
+
 // ─── Composable DeFi ───
 
 export type DeFiProtocol = 'jupiter' | 'raydium' | 'orca' | 'marinade' | 'drift';

@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "PAW Agents",
+  "version": "3.2.0",
+  "description": "Trigger your PAW AI agent from any webpage. Send selected text, URLs, or queries directly to PAW.",
+  "permissions": ["activeTab", "storage", "contextMenus"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "PAW Agents"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "icons/paw-16.png",
+    "48": "icons/paw-48.png",
+    "128": "icons/paw-128.png"
+  }
+}

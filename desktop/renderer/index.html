@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';">
+  <title>PAW Agents</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
+      background: #0f0f23;
+      color: #e0e0e8;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-app-region: drag;
+    }
+    .titlebar {
+      height: 38px;
+      background: #0a0a1a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: #8888aa;
+      flex-shrink: 0;
+    }
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #ef4444;
+      margin-right: 8px;
+      transition: background 0.3s;
+    }
+    .status-dot.connected { background: #22c55e; }
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      -webkit-app-region: no-drag;
+    }
+    .message {
+      max-width: 80%;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+    .message.user {
+      background: #3b3b8f;
+      margin-left: auto;
+      border-bottom-right-radius: 4px;
+    }
+    .message.agent {
+      background: #1a1a3e;
+      border: 1px solid #2a2a5e;
+      border-bottom-left-radius: 4px;
+    }
+    .input-area {
+      padding: 16px 20px;
+      background: #0a0a1a;
+      border-top: 1px solid #1a1a3e;
+      display: flex;
+      gap: 12px;
+      -webkit-app-region: no-drag;
+      flex-shrink: 0;
+    }
+    .input-area input {
+      flex: 1;
+      background: #1a1a3e;
+      border: 1px solid #2a2a5e;
+      border-radius: 12px;
+      padding: 12px 16px;
+      color: #e0e0e8;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-area input:focus { border-color: #6366f1; }
+    .input-area button {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .input-area button:hover { opacity: 0.9; }
+    .input-area button:disabled { opacity: 0.4; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="titlebar">
+    <span class="status-dot" id="statusDot"></span>
+    <span>🐾 PAW Agents</span>
+  </div>
+
+  <div class="chat-container" id="chat"></div>
+
+  <div class="input-area">
+    <input type="text" id="input" placeholder="Message PAW..." autocomplete="off" />
+    <button id="send">Send</button>
+  </div>
+
+  <script>
+    const chat = document.getElementById('chat');
+    const input = document.getElementById('input');
+    const sendBtn = document.getElementById('send');
+    const statusDot = document.getElementById('statusDot');
+
+    function addMessage(text, role) {
+      const div = document.createElement('div');
+      div.className = 'message ' + role;
+      div.textContent = text;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    async function send() {
+      const text = input.value.trim();
+      if (!text) return;
+
+      addMessage(text, 'user');
+      input.value = '';
+      sendBtn.disabled = true;
+
+      try {
+        await window.paw.send(text);
+      } catch (err) {
+        addMessage('Failed to send message. Check connection.', 'agent');
+      }
+
+      sendBtn.disabled = false;
+      input.focus();
+    }
+
+    sendBtn.addEventListener('click', send);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') send();
+    });
+
+    // Listen for messages from PAW
+    window.paw.onMessage((msg) => {
+      if (msg && msg.payload && msg.payload.text) {
+        addMessage(msg.payload.text, 'agent');
+      } else if (msg && msg.message) {
+        addMessage(msg.message, 'agent');
+      }
+    });
+
+    // Connection status
+    window.paw.onStatus((status) => {
+      if (status === 'connected') {
+        statusDot.classList.add('connected');
+      } else {
+        statusDot.classList.remove('connected');
+      }
+    });
+
+    // Initial status check
+    window.paw.status().then((s) => {
+      if (s.connected) statusDot.classList.add('connected');
+    });
+
+    // Welcome message
+    addMessage('🐾 Welcome to PAW Agents Desktop! Type a message to get started.', 'agent');
+
+    input.focus();
+  </script>
+</body>
+</html>

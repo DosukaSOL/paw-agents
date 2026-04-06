@@ -19,7 +19,7 @@ async function main(): Promise<void> {
   console.log(`
   ╔═══════════════════════════════════════════════════╗
   ║                                                   ║
-  ║   🐾  PAW AGENTS v3.1                             ║
+  ║   🐾  PAW AGENTS v3.2                             ║
   ║   Purp Autonomous Workers                         ║
   ║                                                   ║
   ║   The operating system for autonomous AI agents.  ║

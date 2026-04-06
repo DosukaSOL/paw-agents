@@ -1,0 +1,91 @@
+{
+  "name": "paw-vscode",
+  "displayName": "PAW Agents",
+  "description": "Chat with your PAW AI agent directly from VS Code",
+  "version": "3.2.0",
+  "publisher": "paw-agents",
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": ["Other", "Machine Learning", "Chat"],
+  "activationEvents": [
+    "onCommand:paw.openChat",
+    "onCommand:paw.sendSelection",
+    "onView:pawChat"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "paw.openChat",
+        "title": "PAW: Open Chat",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "paw.sendSelection",
+        "title": "PAW: Send Selection to Agent"
+      },
+      {
+        "command": "paw.setGateway",
+        "title": "PAW: Set Gateway URL"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "paw-sidebar",
+          "title": "PAW Agents",
+          "icon": "$(hubot)"
+        }
+      ]
+    },
+    "views": {
+      "paw-sidebar": [
+        {
+          "type": "webview",
+          "id": "pawChat",
+          "name": "PAW Chat"
+        }
+      ]
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "paw.sendSelection",
+          "group": "paw",
+          "when": "editorHasSelection"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "PAW Agents",
+      "properties": {
+        "paw.gatewayUrl": {
+          "type": "string",
+          "default": "ws://127.0.0.1:18789",
+          "description": "WebSocket URL of the PAW gateway"
+        },
+        "paw.authToken": {
+          "type": "string",
+          "default": "",
+          "description": "Authentication token for the PAW gateway"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "watch": "tsc -watch -p .",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.95.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0",
+    "@vscode/vsce": "^3.0.0"
+  },
+  "dependencies": {
+    "ws": "^8.20.0"
+  }
+}

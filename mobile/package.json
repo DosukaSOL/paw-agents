@@ -1,0 +1,26 @@
+{
+  "name": "paw-mobile",
+  "version": "3.2.0",
+  "description": "PAW Agents Mobile — AI agent on iOS and Android",
+  "main": "index.js",
+  "scripts": {
+    "start": "react-native start",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "lint": "eslint . --ext .ts,.tsx",
+    "test": "jest"
+  },
+  "dependencies": {
+    "react": "^18.3.0",
+    "react-native": "^0.76.0",
+    "@react-navigation/native": "^7.0.0",
+    "@react-navigation/native-stack": "^7.0.0",
+    "react-native-safe-area-context": "^5.0.0",
+    "react-native-screens": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-native": "^0.73.0",
+    "typescript": "^5.6.0"
+  }
+}
