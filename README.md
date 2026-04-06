@@ -435,6 +435,10 @@ PAW is available everywhere — not just chat channels.
 
 Interactive terminal client with full agent access:
 
+<p align="center">
+  <img src="assets/paw-cli-companion.svg" alt="PAW CLI Companion" width="800" />
+</p>
+
 ```bash
 npx paw chat          # Interactive chat session
 npx paw status        # System health and settings
@@ -447,6 +451,10 @@ In-chat commands: `/mode`, `/branch`, `/rag`, `/stats`, `/clear`, `/exit`
 ### Desktop App (Electron)
 
 Native desktop app for macOS, Windows, and Linux:
+
+<p align="center">
+  <img src="assets/paw-desktop-app.svg" alt="PAW Desktop App" width="800" />
+</p>
 
 ```bash
 cd desktop && npm install && npm start
@@ -461,6 +469,10 @@ cd desktop && npm install && npm start
 
 iOS and Android app with full chat interface:
 
+<p align="center">
+  <img src="assets/paw-mobile-app.svg" alt="PAW Mobile App" width="800" />
+</p>
+
 ```bash
 cd mobile && npm install && npx react-native run-ios
 ```
@@ -474,6 +486,10 @@ cd mobile && npm install && npx react-native run-ios
 
 Chat with PAW directly from your editor:
 
+<p align="center">
+  <img src="assets/paw-vscode-extension.svg" alt="PAW VS Code Extension" width="800" />
+</p>
+
 - Sidebar chat panel
 - Right-click "Send to PAW" on selected code
 - Editor panel with full conversation view
@@ -482,6 +498,10 @@ Chat with PAW directly from your editor:
 ### Browser Extension
 
 Chrome/Firefox extension (Manifest v3):
+
+<p align="center">
+  <img src="assets/paw-browser-extension.svg" alt="PAW Browser Extension" width="800" />
+</p>
 
 - Popup chat window from any webpage
 - Right-click context menu — send selected text to PAW

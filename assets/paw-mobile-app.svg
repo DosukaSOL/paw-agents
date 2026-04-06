@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" fill="none">
+  <defs>
+    <linearGradient id="glowGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="rgba(124,58,237,0.3)"/>
+      <stop offset="100%" stop-color="rgba(124,58,237,0)"/>
+    </linearGradient>
+    <filter id="softShadow">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="rgba(0,0,0,0.6)"/>
+    </filter>
+    <clipPath id="screenClip">
+      <rect x="310" y="42" width="280" height="496" rx="28"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="560" fill="#08080d"/>
+  <ellipse cx="450" cy="280" rx="350" ry="240" fill="url(#glowGrad)" opacity="0.35"/>
+
+  <!-- Phone Frame -->
+  <g filter="softShadow">
+    <rect x="305" y="37" width="290" height="506" rx="32" fill="#1a1a2e" stroke="rgba(124,58,237,0.35)" stroke-width="2"/>
+  </g>
+
+  <!-- Screen -->
+  <g clip-path="url(#screenClip)">
+    <!-- Status Bar (iOS-style) -->
+    <rect x="310" y="42" width="280" height="496" fill="#08080d"/>
+    <text x="340" y="62" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600">9:41</text>
+    <text x="538" y="62" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="11">📶 🔋</text>
+
+    <!-- Navigation Header -->
+    <rect x="310" y="70" width="280" height="44" fill="#0e0e16"/>
+    <text x="412" y="97" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">🐾 PAW Chat</text>
+    <line x1="310" y1="114" x2="590" y2="114" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+
+    <!-- Status Indicator -->
+    <rect x="310" y="114" width="280" height="28" fill="#08080d"/>
+    <circle cx="340" cy="128" r="4" fill="#34d399"/>
+    <text x="350" y="132" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="10">connected</text>
+    <line x1="310" y1="142" x2="590" y2="142" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+
+    <!-- Chat Messages -->
+    <!-- Agent Welcome -->
+    <rect x="325" y="152" width="210" height="42" rx="12" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+    <text x="335" y="170" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="11">🐾 Welcome to PAW Agents!</text>
+    <text x="335" y="184" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="10">Type a message to get started.</text>
+
+    <!-- User Message -->
+    <rect x="405" y="204" width="170" height="30" rx="12" fill="#7c3aed"/>
+    <text x="415" y="224" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="11">Deploy my vault contract</text>
+
+    <!-- Agent Response -->
+    <rect x="325" y="244" width="230" height="72" rx="12" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+    <text x="335" y="262" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="11">⚠️ Deploy requires confirmation:</text>
+    <text x="335" y="278" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="10">Intent: Compile &amp; deploy VaultState</text>
+    <text x="335" y="292" fill="#fbbf24" font-family="Inter, system-ui, sans-serif" font-size="10">Risk: 55/100</text>
+    <text x="335" y="306" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="10">Reply "yes" to confirm.</text>
+
+    <!-- User Confirm -->
+    <rect x="533" y="326" width="42" height="28" rx="12" fill="#7c3aed"/>
+    <text x="543" y="344" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="11">yes</text>
+
+    <!-- Agent Success -->
+    <rect x="325" y="364" width="230" height="64" rx="12" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+    <text x="335" y="382" fill="#34d399" font-family="Inter, system-ui, sans-serif" font-size="11">✅ Deployment complete!</text>
+    <text x="335" y="398" fill="#22d3ee" font-family="JetBrains Mono, monospace" font-size="10">Program: 7Yh2...kM9x</text>
+    <text x="335" y="414" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="10">⏱ 4.2s · Anchor + SDK generated</text>
+
+    <!-- Input Area -->
+    <rect x="310" y="440" width="280" height="56" fill="#0e0e16"/>
+    <line x1="310" y1="440" x2="590" y2="440" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+    <rect x="325" y="452" width="198" height="32" rx="10" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+    <text x="338" y="472" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="11">Message PAW...</text>
+    <rect x="532" y="452" width="48" height="32" rx="10" fill="#7c3aed"/>
+    <text x="542" y="473" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600">Send</text>
+
+    <!-- Bottom Nav -->
+    <rect x="310" y="496" width="280" height="42" fill="#0e0e16"/>
+    <line x1="310" y1="496" x2="590" y2="496" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+    <text x="383" y="520" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600">💬 Chat</text>
+    <text x="473" y="520" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="10">⚙️ Settings</text>
+  </g>
+
+  <!-- Notch -->
+  <rect x="405" y="42" width="90" height="16" rx="8" fill="#1a1a2e"/>
+
+  <!-- Platform labels -->
+  <rect x="155" y="200" width="105" height="36" rx="8" fill="rgba(124,58,237,0.1)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="169" y="214" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600">📱 iOS</text>
+  <text x="169" y="228" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="9">React Native</text>
+
+  <rect x="155" y="250" width="105" height="36" rx="8" fill="rgba(124,58,237,0.1)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="169" y="264" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600">🤖 Android</text>
+  <text x="169" y="278" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="9">React Native</text>
+
+  <!-- Feature labels -->
+  <rect x="640" y="170" width="160" height="30" rx="6" fill="rgba(34,211,238,0.08)" stroke="rgba(34,211,238,0.2)" stroke-width="1"/>
+  <text x="656" y="190" fill="#22d3ee" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="500">WebSocket real-time</text>
+
+  <rect x="640" y="210" width="160" height="30" rx="6" fill="rgba(34,211,238,0.08)" stroke="rgba(34,211,238,0.2)" stroke-width="1"/>
+  <text x="656" y="230" fill="#22d3ee" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="500">Auto-reconnect</text>
+
+  <rect x="640" y="250" width="160" height="30" rx="6" fill="rgba(34,211,238,0.08)" stroke="rgba(34,211,238,0.2)" stroke-width="1"/>
+  <text x="656" y="270" fill="#22d3ee" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="500">Dark mode</text>
+
+  <rect x="640" y="290" width="160" height="30" rx="6" fill="rgba(34,211,238,0.08)" stroke="rgba(34,211,238,0.2)" stroke-width="1"/>
+  <text x="656" y="310" fill="#22d3ee" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="500">Push notifications</text>
+
+  <!-- Connector lines -->
+  <line x1="595" y1="185" x2="640" y2="185" stroke="rgba(34,211,238,0.3)" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="595" y1="225" x2="640" y2="225" stroke="rgba(34,211,238,0.3)" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="595" y1="265" x2="640" y2="265" stroke="rgba(34,211,238,0.3)" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="595" y1="305" x2="640" y2="305" stroke="rgba(34,211,238,0.3)" stroke-width="1" stroke-dasharray="4,4"/>
+</svg>

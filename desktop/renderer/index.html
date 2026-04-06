@@ -5,12 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';">
   <title>PAW Agents</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-primary: #08080d;
+      --bg-secondary: #0e0e16;
+      --bg-card: #13131f;
+      --bg-card-hover: #1a1a2e;
+      --bg-elevated: #1e1e32;
+      --border-subtle: rgba(124, 58, 237, 0.12);
+      --border-standard: rgba(124, 58, 237, 0.2);
+      --border-bright: rgba(124, 58, 237, 0.35);
+      --text-primary: #f0eef5;
+      --text-secondary: #a8a4b8;
+      --text-tertiary: #6b6880;
+      --brand: #7c3aed;
+      --brand-light: #a78bfa;
+      --brand-dark: #6d28d9;
+      --brand-glow: rgba(124, 58, 237, 0.15);
+      --accent: #22d3ee;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --error: #f87171;
+    }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-      background: #0f0f23;
-      color: #e0e0e8;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
       height: 100vh;
       display: flex;
       flex-direction: column;
@@ -18,23 +40,24 @@
     }
     .titlebar {
       height: 38px;
-      background: #0a0a1a;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-subtle);
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 13px;
       font-weight: 600;
-      color: #8888aa;
+      color: var(--text-secondary);
       flex-shrink: 0;
     }
     .status-dot {
       width: 8px; height: 8px;
       border-radius: 50%;
-      background: #ef4444;
+      background: var(--error);
       margin-right: 8px;
       transition: background 0.3s;
     }
-    .status-dot.connected { background: #22c55e; }
+    .status-dot.connected { background: var(--success); }
     .chat-container {
       flex: 1;
       overflow-y: auto;
@@ -52,19 +75,20 @@
       white-space: pre-wrap;
     }
     .message.user {
-      background: #3b3b8f;
+      background: var(--brand);
+      color: #fff;
       margin-left: auto;
       border-bottom-right-radius: 4px;
     }
     .message.agent {
-      background: #1a1a3e;
-      border: 1px solid #2a2a5e;
+      background: var(--bg-card);
+      border: 1px solid var(--border-standard);
       border-bottom-left-radius: 4px;
     }
     .input-area {
       padding: 16px 20px;
-      background: #0a0a1a;
-      border-top: 1px solid #1a1a3e;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border-subtle);
       display: flex;
       gap: 12px;
       -webkit-app-region: no-drag;
@@ -72,28 +96,32 @@
     }
     .input-area input {
       flex: 1;
-      background: #1a1a3e;
-      border: 1px solid #2a2a5e;
+      background: var(--bg-card);
+      border: 1px solid var(--border-standard);
       border-radius: 12px;
       padding: 12px 16px;
-      color: #e0e0e8;
+      color: var(--text-primary);
+      font-family: 'Inter', system-ui, sans-serif;
       font-size: 14px;
       outline: none;
       transition: border-color 0.2s;
     }
-    .input-area input:focus { border-color: #6366f1; }
+    .input-area input:focus { border-color: var(--brand-light); }
+    .input-area input::placeholder { color: var(--text-tertiary); }
     .input-area button {
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      background: var(--brand);
       color: white;
       border: none;
       border-radius: 12px;
       padding: 12px 24px;
+      font-family: 'Inter', system-ui, sans-serif;
       font-size: 14px;
       font-weight: 600;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: opacity 0.2s, box-shadow 0.2s;
+      box-shadow: 0 0 20px var(--brand-glow);
     }
-    .input-area button:hover { opacity: 0.9; }
+    .input-area button:hover { opacity: 0.9; box-shadow: 0 0 30px rgba(124, 58, 237, 0.3); }
     .input-area button:disabled { opacity: 0.4; cursor: not-allowed; }
   </style>
 </head>

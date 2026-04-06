@@ -1,11 +1,29 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+:root {
+  --bg-primary: #08080d;
+  --bg-secondary: #0e0e16;
+  --bg-card: #13131f;
+  --bg-card-hover: #1a1a2e;
+  --border-subtle: rgba(124, 58, 237, 0.12);
+  --border-standard: rgba(124, 58, 237, 0.2);
+  --border-bright: rgba(124, 58, 237, 0.35);
+  --text-primary: #f0eef5;
+  --text-secondary: #a8a4b8;
+  --text-tertiary: #6b6880;
+  --brand: #7c3aed;
+  --brand-light: #a78bfa;
+  --brand-glow: rgba(124, 58, 237, 0.15);
+  --success: #34d399;
+  --error: #f87171;
+}
+
 body {
   width: 360px;
   height: 500px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #0f0f23;
-  color: #e0e0e8;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   display: flex;
   flex-direction: column;
 }
@@ -14,8 +32,8 @@ body {
   display: flex;
   align-items: center;
   padding: 12px 16px;
-  background: #0a0a1a;
-  border-bottom: 1px solid #1a1a3e;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-subtle);
   gap: 8px;
 }
 
@@ -23,10 +41,10 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ef4444;
+  background: var(--error);
   transition: background 0.3s;
 }
-.status-dot.connected { background: #22c55e; }
+.status-dot.connected { background: var(--success); }
 
 .title {
   font-weight: 600;
@@ -51,14 +69,15 @@ body {
 }
 
 .msg.user {
-  background: #3b3b8f;
+  background: var(--brand);
+  color: #fff;
   margin-left: auto;
   border-bottom-right-radius: 4px;
 }
 
 .msg.agent {
-  background: #1a1a3e;
-  border: 1px solid #2a2a5e;
+  background: var(--bg-card);
+  border: 1px solid var(--border-standard);
   border-bottom-left-radius: 4px;
 }
 
@@ -66,43 +85,49 @@ body {
   display: flex;
   gap: 8px;
   padding: 10px 12px;
-  border-top: 1px solid #1a1a3e;
-  background: #0a0a1a;
+  border-top: 1px solid var(--border-subtle);
+  background: var(--bg-secondary);
 }
 
 .input-area input {
   flex: 1;
-  background: #1a1a3e;
-  border: 1px solid #2a2a5e;
+  background: var(--bg-card);
+  border: 1px solid var(--border-standard);
   border-radius: 8px;
   padding: 8px 12px;
-  color: #e0e0e8;
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 13px;
   outline: none;
 }
 
-.input-area input:focus { border-color: #6366f1; }
+.input-area input::placeholder { color: var(--text-tertiary); }
+
+.input-area input:focus { border-color: var(--brand-light); }
 
 .input-area button {
-  background: #6366f1;
+  background: var(--brand);
   color: white;
   border: none;
   border-radius: 8px;
   width: 36px;
   font-size: 16px;
   cursor: pointer;
+  transition: opacity 0.2s;
 }
+
+.input-area button:hover { opacity: 0.9; }
 
 .footer {
   padding: 6px 12px;
   text-align: center;
-  background: #0a0a1a;
+  background: var(--bg-secondary);
 }
 
 .link-btn {
   background: none;
   border: none;
-  color: #6366f1;
+  color: var(--brand-light);
   cursor: pointer;
   font-size: 12px;
   text-decoration: underline;
@@ -114,7 +139,7 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  background: #0f0f23;
+  background: var(--bg-primary);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -122,24 +147,29 @@ body {
 }
 
 .settings-panel label {
-  color: #8888aa;
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
 }
 
 .settings-panel input {
-  background: #1a1a3e;
-  border: 1px solid #2a2a5e;
+  background: var(--bg-card);
+  border: 1px solid var(--border-standard);
   border-radius: 8px;
   padding: 10px 12px;
-  color: #e0e0e8;
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 13px;
   outline: none;
 }
 
+.settings-panel input::placeholder { color: var(--text-tertiary); }
+
+.settings-panel input:focus { border-color: var(--brand-light); }
+
 .settings-panel button {
-  background: #6366f1;
+  background: var(--brand);
   color: white;
   border: none;
   border-radius: 8px;
@@ -147,4 +177,7 @@ body {
   font-weight: 600;
   cursor: pointer;
   margin-top: 8px;
+  transition: opacity 0.2s;
 }
+
+.settings-panel button:hover { opacity: 0.9; }

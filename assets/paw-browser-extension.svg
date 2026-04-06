@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" fill="none">
+  <defs>
+    <linearGradient id="glowGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="rgba(124,58,237,0.3)"/>
+      <stop offset="100%" stop-color="rgba(124,58,237,0)"/>
+    </linearGradient>
+    <filter id="softShadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="rgba(0,0,0,0.5)"/>
+    </filter>
+    <clipPath id="popupClip">
+      <rect x="500" y="60" width="340" height="420" rx="12"/>
+    </clipPath>
+    <clipPath id="browserClip">
+      <rect x="60" y="40" width="780" height="500" rx="12"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="560" fill="#08080d"/>
+  <ellipse cx="450" cy="280" rx="400" ry="250" fill="url(#glowGrad)" opacity="0.3"/>
+
+  <!-- Browser Window (background context) -->
+  <g filter="softShadow">
+    <rect x="60" y="40" width="780" height="480" rx="12" fill="#1c1c22" stroke="rgba(124,58,237,0.15)" stroke-width="1"/>
+  </g>
+
+  <g clip-path="url(#browserClip)">
+    <!-- Browser Tab Bar -->
+    <rect x="60" y="40" width="780" height="36" fill="#13131f"/>
+    <circle cx="85" cy="58" r="6" fill="#f87171"/>
+    <circle cx="105" cy="58" r="6" fill="#fbbf24"/>
+    <circle cx="125" cy="58" r="6" fill="#34d399"/>
+    <rect x="180" y="48" width="200" height="20" rx="4" fill="#0e0e16"/>
+    <text x="200" y="62" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="10">🔒 example.com/docs/solana</text>
+
+    <!-- Browser URL Bar -->
+    <rect x="60" y="76" width="780" height="32" fill="#0e0e16"/>
+    <rect x="80" y="82" width="640" height="20" rx="4" fill="#13131f" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+    <text x="96" y="96" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="11">https://example.com/docs/solana-deployment-guide</text>
+
+    <!-- PAW Extension Icon in toolbar -->
+    <rect x="746" y="82" width="24" height="20" rx="4" fill="#7c3aed"/>
+    <text x="750" y="96" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="11">🐾</text>
+
+    <!-- Webpage Content (dimmed) -->
+    <rect x="60" y="108" width="780" height="412" fill="#1c1c22"/>
+
+    <!-- Fake article content -->
+    <rect x="120" y="130" width="350" height="18" rx="3" fill="#2a2a35"/>
+    <rect x="120" y="156" width="420" height="12" rx="2" fill="#1e1e28"/>
+    <rect x="120" y="174" width="380" height="12" rx="2" fill="#1e1e28"/>
+    <rect x="120" y="192" width="400" height="12" rx="2" fill="#1e1e28"/>
+    <rect x="120" y="216" width="340" height="12" rx="2" fill="#1e1e28"/>
+    <rect x="120" y="234" width="410" height="12" rx="2" fill="#1e1e28"/>
+
+    <!-- Selected text highlight -->
+    <rect x="120" y="258" width="360" height="40" rx="4" fill="rgba(124,58,237,0.2)" stroke="rgba(124,58,237,0.3)" stroke-width="1"/>
+    <rect x="128" y="264" width="340" height="12" rx="2" fill="#3a3a4a"/>
+    <rect x="128" y="282" width="280" height="12" rx="2" fill="#3a3a4a"/>
+
+    <!-- More content -->
+    <rect x="120" y="310" width="370" height="12" rx="2" fill="#1e1e28"/>
+    <rect x="120" y="328" width="420" height="12" rx="2" fill="#1e1e28"/>
+    <rect x="120" y="346" width="300" height="12" rx="2" fill="#1e1e28"/>
+
+    <!-- Floating PAW button (on selection) -->
+    <circle cx="108" cy="435" r="22" fill="#7c3aed" filter="softShadow"/>
+    <text x="97" y="441" fill="#ffffff" font-size="18">🐾</text>
+    <text x="138" y="440" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="10" font-style="italic">← Send selection to PAW</text>
+
+    <!-- Right-Click Context Menu (ghost) -->
+    <rect x="250" y="250" width="180" height="100" rx="8" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="1" opacity="0.9"/>
+    <text x="268" y="273" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="11">Copy</text>
+    <line x1="260" y1="282" x2="420" y2="282" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+    <text x="268" y="300" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="500">🐾 Send to PAW Agent</text>
+    <line x1="260" y1="310" x2="420" y2="310" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+    <text x="268" y="328" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="500">🐾 Send page URL to PAW</text>
+    <line x1="260" y1="338" x2="420" y2="338" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+    <text x="268" y="345" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="11">Inspect</text>
+  </g>
+
+  <!-- Extension Popup -->
+  <g filter="softShadow">
+    <rect x="530" y="102" width="280" height="380" rx="12" fill="#08080d" stroke="rgba(124,58,237,0.25)" stroke-width="1.5"/>
+  </g>
+
+  <!-- Popup Header -->
+  <rect x="530" y="102" width="280" height="36" rx="12" fill="#0e0e16"/>
+  <rect x="530" y="126" width="280" height="12" fill="#0e0e16"/>
+  <line x1="530" y1="138" x2="810" y2="138" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+  <circle cx="555" cy="120" r="4" fill="#34d399"/>
+  <text x="566" y="124" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600">🐾 PAW Agents</text>
+
+  <!-- Popup Chat Messages -->
+  <rect x="548" y="148" width="200" height="30" rx="10" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="558" y="167" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="10">Send text from any webpage.</text>
+
+  <!-- User message in popup -->
+  <rect x="635" y="188" width="160" height="28" rx="10" fill="#7c3aed"/>
+  <text x="645" y="206" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="10">Explain this Solana code</text>
+
+  <!-- Agent response in popup -->
+  <rect x="548" y="226" width="220" height="64" rx="10" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="558" y="244" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="10">This code initializes a PDA with</text>
+  <text x="558" y="258" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="10">a vault account. The `#[init]`</text>
+  <text x="558" y="272" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="10">attribute creates the account on</text>
+  <text x="558" y="286" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="10">first invocation...</text>
+
+  <!-- User message 2 -->
+  <rect x="678" y="300" width="118" height="28" rx="10" fill="#7c3aed"/>
+  <text x="688" y="318" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="10">Is it safe to deploy?</text>
+
+  <!-- Agent response 2 -->
+  <rect x="548" y="338" width="220" height="42" rx="10" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="558" y="356" fill="#34d399" font-family="Inter, system-ui, sans-serif" font-size="10">✅ Safe to deploy. No vulnerabilities</text>
+  <text x="558" y="370" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="9">⏱ 1.2s · provider: anthropic</text>
+
+  <!-- Popup Input -->
+  <rect x="530" y="392" width="280" height="44" fill="#0e0e16"/>
+  <line x1="530" y1="392" x2="810" y2="392" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+  <rect x="545" y="400" width="210" height="28" rx="8" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="558" y="418" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="10">Message PAW...</text>
+  <rect x="762" y="400" width="34" height="28" rx="8" fill="#7c3aed"/>
+  <text x="773" y="419" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="14">→</text>
+
+  <!-- Settings link -->
+  <rect x="530" y="436" width="280" height="24" rx="0" fill="#0e0e16"/>
+  <rect x="530" y="448" width="280" height="12" rx="12" fill="#0e0e16"/>
+  <text x="644" y="452" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="10" text-decoration="underline" text-anchor="middle">Settings</text>
+
+  <!-- Manifest badge -->
+  <rect x="60" y="532" width="170" height="18" rx="4" fill="rgba(124,58,237,0.15)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="76" y="545" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600">Chrome · Firefox · Manifest v3</text>
+</svg>

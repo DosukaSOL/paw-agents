@@ -14,9 +14,9 @@
   btn.style.cssText = `
     position: fixed; bottom: 20px; right: 20px; z-index: 999999;
     width: 48px; height: 48px; border-radius: 50%;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: #7c3aed;
     display: none; align-items: center; justify-content: center;
-    font-size: 22px; cursor: pointer; box-shadow: 0 4px 16px rgba(99,102,241,0.5);
+    font-size: 22px; cursor: pointer; box-shadow: 0 4px 16px rgba(124,58,237,0.5);
     transition: transform 0.2s, opacity 0.2s; opacity: 0.9;
     user-select: none; -webkit-user-select: none;
   `;

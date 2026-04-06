@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" fill="none">
+  <defs>
+    <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="50%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+    <linearGradient id="glowGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="rgba(124,58,237,0.3)"/>
+      <stop offset="100%" stop-color="rgba(124,58,237,0)"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="softShadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="rgba(0,0,0,0.5)"/>
+    </filter>
+    <clipPath id="windowClip">
+      <rect x="150" y="60" width="600" height="440" rx="12"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="560" fill="#08080d"/>
+  <ellipse cx="450" cy="280" rx="400" ry="250" fill="url(#glowGrad)" opacity="0.4"/>
+
+  <!-- Window Frame -->
+  <g filter="softShadow">
+    <rect x="150" y="60" width="600" height="440" rx="12" fill="#0e0e16" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  </g>
+
+  <!-- Title Bar -->
+  <rect x="150" y="60" width="600" height="38" rx="12" fill="#0e0e16"/>
+  <rect x="150" y="86" width="600" height="12" fill="#0e0e16"/>
+  <line x1="150" y1="98" x2="750" y2="98" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+
+  <!-- Traffic Lights -->
+  <circle cx="175" cy="79" r="6" fill="#f87171"/>
+  <circle cx="195" cy="79" r="6" fill="#fbbf24"/>
+  <circle cx="215" cy="79" r="6" fill="#34d399"/>
+
+  <!-- Title Bar Text -->
+  <circle cx="420" cy="79" r="4" fill="#34d399"/>
+  <text x="430" y="83" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600">🐾 PAW Agents</text>
+
+  <!-- Chat Area -->
+  <g clip-path="url(#windowClip)">
+    <!-- Agent Message 1 -->
+    <rect x="175" y="115" width="320" height="50" rx="14" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+    <text x="190" y="138" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="12">🐾 Welcome to PAW Agents Desktop!</text>
+    <text x="190" y="154" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="11">Type a message to get started.</text>
+
+    <!-- User Message 1 -->
+    <rect x="445" y="180" width="280" height="36" rx="14" fill="#7c3aed"/>
+    <text x="460" y="203" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="12">Check my SOL balance on GkXn5...</text>
+
+    <!-- Agent Message 2 -->
+    <rect x="175" y="230" width="350" height="80" rx="14" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+    <text x="190" y="253" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="12">✅ Balance retrieved:</text>
+    <text x="190" y="273" fill="#22d3ee" font-family="JetBrains Mono, monospace" font-size="13" font-weight="600">  12.847 SOL</text>
+    <text x="190" y="293" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="11">⏱ Completed in 340ms</text>
+
+    <!-- User Message 2 -->
+    <rect x="490" y="325" width="235" height="36" rx="14" fill="#7c3aed"/>
+    <text x="505" y="348" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="12">Swap 1 SOL for USDC</text>
+
+    <!-- Agent Message 3 (in progress) -->
+    <rect x="175" y="375" width="300" height="50" rx="14" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+    <text x="190" y="398" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="12">⚠️ DeFi swap requires confirmation:</text>
+    <text x="190" y="415" fill="#fbbf24" font-family="Inter, system-ui, sans-serif" font-size="11">Risk score: 42/100 — Reply "yes"</text>
+  </g>
+
+  <!-- Input Area -->
+  <rect x="150" y="440" width="600" height="60" fill="#0e0e16"/>
+  <line x1="150" y1="440" x2="750" y2="440" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+  <rect x="170" y="452" width="470" height="36" rx="10" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="186" y="475" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="13">Message PAW...</text>
+  <rect x="652" y="452" width="80" height="36" rx="10" fill="#7c3aed" filter="glow"/>
+  <text x="673" y="475" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="600">Send</text>
+
+  <!-- Bottom rounded corners -->
+  <rect x="150" y="488" width="600" height="12" rx="0" fill="#0e0e16"/>
+  <rect x="150" y="488" width="600" height="12" rx="12" fill="#0e0e16"/>
+
+  <!-- Platform badges -->
+  <text x="195" y="535" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="11">macOS</text>
+  <rect x="193" y="521" width="40" height="18" rx="4" fill="none" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="270" y="535" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="11">Windows</text>
+  <rect x="267" y="521" width="56" height="18" rx="4" fill="none" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="357" y="535" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="11">Linux</text>
+  <rect x="354" y="521" width="38" height="18" rx="4" fill="none" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+
+  <!-- Electron badge -->
+  <rect x="560" y="521" width="185" height="18" rx="4" fill="rgba(124,58,237,0.15)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="576" y="535" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600">⚡ Electron · System Tray</text>
+</svg>

@@ -50,7 +50,7 @@ export function SettingsScreen(): React.JSX.Element {
           <Switch
             value={darkMode}
             onValueChange={setDarkMode}
-            trackColor={{ true: '#6366f1', false: '#333' }}
+            trackColor={{ true: '#7c3aed', false: '#333' }}
           />
         </View>
         <View style={styles.settingRow}>
@@ -58,7 +58,7 @@ export function SettingsScreen(): React.JSX.Element {
           <Switch
             value={notifications}
             onValueChange={setNotifications}
-            trackColor={{ true: '#6366f1', false: '#333' }}
+            trackColor={{ true: '#7c3aed', false: '#333' }}
           />
         </View>
       </View>
@@ -80,11 +80,11 @@ export function SettingsScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f0f23',
+    backgroundColor: '#08080d',
     padding: 16,
   },
   sectionTitle: {
-    color: '#8888aa',
+    color: '#a8a4b8',
     fontSize: 13,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -93,25 +93,25 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   card: {
-    backgroundColor: '#1a1a3e',
+    backgroundColor: '#13131f',
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
-    borderColor: '#2a2a5e',
+    borderColor: 'rgba(124, 58, 237, 0.2)',
   },
   label: {
-    color: '#aaaacc',
+    color: '#a8a4b8',
     fontSize: 13,
     marginBottom: 6,
     marginTop: 8,
   },
   input: {
-    backgroundColor: '#0f0f23',
+    backgroundColor: '#08080d',
     borderWidth: 1,
-    borderColor: '#2a2a5e',
+    borderColor: 'rgba(124, 58, 237, 0.2)',
     borderRadius: 8,
     padding: 12,
-    color: '#e0e0e8',
+    color: '#f0eef5',
     fontSize: 15,
   },
   settingRow: {
@@ -121,21 +121,21 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   settingLabel: {
-    color: '#e0e0e8',
+    color: '#f0eef5',
     fontSize: 15,
   },
   aboutText: {
-    color: '#e0e0e8',
+    color: '#f0eef5',
     fontSize: 15,
     fontWeight: '600',
   },
   aboutSubtext: {
-    color: '#8888aa',
+    color: '#a8a4b8',
     fontSize: 13,
     marginTop: 4,
   },
   saveButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: '#7c3aed',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" fill="none">
+  <defs>
+    <linearGradient id="glowGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="rgba(124,58,237,0.3)"/>
+      <stop offset="100%" stop-color="rgba(124,58,237,0)"/>
+    </linearGradient>
+    <filter id="softShadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="rgba(0,0,0,0.5)"/>
+    </filter>
+    <clipPath id="vsClip">
+      <rect x="80" y="40" width="740" height="480" rx="10"/>
+    </clipPath>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="560" fill="#08080d"/>
+  <ellipse cx="450" cy="280" rx="400" ry="250" fill="url(#glowGrad)" opacity="0.3"/>
+
+  <!-- VS Code Window -->
+  <g filter="softShadow">
+    <rect x="80" y="40" width="740" height="480" rx="10" fill="#1e1e1e" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  </g>
+
+  <g clip-path="url(#vsClip)">
+    <!-- Title Bar -->
+    <rect x="80" y="40" width="740" height="30" fill="#323233"/>
+    <circle cx="103" cy="55" r="6" fill="#f87171"/>
+    <circle cx="123" cy="55" r="6" fill="#fbbf24"/>
+    <circle cx="143" cy="55" r="6" fill="#34d399"/>
+    <text x="395" y="60" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="11" text-anchor="middle">extension.ts — paw-agents — Visual Studio Code</text>
+
+    <!-- Menu Bar -->
+    <rect x="80" y="70" width="740" height="22" fill="#2d2d2d"/>
+    <text x="100" y="85" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="10">File  Edit  Selection  View  Go  Run  Terminal  Help</text>
+
+    <!-- Activity Bar (left) -->
+    <rect x="80" y="92" width="40" height="428" fill="#2d2d2d"/>
+    <text x="91" y="118" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="16">📁</text>
+    <text x="91" y="148" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="16">🔍</text>
+    <text x="91" y="178" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="16">🔀</text>
+    <text x="91" y="208" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="16">🐛</text>
+    <rect x="80" y="225" width="40" height="32" fill="rgba(124,58,237,0.15)"/>
+    <rect x="80" y="225" width="3" height="32" fill="#7c3aed"/>
+    <text x="91" y="246" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="16">🐾</text>
+
+    <!-- PAW Sidebar -->
+    <rect x="120" y="92" width="200" height="428" fill="#252526"/>
+    <rect x="120" y="92" width="200" height="28" fill="#2d2d2d"/>
+    <text x="138" y="111" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700">PAW AGENTS</text>
+
+    <!-- Sidebar Chat -->
+    <rect x="130" y="130" width="180" height="28" rx="6" fill="#1e1e1e" stroke="rgba(124,58,237,0.15)" stroke-width="1"/>
+    <text x="140" y="148" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="10">🐾 Quick Chat</text>
+
+    <!-- Sidebar Status -->
+    <text x="130" y="178" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600">STATUS</text>
+    <circle cx="140" cy="194" r="4" fill="#34d399"/>
+    <text x="150" y="198" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="10">Connected</text>
+    <text x="130" y="218" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="10">Mode:</text>
+    <text x="163" y="218" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="10">autonomous</text>
+    <text x="130" y="236" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="10">Provider:</text>
+    <text x="180" y="236" fill="#22d3ee" font-family="Inter, system-ui, sans-serif" font-size="10">anthropic</text>
+
+    <!-- Sidebar Commands -->
+    <text x="130" y="266" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600">COMMANDS</text>
+    <text x="140" y="284" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="10">▸ Open Chat Panel</text>
+    <text x="140" y="302" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="10">▸ Send Selection to PAW</text>
+    <text x="140" y="320" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="10">▸ Set Gateway URL</text>
+
+    <!-- Editor Area -->
+    <rect x="320" y="92" width="500" height="286" fill="#1e1e1e"/>
+
+    <!-- Editor Tab -->
+    <rect x="320" y="92" width="160" height="28" fill="#1e1e1e"/>
+    <rect x="480" y="92" width="340" height="28" fill="#2d2d2d"/>
+    <text x="338" y="111" fill="#f0eef5" font-family="JetBrains Mono, monospace" font-size="10">🐾 PAW Chat</text>
+    <text x="496" y="111" fill="#6b6880" font-family="JetBrains Mono, monospace" font-size="10">extension.ts</text>
+
+    <!-- Chat Panel Content -->
+    <rect x="320" y="120" width="500" height="258" fill="#1e1e1e"/>
+
+    <!-- Chat Messages in Panel -->
+    <rect x="340" y="134" width="260" height="36" rx="10" fill="#252526" stroke="rgba(124,58,237,0.15)" stroke-width="1"/>
+    <text x="352" y="150" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="10">🐾 PAW connected to your editor!</text>
+    <text x="352" y="164" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="9">Select code → right-click → Send to PAW</text>
+
+    <!-- User message -->
+    <rect x="580" y="180" width="220" height="28" rx="10" fill="#7c3aed"/>
+    <text x="592" y="198" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="10">Explain this function and optimize it</text>
+
+    <!-- Agent response -->
+    <rect x="340" y="218" width="320" height="72" rx="10" fill="#252526" stroke="rgba(124,58,237,0.15)" stroke-width="1"/>
+    <text x="352" y="236" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="10">This function parses Purp SCL tokens</text>
+    <text x="352" y="252" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="10">using recursive descent. To optimize:</text>
+    <text x="352" y="268" fill="#22d3ee" font-family="JetBrains Mono, monospace" font-size="9">1. Cache token lookups in a Map</text>
+    <text x="352" y="282" fill="#22d3ee" font-family="JetBrains Mono, monospace" font-size="9">2. Use iterative instead of recursive</text>
+
+    <!-- Chat input in panel -->
+    <rect x="340" y="308" width="410" height="28" rx="8" fill="#252526" stroke="rgba(124,58,237,0.15)" stroke-width="1"/>
+    <text x="354" y="326" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="10">Ask PAW about your code...</text>
+    <rect x="758" y="308" width="40" height="28" rx="8" fill="#7c3aed"/>
+    <text x="770" y="326" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600">→</text>
+
+    <!-- Terminal Panel (bottom) -->
+    <rect x="320" y="378" width="500" height="142" fill="#1e1e1e"/>
+    <line x1="320" y1="378" x2="820" y2="378" stroke="#2d2d2d" stroke-width="1"/>
+    <rect x="320" y="378" width="500" height="24" fill="#252526"/>
+    <text x="340" y="394" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="10">TERMINAL</text>
+    <text x="404" y="394" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="10">OUTPUT</text>
+    <text x="454" y="394" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600">PAW AGENTS</text>
+
+    <!-- Output log -->
+    <text x="340" y="418" fill="#6b6880" font-family="JetBrains Mono, monospace" font-size="9">[PAW] Extension activated</text>
+    <text x="340" y="434" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="9">[PAW] Connected to gateway ws://127.0.0.1:18789</text>
+    <text x="340" y="450" fill="#a8a4b8" font-family="JetBrains Mono, monospace" font-size="9">[PAW] Registered as vscode-extension client</text>
+    <text x="340" y="466" fill="#22d3ee" font-family="JetBrains Mono, monospace" font-size="9">[PAW] Smart routing: task=code_review → anthropic</text>
+    <text x="340" y="482" fill="#a8a4b8" font-family="JetBrains Mono, monospace" font-size="9">[PAW] Response delivered in 2.1s</text>
+    <text x="340" y="498" fill="#fbbf24" font-family="JetBrains Mono, monospace" font-size="9">[PAW] User profile updated: prefers code explanations</text>
+
+    <!-- Status Bar -->
+    <rect x="80" y="510" width="740" height="20" fill="#7c3aed"/>
+    <text x="100" y="524" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="10">🐾 PAW: Connected</text>
+    <text x="660" y="524" fill="rgba(255,255,255,0.7)" font-family="Inter, system-ui, sans-serif" font-size="10">TypeScript · UTF-8</text>
+  </g>
+
+  <!-- Feature badge -->
+  <rect x="580" y="536" width="236" height="18" rx="4" fill="rgba(124,58,237,0.15)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="596" y="549" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600">Sidebar · Chat Panel · Context Menu</text>
+</svg>

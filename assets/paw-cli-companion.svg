@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" fill="none">
+  <defs>
+    <linearGradient id="glowGrad" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="rgba(124,58,237,0.3)"/>
+      <stop offset="100%" stop-color="rgba(124,58,237,0)"/>
+    </linearGradient>
+    <filter id="softShadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="rgba(0,0,0,0.5)"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="560" fill="#08080d"/>
+  <ellipse cx="450" cy="280" rx="380" ry="240" fill="url(#glowGrad)" opacity="0.35"/>
+
+  <!-- Terminal Window -->
+  <g filter="softShadow">
+    <rect x="120" y="40" width="660" height="480" rx="12" fill="#0e0e16" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  </g>
+
+  <!-- Terminal Title Bar -->
+  <rect x="120" y="40" width="660" height="36" rx="12" fill="#0e0e16"/>
+  <rect x="120" y="64" width="660" height="12" fill="#0e0e16"/>
+  <line x1="120" y1="76" x2="780" y2="76" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+  <circle cx="145" cy="58" r="6" fill="#f87171"/>
+  <circle cx="165" cy="58" r="6" fill="#fbbf24"/>
+  <circle cx="185" cy="58" r="6" fill="#34d399"/>
+  <text x="390" y="62" fill="#a8a4b8" font-family="JetBrains Mono, monospace" font-size="12" font-weight="500" text-anchor="middle">paw — zsh — 80×24</text>
+
+  <!-- Terminal Content -->
+  <!-- Banner -->
+  <text x="150" y="102" fill="#22d3ee" font-family="JetBrains Mono, monospace" font-size="13" font-weight="600">$ paw chat</text>
+
+  <text x="150" y="126" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="12"> ╔═══════════════════════════════════════════╗</text>
+  <text x="150" y="144" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="12"> ║    🐾  PAW Agents CLI  v3.2              ║</text>
+  <text x="150" y="162" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="12"> ║    Programmable Autonomous Workers        ║</text>
+  <text x="150" y="180" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="12"> ╚═══════════════════════════════════════════╝</text>
+
+  <text x="150" y="204" fill="#6b6880" font-family="JetBrains Mono, monospace" font-size="11">  Connected to gateway ws://127.0.0.1:18789</text>
+  <text x="150" y="222" fill="#6b6880" font-family="JetBrains Mono, monospace" font-size="11">  Type /help for commands, /exit to quit</text>
+
+  <!-- User Input 1 -->
+  <text x="150" y="252" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="12" font-weight="500">you →</text>
+  <text x="215" y="252" fill="#f0eef5" font-family="JetBrains Mono, monospace" font-size="12">What's the SOL price?</text>
+
+  <!-- Agent Response 1 -->
+  <text x="150" y="276" fill="#22d3ee" font-family="JetBrains Mono, monospace" font-size="12" font-weight="500">paw →</text>
+  <text x="215" y="276" fill="#f0eef5" font-family="JetBrains Mono, monospace" font-size="12">Current SOL price:</text>
+  <text x="215" y="294" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="13" font-weight="600">$168.42 USD</text>
+  <text x="215" y="312" fill="#6b6880" font-family="JetBrains Mono, monospace" font-size="11">⏱ 240ms · provider: groq (fast path)</text>
+
+  <!-- User Input 2 -->
+  <text x="150" y="342" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="12" font-weight="500">you →</text>
+  <text x="215" y="342" fill="#f0eef5" font-family="JetBrains Mono, monospace" font-size="12">/mode autonomous</text>
+
+  <!-- Agent Response 2 -->
+  <text x="150" y="366" fill="#22d3ee" font-family="JetBrains Mono, monospace" font-size="12" font-weight="500">paw →</text>
+  <text x="215" y="366" fill="#fbbf24" font-family="JetBrains Mono, monospace" font-size="12">Mode switched to autonomous</text>
+  <text x="215" y="384" fill="#6b6880" font-family="JetBrains Mono, monospace" font-size="11">Low/medium risk actions will auto-execute.</text>
+
+  <!-- User Input 3 -->
+  <text x="150" y="414" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="12" font-weight="500">you →</text>
+  <text x="215" y="414" fill="#f0eef5" font-family="JetBrains Mono, monospace" font-size="12">/rag search solana deployment guide</text>
+
+  <!-- Agent Response 3 -->
+  <text x="150" y="438" fill="#22d3ee" font-family="JetBrains Mono, monospace" font-size="12" font-weight="500">paw →</text>
+  <text x="215" y="438" fill="#f0eef5" font-family="JetBrains Mono, monospace" font-size="12">Found 3 relevant chunks (score: 0.82)</text>
+  <text x="215" y="456" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="11">📄 docs/deployment.md [chunk 4/12]</text>
+  <text x="215" y="474" fill="#6b6880" font-family="JetBrains Mono, monospace" font-size="11">"To deploy a Solana program, first ensure..."</text>
+
+  <!-- Cursor -->
+  <text x="150" y="500" fill="#34d399" font-family="JetBrains Mono, monospace" font-size="12" font-weight="500">you →</text>
+  <rect x="215" y="489" width="8" height="15" fill="#f0eef5" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0;0.8" dur="1.2s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Bottom Commands Bar -->
+  <rect x="120" y="510" width="660" height="10" fill="#0e0e16"/>
+  <rect x="120" y="510" width="660" height="10" rx="12" fill="#0e0e16"/>
+
+  <!-- Command badges -->
+  <rect x="155" y="535" width="70" height="18" rx="4" fill="rgba(124,58,237,0.15)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="167" y="548" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="10" font-weight="500">paw chat</text>
+
+  <rect x="240" y="535" width="80" height="18" rx="4" fill="rgba(124,58,237,0.15)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="250" y="548" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="10" font-weight="500">paw status</text>
+
+  <rect x="335" y="535" width="84" height="18" rx="4" fill="rgba(124,58,237,0.15)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="345" y="548" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="10" font-weight="500">paw deploy</text>
+
+  <rect x="434" y="535" width="86" height="18" rx="4" fill="rgba(124,58,237,0.15)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <text x="444" y="548" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="10" font-weight="500">paw models</text>
+
+  <rect x="600" y="535" width="175" height="18" rx="4" fill="rgba(34,211,238,0.1)" stroke="rgba(34,211,238,0.2)" stroke-width="1"/>
+  <text x="616" y="548" fill="#22d3ee" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600">Interactive REPL · In-chat</text>
+</svg>

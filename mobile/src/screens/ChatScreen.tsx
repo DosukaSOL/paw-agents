@@ -88,7 +88,7 @@ export function ChatScreen(): React.JSX.Element {
     </View>
   );
 
-  const statusColor = status === 'connected' ? '#22c55e' : status === 'connecting' ? '#eab308' : '#ef4444';
+  const statusColor = status === 'connected' ? '#34d399' : status === 'connecting' ? '#fbbf24' : '#f87171';
 
   return (
     <KeyboardAvoidingView
@@ -136,7 +136,7 @@ export function ChatScreen(): React.JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0f0f23',
+    backgroundColor: '#08080d',
   },
   statusBar: {
     flexDirection: 'row',
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#1a1a3e',
+    borderBottomColor: 'rgba(124, 58, 237, 0.12)',
   },
   statusDot: {
     width: 8,
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   statusText: {
-    color: '#8888aa',
+    color: '#a8a4b8',
     fontSize: 12,
     textTransform: 'capitalize',
   },
@@ -171,19 +171,19 @@ const styles = StyleSheet.create({
     borderRadius: 16,
   },
   userBubble: {
-    backgroundColor: '#3b3b8f',
+    backgroundColor: '#7c3aed',
     alignSelf: 'flex-end',
     borderBottomRightRadius: 4,
   },
   agentBubble: {
-    backgroundColor: '#1a1a3e',
+    backgroundColor: '#13131f',
     alignSelf: 'flex-start',
     borderBottomLeftRadius: 4,
     borderWidth: 1,
-    borderColor: '#2a2a5e',
+    borderColor: 'rgba(124, 58, 237, 0.2)',
   },
   messageText: {
-    color: '#e0e0e8',
+    color: '#f0eef5',
     fontSize: 15,
     lineHeight: 22,
   },
@@ -192,22 +192,22 @@ const styles = StyleSheet.create({
     padding: 12,
     gap: 10,
     borderTopWidth: 1,
-    borderTopColor: '#1a1a3e',
-    backgroundColor: '#0a0a1a',
+    borderTopColor: 'rgba(124, 58, 237, 0.12)',
+    backgroundColor: '#0e0e16',
   },
   input: {
     flex: 1,
-    backgroundColor: '#1a1a3e',
+    backgroundColor: '#13131f',
     borderWidth: 1,
-    borderColor: '#2a2a5e',
+    borderColor: 'rgba(124, 58, 237, 0.2)',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    color: '#e0e0e8',
+    color: '#f0eef5',
     fontSize: 15,
   },
   sendButton: {
-    backgroundColor: '#6366f1',
+    backgroundColor: '#7c3aed',
     borderRadius: 12,
     paddingHorizontal: 20,
     justifyContent: 'center',
