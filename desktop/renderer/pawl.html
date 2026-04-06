@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; script-src 'self' 'unsafe-inline';">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      background: transparent;
+      overflow: hidden;
+      user-select: none;
+      -webkit-app-region: no-drag;
+    }
+    body {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* ─── Sprite Container ─── */
+    #pawl {
+      width: 96px;
+      height: 96px;
+      position: relative;
+      cursor: pointer;
+      image-rendering: auto;
+      transition: filter 0.2s ease;
+      /* Drop shadow for the character */
+      filter: drop-shadow(0 2px 8px rgba(124, 58, 237, 0.35));
+    }
+    #pawl:hover {
+      filter: drop-shadow(0 2px 12px rgba(124, 58, 237, 0.6));
+    }
+    #pawl:active {
+      transform: scale(0.92);
+    }
+
+    /* SVG sprite clipping */
+    #sprite-container {
+      width: 96px;
+      height: 96px;
+      overflow: hidden;
+      position: relative;
+    }
+    #sprite-sheet {
+      position: absolute;
+      width: 960px; /* 128*10 * (96/128) = 960 scaled */
+      height: 480px; /* 128*5 * (96/128) = 480 scaled */
+      /* We scale from 128px frames to 96px display */
+      transform-origin: top left;
+    }
+
+    /* ─── Notification Bubble ─── */
+    .notification-bubble {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #13131f;
+      border: 1px solid rgba(124, 58, 237, 0.35);
+      border-radius: 12px;
+      padding: 8px 14px;
+      max-width: 200px;
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 11px;
+      color: #f0eef5;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 20px rgba(124, 58, 237, 0.15);
+      opacity: 0;
+      animation: bubbleIn 0.3s ease forwards;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .notification-bubble.info { border-color: rgba(96, 165, 250, 0.5); }
+    .notification-bubble.success { border-color: rgba(52, 211, 153, 0.5); }
+    .notification-bubble.error { border-color: rgba(248, 113, 113, 0.5); }
+    .notification-bubble.warning { border-color: rgba(251, 191, 36, 0.5); }
+
+    .notification-bubble::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      left: 50%;
+      transform: translateX(-50%) rotate(45deg);
+      width: 10px;
+      height: 10px;
+      background: #13131f;
+      border-right: 1px solid rgba(124, 58, 237, 0.35);
+      border-bottom: 1px solid rgba(124, 58, 237, 0.35);
+    }
+
+    @keyframes bubbleIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    @keyframes bubbleOut {
+      from { opacity: 1; transform: translateX(-50%) translateY(0); }
+      to   { opacity: 0; transform: translateX(-50%) translateY(-8px); }
+    }
+
+    /* ─── Bounce on jump ─── */
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-16px); }
+    }
+    .bounce { animation: bounce 0.4s ease; }
+  </style>
+</head>
+<body>
+  <div id="pawl">
+    <div id="sprite-container">
+      <img id="sprite-sheet" src="../assets/pawl-sprites.svg" alt="Pawl" draggable="false" />
+    </div>
+  </div>
+
+  <script>
+    // ─── Sprite Frame Map ───
+    const SPRITE_MAP = {
+      idle_front:   { x: 0,   y: 0 },
+      idle_left:    { x: 128, y: 0 },
+      idle_right:   { x: 256, y: 0 },
+      sit_front:    { x: 384, y: 0 },
+      blink:        { x: 512, y: 0 },
+      happy:        { x: 0,   y: 128 },
+      excited:      { x: 128, y: 128 },
+      mad:          { x: 256, y: 128 },
+      sad:          { x: 384, y: 128 },
+      confused:     { x: 512, y: 128 },
+      bark:         { x: 0,   y: 256 },
+      alert:        { x: 128, y: 256 },
+      success:      { x: 256, y: 256 },
+      error:        { x: 384, y: 256 },
+      thinking:     { x: 512, y: 256 },
+      walk_left_1:  { x: 0,   y: 384 },
+      walk_left_2:  { x: 128, y: 384 },
+      walk_right_1: { x: 256, y: 384 },
+      walk_right_2: { x: 384, y: 384 },
+      jump:         { x: 512, y: 384 },
+      sleep:        { x: 0,   y: 512 },
+      wag_1:        { x: 128, y: 512 },
+      wag_2:        { x: 256, y: 512 },
+      notification: { x: 384, y: 512 },
+      love:         { x: 512, y: 512 },
+    };
+
+    const FRAME_SIZE = 128;
+    const DISPLAY_SIZE = 96;
+    const SCALE = DISPLAY_SIZE / FRAME_SIZE;
+
+    const spriteSheet = document.getElementById('sprite-sheet');
+    const pawlEl = document.getElementById('pawl');
+    let notificationTimeout = null;
+
+    function setFrame(frameName) {
+      const frame = SPRITE_MAP[frameName];
+      if (!frame) return;
+      // Position the sprite sheet so the correct frame is visible
+      spriteSheet.style.left = -(frame.x * SCALE) + 'px';
+      spriteSheet.style.top = -(frame.y * SCALE) + 'px';
+    }
+
+    // Start with idle
+    setFrame('idle_front');
+
+    // ─── Click / Double-click ───
+    let clickCount = 0;
+    let clickTimer = null;
+
+    pawlEl.addEventListener('mousedown', (e) => {
+      clickCount++;
+      if (clickCount === 1) {
+        clickTimer = setTimeout(() => {
+          clickCount = 0;
+          // Single click — send to main process
+          if (window.pawlAPI) window.pawlAPI.click();
+        }, 300);
+      } else if (clickCount === 2) {
+        clearTimeout(clickTimer);
+        clickCount = 0;
+        // Double click — open app
+        if (window.pawlAPI) window.pawlAPI.doubleclick();
+      }
+    });
+
+    // ─── Drag support ───
+    let isDragging = false;
+    let dragStartX = 0, dragStartY = 0;
+
+    pawlEl.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      dragStartX = e.screenX;
+      dragStartY = e.screenY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const dx = e.screenX - dragStartX;
+      const dy = e.screenY - dragStartY;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+        dragStartX = e.screenX;
+        dragStartY = e.screenY;
+        if (window.pawlAPI) window.pawlAPI.drag(dx, dy);
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    // ─── IPC listeners ───
+    if (window.pawlAPI) {
+      window.pawlAPI.onFrame((frame) => {
+        setFrame(frame);
+        if (frame === 'jump') {
+          pawlEl.classList.add('bounce');
+          setTimeout(() => pawlEl.classList.remove('bounce'), 400);
+        }
+      });
+
+      window.pawlAPI.onNotification(({ text, type }) => {
+        showBubble(text, type);
+      });
+
+      window.pawlAPI.onSound((sound) => {
+        playSound(sound);
+      });
+
+      window.pawlAPI.onOpenApp(() => {
+        // Main process handles this — show excited reaction
+        setFrame('excited');
+        setTimeout(() => setFrame('idle_front'), 1000);
+      });
+    }
+
+    // ─── Notification bubble ───
+    function showBubble(text, type) {
+      // Remove existing
+      const existing = document.querySelector('.notification-bubble');
+      if (existing) existing.remove();
+      if (notificationTimeout) clearTimeout(notificationTimeout);
+
+      const bubble = document.createElement('div');
+      bubble.className = `notification-bubble ${type}`;
+      bubble.textContent = text;
+      pawlEl.appendChild(bubble);
+
+      notificationTimeout = setTimeout(() => {
+        bubble.style.animation = 'bubbleOut 0.3s ease forwards';
+        setTimeout(() => bubble.remove(), 300);
+      }, 3500);
+    }
+
+    // ─── Sound effects (Web Audio API) ───
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'bark') {
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1);
+        osc.frequency.setValueAtTime(500, audioCtx.currentTime + 0.12);
+        osc.frequency.exponentialRampToValueAtTime(250, audioCtx.currentTime + 0.22);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.25);
+      } else {
+        // Yip — short high pitched
+        osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(500, audioCtx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 0.1);
+      }
+    }
+  </script>
+</body>
+</html>

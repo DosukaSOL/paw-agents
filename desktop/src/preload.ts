@@ -14,3 +14,22 @@ contextBridge.exposeInMainWorld('paw', {
     ipcRenderer.on('gateway:status', (_event, status) => callback(status));
   },
 });
+
+// ─── Pawl Companion API ───
+contextBridge.exposeInMainWorld('pawlAPI', {
+  click: () => ipcRenderer.send('pawl:click'),
+  doubleclick: () => ipcRenderer.send('pawl:doubleclick'),
+  drag: (dx: number, dy: number) => ipcRenderer.send('pawl:drag', dx, dy),
+  onFrame: (callback: (frame: string) => void) => {
+    ipcRenderer.on('pawl:frame', (_event, frame) => callback(frame));
+  },
+  onNotification: (callback: (data: { text: string; type: string }) => void) => {
+    ipcRenderer.on('pawl:notification', (_event, data) => callback(data));
+  },
+  onSound: (callback: (sound: string) => void) => {
+    ipcRenderer.on('pawl:sound', (_event, sound) => callback(sound));
+  },
+  onOpenApp: (callback: () => void) => {
+    ipcRenderer.on('pawl:open-app', () => callback());
+  },
+});

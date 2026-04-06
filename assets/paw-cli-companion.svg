@@ -32,7 +32,7 @@
   <text x="150" y="102" fill="#22d3ee" font-family="JetBrains Mono, monospace" font-size="13" font-weight="600">$ paw chat</text>
 
   <text x="150" y="126" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="12"> ╔═══════════════════════════════════════════╗</text>
-  <text x="150" y="144" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="12"> ║    🐾  PAW Agents CLI  v3.2              ║</text>
+  <text x="150" y="144" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="12"> ║    PAW Agents CLI  v3.2                ║</text>
   <text x="150" y="162" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="12"> ║    Programmable Autonomous Workers        ║</text>
   <text x="150" y="180" fill="#a78bfa" font-family="JetBrains Mono, monospace" font-size="12"> ╚═══════════════════════════════════════════╝</text>
 

@@ -1,0 +1,267 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 750" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#08080d"/>
+      <stop offset="100%" stop-color="#0e0e16"/>
+    </linearGradient>
+    <linearGradient id="fur" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="furDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+    <linearGradient id="belly" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#ede9fe"/>
+      <stop offset="100%" stop-color="#ddd6fe"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="softGlow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="750" fill="url(#bg)"/>
+  
+  <!-- Subtle grid pattern -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(124,58,237,0.04)" stroke-width="0.5"/>
+  </pattern>
+  <rect width="1200" height="750" fill="url(#grid)"/>
+
+  <!-- Title -->
+  <text x="600" y="52" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="28" font-weight="600" fill="#f0eef5">
+    Desktop Companion — <tspan fill="#a78bfa">Pawl</tspan>
+  </text>
+  <text x="600" y="76" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#6b6880">
+    Your friendly PAW mascot that lives on your desktop
+  </text>
+
+  <!-- ═══ DESKTOP MOCK ═══ -->
+  <!-- Desktop wallpaper area -->
+  <rect x="60" y="110" width="740" height="520" rx="12" fill="#0c0c14" stroke="rgba(124,58,237,0.15)" stroke-width="1"/>
+  
+  <!-- Fake macOS top bar -->
+  <rect x="60" y="110" width="740" height="28" rx="12" fill="#13131f"/>
+  <rect x="60" y="126" width="740" height="12" fill="#13131f"/>
+  <circle cx="80" cy="124" r="5" fill="#f87171"/>
+  <circle cx="96" cy="124" r="5" fill="#fbbf24"/>
+  <circle cx="112" cy="124" r="5" fill="#34d399"/>
+  <text x="430" y="128" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#6b6880">Desktop</text>
+  
+  <!-- Some fake desktop icons -->
+  <g transform="translate(100, 170)">
+    <rect width="48" height="48" rx="10" fill="rgba(124,58,237,0.1)" stroke="rgba(124,58,237,0.2)" stroke-width="0.5"/>
+    <text x="24" y="32" text-anchor="middle" font-size="20">📁</text>
+    <text x="24" y="66" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#a8a4b8">Projects</text>
+  </g>
+  <g transform="translate(100, 260)">
+    <rect width="48" height="48" rx="10" fill="rgba(124,58,237,0.1)" stroke="rgba(124,58,237,0.2)" stroke-width="0.5"/>
+    <text x="24" y="32" text-anchor="middle" font-size="20">💻</text>
+    <text x="24" y="66" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#a8a4b8">Terminal</text>
+  </g>
+
+  <!-- Fake code editor in background -->
+  <rect x="200" y="170" width="480" height="340" rx="8" fill="#0c0c14" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
+  <rect x="200" y="170" width="480" height="24" rx="8" fill="#13131f"/>
+  <rect x="200" y="186" width="480" height="8" fill="#13131f"/>
+  <circle cx="214" cy="182" r="4" fill="#f87171" opacity="0.8"/>
+  <circle cx="226" cy="182" r="4" fill="#fbbf24" opacity="0.8"/>
+  <circle cx="238" cy="182" r="4" fill="#34d399" opacity="0.8"/>
+  <text x="440" y="186" text-anchor="middle" font-family="Inter, sans-serif" font-size="9" fill="#6b6880">index.ts — PAW Agents</text>
+  <!-- Code lines -->
+  <text x="220" y="214" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6880">1</text>
+  <text x="240" y="214" font-family="'JetBrains Mono', monospace" font-size="10" fill="#7c3aed">import</text>
+  <text x="280" y="214" font-family="'JetBrains Mono', monospace" font-size="10" fill="#f0eef5"> { PawAgent } </text>
+  <text x="386" y="214" font-family="'JetBrains Mono', monospace" font-size="10" fill="#7c3aed">from</text>
+  <text x="414" y="214" font-family="'JetBrains Mono', monospace" font-size="10" fill="#34d399"> './agent'</text>
+  <text x="220" y="230" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6880">2</text>
+  <text x="240" y="230" font-family="'JetBrains Mono', monospace" font-size="10" fill="#7c3aed">import</text>
+  <text x="280" y="230" font-family="'JetBrains Mono', monospace" font-size="10" fill="#f0eef5"> { config } </text>
+  <text x="370" y="230" font-family="'JetBrains Mono', monospace" font-size="10" fill="#7c3aed">from</text>
+  <text x="398" y="230" font-family="'JetBrains Mono', monospace" font-size="10" fill="#34d399"> './config'</text>
+  <text x="220" y="246" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6880">3</text>
+  <text x="220" y="262" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6880">4</text>
+  <text x="240" y="262" font-family="'JetBrains Mono', monospace" font-size="10" fill="#7c3aed">const</text>
+  <text x="274" y="262" font-family="'JetBrains Mono', monospace" font-size="10" fill="#22d3ee"> agent</text>
+  <text x="310" y="262" font-family="'JetBrains Mono', monospace" font-size="10" fill="#f0eef5"> = </text>
+  <text x="328" y="262" font-family="'JetBrains Mono', monospace" font-size="10" fill="#fbbf24">new</text>
+  <text x="352" y="262" font-family="'JetBrains Mono', monospace" font-size="10" fill="#22d3ee"> PawAgent</text>
+  <text x="418" y="262" font-family="'JetBrains Mono', monospace" font-size="10" fill="#f0eef5">()</text>
+  <text x="220" y="278" font-family="'JetBrains Mono', monospace" font-size="10" fill="#6b6880">5</text>
+  <text x="240" y="278" font-family="'JetBrains Mono', monospace" font-size="10" fill="#7c3aed">await</text>
+  <text x="276" y="278" font-family="'JetBrains Mono', monospace" font-size="10" fill="#22d3ee"> agent</text>
+  <text x="310" y="278" font-family="'JetBrains Mono', monospace" font-size="10" fill="#f0eef5">.deploy()</text>
+
+  <!-- ═══ PAWL ON DESKTOP (bottom-right corner) ═══ -->
+  <g transform="translate(590, 440)" filter="url(#softGlow)">
+    <!-- Notification bubble -->
+    <g>
+      <rect x="-100" y="-52" width="170" height="40" rx="10" fill="#13131f" stroke="rgba(52,211,153,0.5)" stroke-width="1"/>
+      <text x="-85" y="-33" font-family="Inter, sans-serif" font-size="9" font-weight="600" fill="#34d399">✓ Build complete!</text>
+      <text x="-85" y="-21" font-family="Inter, sans-serif" font-size="8" fill="#a8a4b8">All 47 tests passed • 0 errors</text>
+      <!-- Bubble tail -->
+      <polygon points="20,-12 30,-12 25,-4" fill="#13131f"/>
+    </g>
+    
+    <!-- Pawl dog (success pose) -->
+    <ellipse cx="30" cy="52" rx="22" ry="19" fill="url(#fur)"/>
+    <ellipse cx="30" cy="55" rx="14" ry="11" fill="url(#belly)"/>
+    <circle cx="30" cy="24" r="19" fill="url(#fur)"/>
+    <!-- Ears perked up -->
+    <ellipse cx="14" cy="8" rx="8" ry="13" fill="url(#furDark)" transform="rotate(-20,14,8)"/>
+    <ellipse cx="46" cy="8" rx="8" ry="13" fill="url(#furDark)" transform="rotate(20,46,8)"/>
+    <ellipse cx="14" cy="10" rx="5" ry="8" fill="#c4b5fd" transform="rotate(-20,14,10)"/>
+    <ellipse cx="46" cy="10" rx="5" ry="8" fill="#c4b5fd" transform="rotate(20,46,10)"/>
+    <!-- Happy squint eyes -->
+    <path d="M21 22 Q25 18 29 22" stroke="#1e1e32" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M31 22 Q35 18 39 22" stroke="#1e1e32" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="18" cy="29" r="4" fill="#f9a8d4" opacity="0.4"/>
+    <circle cx="42" cy="29" r="4" fill="#f9a8d4" opacity="0.4"/>
+    <ellipse cx="30" cy="30" rx="3" ry="2.5" fill="#4c1d95"/>
+    <path d="M24 32 Q30 40 36 32" stroke="#4c1d95" stroke-width="1.5" fill="none"/>
+    <!-- Legs -->
+    <rect x="14" y="65" width="8" height="13" rx="4" fill="url(#fur)"/>
+    <rect x="38" y="65" width="8" height="13" rx="4" fill="url(#fur)"/>
+    <ellipse cx="18" cy="78" rx="6" ry="3" fill="url(#furDark)"/>
+    <ellipse cx="42" cy="78" rx="6" ry="3" fill="url(#furDark)"/>
+    <!-- Wagging tail -->
+    <path d="M52 48 Q68 30 62 22" stroke="url(#fur)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <!-- Checkmark bubble icon -->
+    <circle cx="58" cy="4" r="9" fill="#34d399"/>
+    <path d="M53 4 L56 7 L63 0" stroke="white" stroke-width="2" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- macOS taskbar -->
+  <rect x="250" y="590" width="360" height="40" rx="12" fill="rgba(19,19,31,0.9)" stroke="rgba(124,58,237,0.2)" stroke-width="1"/>
+  <circle cx="290" cy="610" r="12" fill="rgba(124,58,237,0.15)"/>
+  <text x="290" y="614" text-anchor="middle" font-size="12">🔍</text>
+  <circle cx="325" cy="610" r="12" fill="rgba(124,58,237,0.15)"/>
+  <text x="325" y="614" text-anchor="middle" font-size="12">📂</text>
+  <circle cx="360" cy="610" r="12" fill="rgba(124,58,237,0.15)"/>
+  <text x="360" y="614" text-anchor="middle" font-size="12">💻</text>
+  <circle cx="395" cy="610" r="12" fill="rgba(124,58,237,0.15)"/>
+  <text x="395" y="614" text-anchor="middle" font-size="12">🎵</text>
+  <!-- PAW icon in dock -->
+  <circle cx="430" cy="610" r="12" fill="rgba(124,58,237,0.3)" stroke="#7c3aed" stroke-width="1"/>
+  <text x="430" y="615" text-anchor="middle" font-size="11">🐾</text>
+  <circle cx="465" cy="610" r="12" fill="rgba(124,58,237,0.15)"/>
+  <text x="465" y="614" text-anchor="middle" font-size="12">⚙️</text>
+  <circle cx="500" cy="610" r="12" fill="rgba(124,58,237,0.15)"/>
+  <text x="500" y="614" text-anchor="middle" font-size="12">🌐</text>
+  <circle cx="535" cy="610" r="12" fill="rgba(124,58,237,0.15)"/>
+  <text x="535" y="614" text-anchor="middle" font-size="12">📧</text>
+  <circle cx="570" cy="610" r="12" fill="rgba(124,58,237,0.15)"/>
+  <text x="570" y="614" text-anchor="middle" font-size="12">🗑️</text>
+
+  <!-- ═══ RIGHT PANEL: FEATURES ═══ -->
+  <g transform="translate(840, 110)">
+    <rect width="300" height="520" rx="12" fill="#0c0c14" stroke="rgba(124,58,237,0.15)" stroke-width="1"/>
+    
+    <text x="150" y="36" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="16" font-weight="600" fill="#f0eef5">
+      Companion Features
+    </text>
+    
+    <!-- Feature list -->
+    <g transform="translate(24, 60)">
+      <!-- Click Reactions -->
+      <circle cx="8" cy="8" r="8" fill="rgba(124,58,237,0.2)"/>
+      <text x="8" y="12" text-anchor="middle" font-size="9">👆</text>
+      <text x="24" y="8" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#f0eef5">Click Reactions</text>
+      <text x="24" y="22" font-family="Inter, sans-serif" font-size="9" fill="#6b6880">RNG emotions on every click</text>
+    </g>
+
+    <g transform="translate(24, 100)">
+      <circle cx="8" cy="8" r="8" fill="rgba(52,211,153,0.2)"/>
+      <text x="8" y="12" text-anchor="middle" font-size="9">💬</text>
+      <text x="24" y="8" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#f0eef5">Notification Bubbles</text>
+      <text x="24" y="22" font-family="Inter, sans-serif" font-size="9" fill="#6b6880">Alerts for builds, errors, tasks</text>
+    </g>
+
+    <g transform="translate(24, 140)">
+      <circle cx="8" cy="8" r="8" fill="rgba(34,211,238,0.2)"/>
+      <text x="8" y="12" text-anchor="middle" font-size="9">🚶</text>
+      <text x="24" y="8" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#f0eef5">Walk Around</text>
+      <text x="24" y="22" font-family="Inter, sans-serif" font-size="9" fill="#6b6880">Pawl roams your desktop</text>
+    </g>
+
+    <g transform="translate(24, 180)">
+      <circle cx="8" cy="8" r="8" fill="rgba(251,191,36,0.2)"/>
+      <text x="8" y="12" text-anchor="middle" font-size="9">😴</text>
+      <text x="24" y="8" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#f0eef5">Sleep When Idle</text>
+      <text x="24" y="22" font-family="Inter, sans-serif" font-size="9" fill="#6b6880">Curls up after 5 min of inactivity</text>
+    </g>
+
+    <g transform="translate(24, 220)">
+      <circle cx="8" cy="8" r="8" fill="rgba(248,113,113,0.2)"/>
+      <text x="8" y="12" text-anchor="middle" font-size="9">🔊</text>
+      <text x="24" y="8" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#f0eef5">Sound Effects</text>
+      <text x="24" y="22" font-family="Inter, sans-serif" font-size="9" fill="#6b6880">Barks, yips, and notification sounds</text>
+    </g>
+
+    <g transform="translate(24, 260)">
+      <circle cx="8" cy="8" r="8" fill="rgba(167,139,250,0.2)"/>
+      <text x="8" y="12" text-anchor="middle" font-size="9">🖱️</text>
+      <text x="24" y="8" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#f0eef5">Double-Click to Open</text>
+      <text x="24" y="22" font-family="Inter, sans-serif" font-size="9" fill="#6b6880">Opens PAW app or jumps to notification</text>
+    </g>
+
+    <g transform="translate(24, 300)">
+      <circle cx="8" cy="8" r="8" fill="rgba(96,165,250,0.2)"/>
+      <text x="8" y="12" text-anchor="middle" font-size="9">✋</text>
+      <text x="24" y="8" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#f0eef5">Drag &amp; Drop</text>
+      <text x="24" y="22" font-family="Inter, sans-serif" font-size="9" fill="#6b6880">Move Pawl anywhere on screen</text>
+    </g>
+
+    <g transform="translate(24, 340)">
+      <circle cx="8" cy="8" r="8" fill="rgba(244,114,182,0.2)"/>
+      <text x="8" y="12" text-anchor="middle" font-size="9">🎭</text>
+      <text x="24" y="8" font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="#f0eef5">25 Sprite Frames</text>
+      <text x="24" y="22" font-family="Inter, sans-serif" font-size="9" fill="#6b6880">Emotions, actions, walking, specials</text>
+    </g>
+
+    <!-- Toggle controls preview -->
+    <g transform="translate(16, 380)">
+      <rect width="268" height="120" rx="8" fill="#13131f" stroke="rgba(124,58,237,0.12)" stroke-width="0.5"/>
+      <text x="12" y="20" font-family="Inter, sans-serif" font-size="10" font-weight="600" fill="#a8a4b8">Dashboard Toggle</text>
+      
+      <g transform="translate(12, 32)">
+        <text x="0" y="10" font-family="Inter, sans-serif" font-size="9" fill="#6b6880">Enabled</text>
+        <rect x="200" y="0" width="28" height="14" rx="7" fill="#7c3aed"/>
+        <circle cx="222" cy="7" r="5" fill="white"/>
+      </g>
+      <g transform="translate(12, 52)">
+        <text x="0" y="10" font-family="Inter, sans-serif" font-size="9" fill="#6b6880">Sounds</text>
+        <rect x="200" y="0" width="28" height="14" rx="7" fill="#7c3aed"/>
+        <circle cx="222" cy="7" r="5" fill="white"/>
+      </g>
+      <g transform="translate(12, 72)">
+        <text x="0" y="10" font-family="Inter, sans-serif" font-size="9" fill="#6b6880">Walk Around</text>
+        <rect x="200" y="0" width="28" height="14" rx="7" fill="#13131f" stroke="rgba(124,58,237,0.2)" stroke-width="0.5"/>
+        <circle cx="208" cy="7" r="5" fill="#6b6880"/>
+      </g>
+      <g transform="translate(12, 92)">
+        <text x="0" y="10" font-family="Inter, sans-serif" font-size="9" fill="#6b6880">Notifications</text>
+        <rect x="200" y="0" width="28" height="14" rx="7" fill="#7c3aed"/>
+        <circle cx="222" cy="7" r="5" fill="white"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- Bottom attribution -->
+  <text x="600" y="680" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" fill="#6b6880">
+    Pawl lives on your desktop as a transparent always-on-top widget
+  </text>
+  <text x="600" y="700" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#4c1d95">
+    Toggle via CLI: paw companion on|off  •  Dashboard: 🐕 Pawl Companion section
+  </text>
+  <text x="600" y="728" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="rgba(124,58,237,0.4)">
+    PAW Agents v3.2 — pawl companion
+  </text>
+</svg>

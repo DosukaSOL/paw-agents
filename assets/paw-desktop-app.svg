@@ -45,8 +45,9 @@
   <circle cx="215" cy="79" r="6" fill="#34d399"/>
 
   <!-- Title Bar Text -->
+  <image href="logo-transparent.png" x="415" y="69" width="20" height="20" />
   <circle cx="420" cy="79" r="4" fill="#34d399"/>
-  <text x="430" y="83" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600">🐾 PAW Agents</text>
+  <text x="440" y="83" fill="#a8a4b8" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="600">PAW Agents</text>
 
   <!-- Chat Area -->
   <g clip-path="url(#windowClip)">

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; script-src 'self';">
   <title>PAW Agents</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
@@ -128,7 +128,8 @@
 <body>
   <div class="titlebar">
     <span class="status-dot" id="statusDot"></span>
-    <span>🐾 PAW Agents</span>
+    <img src="../icon.png" alt="" style="width:18px;height:18px;margin-right:6px;filter:drop-shadow(0 0 4px rgba(124,58,237,0.4));" />
+    <span>PAW Agents</span>
   </div>
 
   <div class="chat-container" id="chat"></div>

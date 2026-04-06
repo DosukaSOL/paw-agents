@@ -1,0 +1,215 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#08080d"/>
+      <stop offset="100%" stop-color="#0e0e16"/>
+    </linearGradient>
+    <linearGradient id="fur" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="furDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+    <linearGradient id="belly" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#ede9fe"/>
+      <stop offset="100%" stop-color="#ddd6fe"/>
+    </linearGradient>
+    <linearGradient id="heroGlow" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="rgba(124,58,237,0.2)"/>
+      <stop offset="100%" stop-color="rgba(124,58,237,0)"/>
+    </linearGradient>
+    <filter id="purpleGlow">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feFlood flood-color="#7c3aed" flood-opacity="0.3" result="color"/>
+      <feComposite in="color" in2="blur" operator="in" result="glow"/>
+      <feComposite in="SourceGraphic" in2="glow" operator="over"/>
+    </filter>
+    <filter id="softShadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#7c3aed" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="800" fill="url(#bg)"/>
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(124,58,237,0.03)" stroke-width="0.5"/>
+  </pattern>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+
+  <!-- Radial glow behind Pawl -->
+  <circle cx="600" cy="300" r="200" fill="url(#heroGlow)"/>
+
+  <!-- ═══ HERO: LARGE PAWL ═══ -->
+  <g transform="translate(500, 100) scale(2.5)" filter="url(#purpleGlow)">
+    <!-- Body -->
+    <ellipse cx="40" cy="58" rx="22" ry="19" fill="url(#fur)"/>
+    <ellipse cx="40" cy="61" rx="14" ry="11" fill="url(#belly)"/>
+    <!-- Head -->
+    <circle cx="40" cy="30" r="20" fill="url(#fur)"/>
+    <!-- Ears -->
+    <ellipse cx="24" cy="14" rx="8" ry="14" fill="url(#furDark)" transform="rotate(-18,24,14)"/>
+    <ellipse cx="56" cy="14" rx="8" ry="14" fill="url(#furDark)" transform="rotate(18,56,14)"/>
+    <ellipse cx="24" cy="16" rx="5" ry="9" fill="#c4b5fd" transform="rotate(-18,24,16)"/>
+    <ellipse cx="56" cy="16" rx="5" ry="9" fill="#c4b5fd" transform="rotate(18,56,16)"/>
+    <!-- Eyes -->
+    <circle cx="32" cy="28" r="4.5" fill="#1e1e32"/>
+    <circle cx="48" cy="28" r="4.5" fill="#1e1e32"/>
+    <circle cx="33.5" cy="26.5" r="1.8" fill="white"/>
+    <circle cx="49.5" cy="26.5" r="1.8" fill="white"/>
+    <!-- Rosy cheeks -->
+    <circle cx="24" cy="34" r="4" fill="#f9a8d4" opacity="0.35"/>
+    <circle cx="56" cy="34" r="4" fill="#f9a8d4" opacity="0.35"/>
+    <!-- Nose -->
+    <ellipse cx="40" cy="36" rx="3.5" ry="2.5" fill="#4c1d95"/>
+    <!-- Happy mouth -->
+    <path d="M34 38 Q40 46 46 38" stroke="#4c1d95" stroke-width="1.8" fill="none"/>
+    <!-- Legs -->
+    <rect x="24" y="72" width="8" height="14" rx="4" fill="url(#fur)"/>
+    <rect x="48" y="72" width="8" height="14" rx="4" fill="url(#fur)"/>
+    <ellipse cx="28" cy="86" rx="6" ry="3" fill="url(#furDark)"/>
+    <ellipse cx="52" cy="86" rx="6" ry="3" fill="url(#furDark)"/>
+    <!-- Tail wagging -->
+    <path d="M62 54 Q78 36 72 26" stroke="url(#fur)" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <!-- Sparkles around -->
+    <text x="0" y="8" fill="#fbbf24" font-size="8">✦</text>
+    <text x="76" y="4" fill="#22d3ee" font-size="6">✦</text>
+    <text x="82" y="46" fill="#fbbf24" font-size="7">✦</text>
+    <text x="-8" y="50" fill="#a78bfa" font-size="5">✦</text>
+  </g>
+
+  <!-- ═══ NAME & TAGLINE ═══ -->
+  <text x="600" y="400" text-anchor="middle" font-family="'Playfair Display', Georgia, serif" font-size="48" font-weight="700" fill="#f0eef5" filter="url(#softShadow)">
+    Meet <tspan fill="#a78bfa">Pawl</tspan>
+  </text>
+  <text x="600" y="432" text-anchor="middle" font-family="Inter, sans-serif" font-size="16" fill="#a8a4b8">
+    Your PAW Agents desktop companion
+  </text>
+  <text x="600" y="454" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" fill="#6b6880">
+    A friendly purple pup that keeps you company while you build
+  </text>
+
+  <!-- ═══ FEATURE GRID ═══ -->
+  <!-- Row 1 -->
+  <g transform="translate(80, 490)">
+    <rect width="320" height="100" rx="12" fill="#13131f" stroke="rgba(124,58,237,0.12)" stroke-width="0.5"/>
+    <!-- Mini Pawl - happy -->
+    <g transform="translate(24, 18)">
+      <ellipse cx="20" cy="40" rx="14" ry="12" fill="url(#fur)"/>
+      <ellipse cx="20" cy="42" rx="9" ry="7" fill="url(#belly)"/>
+      <circle cx="20" cy="22" r="12" fill="url(#fur)"/>
+      <ellipse cx="12" cy="14" rx="5" ry="8" fill="url(#furDark)" transform="rotate(-18,12,14)"/>
+      <ellipse cx="28" cy="14" rx="5" ry="8" fill="url(#furDark)" transform="rotate(18,28,14)"/>
+      <path d="M15 20 Q18 17 21 20" stroke="#1e1e32" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M19 20 Q22 17 25 20" stroke="#1e1e32" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <ellipse cx="20" cy="27" rx="2.5" ry="2" fill="#4c1d95"/>
+      <path d="M16 28 Q20 34 24 28" stroke="#4c1d95" stroke-width="1.2" fill="none"/>
+      <circle cx="10" cy="25" r="3" fill="#f9a8d4" opacity="0.4"/>
+      <circle cx="30" cy="25" r="3" fill="#f9a8d4" opacity="0.4"/>
+    </g>
+    <text x="84" y="42" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="#f0eef5">Click Reactions</text>
+    <text x="84" y="60" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">Click Pawl for a random emotion —</text>
+    <text x="84" y="76" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">happy, excited, mad, confused, love!</text>
+  </g>
+
+  <g transform="translate(440, 490)">
+    <rect width="320" height="100" rx="12" fill="#13131f" stroke="rgba(124,58,237,0.12)" stroke-width="0.5"/>
+    <!-- Mini Pawl - bark with notification -->
+    <g transform="translate(24, 18)">
+      <ellipse cx="20" cy="40" rx="14" ry="12" fill="url(#fur)"/>
+      <ellipse cx="20" cy="42" rx="9" ry="7" fill="url(#belly)"/>
+      <circle cx="20" cy="22" r="12" fill="url(#fur)"/>
+      <ellipse cx="12" cy="14" rx="5" ry="8" fill="url(#furDark)" transform="rotate(-18,12,14)"/>
+      <ellipse cx="28" cy="14" rx="5" ry="8" fill="url(#furDark)" transform="rotate(18,28,14)"/>
+      <circle cx="16" cy="20" r="3" fill="#1e1e32"/>
+      <circle cx="24" cy="20" r="3" fill="#1e1e32"/>
+      <circle cx="17" cy="19" r="1.2" fill="white"/>
+      <circle cx="25" cy="19" r="1.2" fill="white"/>
+      <ellipse cx="20" cy="26" rx="2.5" ry="2" fill="#4c1d95"/>
+      <ellipse cx="20" cy="31" rx="6" ry="4" fill="#4c1d95"/>
+      <ellipse cx="20" cy="30" rx="4.5" ry="2.5" fill="#c4b5fd"/>
+      <!-- Sound waves -->
+      <path d="M32 18 Q38 18 38 14" stroke="#a78bfa" stroke-width="1" fill="none" opacity="0.5"/>
+      <path d="M34 22 Q42 22 42 16" stroke="#a78bfa" stroke-width="1" fill="none" opacity="0.3"/>
+    </g>
+    <text x="84" y="42" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="#f0eef5">Smart Notifications</text>
+    <text x="84" y="60" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">Pawl barks with text bubbles for builds,</text>
+    <text x="84" y="76" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">errors, completed tasks, and alerts</text>
+  </g>
+
+  <g transform="translate(800, 490)">
+    <rect width="320" height="100" rx="12" fill="#13131f" stroke="rgba(124,58,237,0.12)" stroke-width="0.5"/>
+    <!-- Mini Pawl - walking -->
+    <g transform="translate(24, 18)">
+      <ellipse cx="18" cy="38" rx="14" ry="12" fill="url(#fur)"/>
+      <ellipse cx="17" cy="40" rx="9" ry="7" fill="url(#belly)"/>
+      <circle cx="16" cy="22" r="12" fill="url(#fur)"/>
+      <ellipse cx="8" cy="14" rx="5" ry="8" fill="url(#furDark)" transform="rotate(-18,8,14)"/>
+      <ellipse cx="26" cy="16" rx="4" ry="7" fill="url(#furDark)" transform="rotate(5,26,16)"/>
+      <circle cx="12" cy="20" r="2.5" fill="#1e1e32"/>
+      <circle cx="20" cy="20" r="2" fill="#1e1e32"/>
+      <ellipse cx="14" cy="26" rx="2.5" ry="2" fill="#4c1d95"/>
+      <path d="M11 28 Q14 31 17 28" stroke="#4c1d95" stroke-width="1" fill="none"/>
+      <!-- Walking legs -->
+      <rect x="8" y="46" width="5" height="10" rx="2.5" fill="url(#fur)" transform="rotate(12,10,46)"/>
+      <rect x="24" y="46" width="5" height="10" rx="2.5" fill="url(#fur)" transform="rotate(-8,26,46)"/>
+    </g>
+    <text x="84" y="42" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="#f0eef5">Roaming &amp; Idle</text>
+    <text x="84" y="60" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">Walks across your desktop, blinks,</text>
+    <text x="84" y="76" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">wags tail, and sleeps when you're AFK</text>
+  </g>
+
+  <!-- Row 2 -->
+  <g transform="translate(80, 610)">
+    <rect width="320" height="100" rx="12" fill="#13131f" stroke="rgba(124,58,237,0.12)" stroke-width="0.5"/>
+    <!-- Mini Pawl - sleeping -->
+    <g transform="translate(24, 22)">
+      <ellipse cx="20" cy="38" rx="18" ry="12" fill="url(#fur)"/>
+      <ellipse cx="20" cy="40" rx="12" ry="7" fill="url(#belly)"/>
+      <circle cx="14" cy="28" r="10" fill="url(#fur)"/>
+      <ellipse cx="6" cy="22" rx="4" ry="7" fill="url(#furDark)" transform="rotate(-30,6,22)"/>
+      <path d="M9 26 Q12 29 15 26" stroke="#1e1e32" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <path d="M15 26 Q18 29 21 26" stroke="#1e1e32" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+      <text x="30" y="20" fill="#a78bfa" font-family="Inter" font-size="7" font-weight="700" opacity="0.5">z</text>
+      <text x="36" y="14" fill="#a78bfa" font-family="Inter" font-size="9" font-weight="700" opacity="0.4">z</text>
+      <text x="43" y="6" fill="#a78bfa" font-family="Inter" font-size="11" font-weight="700" opacity="0.3">z</text>
+    </g>
+    <text x="84" y="42" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="#f0eef5">Sleep Mode</text>
+    <text x="84" y="60" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">Pawl curls up and dozes off after</text>
+    <text x="84" y="76" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">5 minutes of idle — click to wake!</text>
+  </g>
+
+  <g transform="translate(440, 610)">
+    <rect width="320" height="100" rx="12" fill="#13131f" stroke="rgba(124,58,237,0.12)" stroke-width="0.5"/>
+    <!-- Sound icon -->
+    <g transform="translate(24, 22)">
+      <circle cx="20" cy="24" r="18" fill="rgba(124,58,237,0.1)" stroke="rgba(124,58,237,0.2)" stroke-width="0.5"/>
+      <text x="20" y="30" text-anchor="middle" font-size="18">🔊</text>
+    </g>
+    <text x="84" y="42" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="#f0eef5">Sound Effects</text>
+    <text x="84" y="60" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">Cute barks and yips using Web Audio.</text>
+    <text x="84" y="76" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">Toggle on/off from dashboard or CLI</text>
+  </g>
+
+  <g transform="translate(800, 610)">
+    <rect width="320" height="100" rx="12" fill="#13131f" stroke="rgba(124,58,237,0.12)" stroke-width="0.5"/>
+    <!-- Toggle icon -->
+    <g transform="translate(24, 22)">
+      <circle cx="20" cy="24" r="18" fill="rgba(124,58,237,0.1)" stroke="rgba(124,58,237,0.2)" stroke-width="0.5"/>
+      <text x="20" y="30" text-anchor="middle" font-size="18">⚙️</text>
+    </g>
+    <text x="84" y="42" font-family="Inter, sans-serif" font-size="14" font-weight="600" fill="#f0eef5">Fully Configurable</text>
+    <text x="84" y="60" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">Toggle every feature from dashboard</text>
+    <text x="84" y="76" font-family="Inter, sans-serif" font-size="11" fill="#a8a4b8">or CLI: paw companion config</text>
+  </g>
+
+  <!-- Bottom bar -->
+  <line x1="100" y1="740" x2="1100" y2="740" stroke="rgba(124,58,237,0.12)" stroke-width="0.5"/>
+  <text x="600" y="770" text-anchor="middle" font-family="Inter, sans-serif" font-size="12" fill="#6b6880">
+    25 hand-crafted sprite frames • 7 emotions • 4 walk cycles • Barks, blinks, wags, and sleeps
+  </text>
+  <text x="600" y="790" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="10" fill="rgba(124,58,237,0.4)">
+    PAW Agents v3.2 — Pawl Desktop Companion
+  </text>
+</svg>

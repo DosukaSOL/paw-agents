@@ -313,6 +313,31 @@ export function getDashboardHTML(): string {
       color: var(--brand-light);
     }
 
+    /* ─── Companion Toggles ─── */
+    .companion-toggles { display: flex; flex-direction: column; gap: 6px; }
+    .toggle-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.72rem; color: var(--text-secondary);
+      padding: 4px 0; cursor: pointer;
+    }
+    .toggle-row input[type="checkbox"] {
+      appearance: none; -webkit-appearance: none;
+      width: 32px; height: 18px; border-radius: 9px;
+      background: var(--bg-elevated); border: 1px solid var(--border-standard);
+      position: relative; cursor: pointer; transition: all var(--transition);
+    }
+    .toggle-row input[type="checkbox"]::after {
+      content: ''; position: absolute; top: 2px; left: 2px;
+      width: 12px; height: 12px; border-radius: 50%;
+      background: var(--text-tertiary); transition: all var(--transition);
+    }
+    .toggle-row input[type="checkbox"]:checked {
+      background: var(--brand); border-color: var(--brand);
+    }
+    .toggle-row input[type="checkbox"]:checked::after {
+      left: 16px; background: white;
+    }
+
     /* ─── Chat Panel ─── */
     .chat-panel {
       display: flex; flex-direction: column;
@@ -558,6 +583,36 @@ export function getDashboardHTML(): string {
             <div class="pipeline-step"><span class="pipeline-num">6</span> Log</div>
           </div>
         </div>
+
+        <div class="sidebar-section">
+          <h4>🐕 Pawl Companion</h4>
+          <div class="companion-toggles">
+            <label class="toggle-row">
+              <span>Enabled</span>
+              <input type="checkbox" id="pawl-enabled" checked onchange="togglePawl('enabled', this.checked)">
+            </label>
+            <label class="toggle-row">
+              <span>Sounds</span>
+              <input type="checkbox" id="pawl-sounds" checked onchange="togglePawl('sounds', this.checked)">
+            </label>
+            <label class="toggle-row">
+              <span>Idle Animations</span>
+              <input type="checkbox" id="pawl-idle" checked onchange="togglePawl('idleAnimations', this.checked)">
+            </label>
+            <label class="toggle-row">
+              <span>Walk Around</span>
+              <input type="checkbox" id="pawl-walk" checked onchange="togglePawl('walkAround', this.checked)">
+            </label>
+            <label class="toggle-row">
+              <span>Notifications</span>
+              <input type="checkbox" id="pawl-notif" checked onchange="togglePawl('notificationBubbles', this.checked)">
+            </label>
+            <label class="toggle-row">
+              <span>Sleep When Idle</span>
+              <input type="checkbox" id="pawl-sleep" checked onchange="togglePawl('sleepWhenIdle', this.checked)">
+            </label>
+          </div>
+        </div>
       </div>
 
       <div class="chat-panel">
@@ -774,6 +829,14 @@ export function getDashboardHTML(): string {
         const m = Math.floor((up % 3600) / 60);
         document.getElementById('uptime').textContent = (h > 0 ? h + 'h ' : '') + m + 'm';
       } catch(e) {}
+    }
+
+    // ─── Pawl Companion Toggles ───
+    function togglePawl(feature, value) {
+      addLog('companion', 'Pawl ' + feature + ' → ' + (value ? 'on' : 'off'));
+      if (ws && ws.readyState === 1) {
+        ws.send(JSON.stringify({ type: 'command', payload: { command: 'pawl_config', feature: feature, value: value }, timestamp: new Date().toISOString() }));
+      }
     }
 
     setInterval(fetchStatus, 30000);

@@ -45,6 +45,7 @@ ${c.bold}Commands:${c.reset}
   ${c.cyan}rag${c.reset}         Manage RAG documents (index, search, list)
   ${c.cyan}branch${c.reset}      Manage conversation branches (list, switch, rollback)
   ${c.cyan}models${c.reset}      Show available AI models and performance stats
+  ${c.cyan}companion${c.reset}   Manage Pawl desktop companion (on, off, status, config)
   ${c.cyan}help${c.reset}        Show this help message
   ${c.cyan}version${c.reset}     Show version
 
@@ -221,6 +222,51 @@ async function deploy(): Promise<void> {
   }
 }
 
+// ─── Companion command ───
+function companionCommand(args: string[]): void {
+  const sub = args[1] ?? 'status';
+
+  console.log(`\n${c.bold}🐕 Pawl — Desktop Companion${c.reset}\n`);
+
+  switch (sub) {
+    case 'on':
+      console.log(`  ${c.green}✓${c.reset} Pawl companion ${c.green}enabled${c.reset}`);
+      console.log(`  ${c.dim}Pawl will appear on your desktop next time the app starts.${c.reset}`);
+      console.log(`  ${c.dim}Env: PAW_COMPANION_ENABLED=true${c.reset}\n`);
+      break;
+    case 'off':
+      console.log(`  ${c.yellow}✗${c.reset} Pawl companion ${c.yellow}disabled${c.reset}`);
+      console.log(`  ${c.dim}Pawl will be hidden until re-enabled.${c.reset}`);
+      console.log(`  ${c.dim}Env: PAW_COMPANION_ENABLED=false${c.reset}\n`);
+      break;
+    case 'config':
+      console.log(`  ${c.cyan}Current Pawl Configuration:${c.reset}\n`);
+      console.log(`  ${c.cyan}sounds:${c.reset}              ${process.env.PAW_COMPANION_SOUNDS !== 'false' ? 'on' : 'off'}`);
+      console.log(`  ${c.cyan}idle-animations:${c.reset}     ${process.env.PAW_COMPANION_IDLE !== 'false' ? 'on' : 'off'}`);
+      console.log(`  ${c.cyan}walk-around:${c.reset}         ${process.env.PAW_COMPANION_WALK !== 'false' ? 'on' : 'off'}`);
+      console.log(`  ${c.cyan}notifications:${c.reset}       ${process.env.PAW_COMPANION_NOTIF !== 'false' ? 'on' : 'off'}`);
+      console.log(`  ${c.cyan}sleep-when-idle:${c.reset}     ${process.env.PAW_COMPANION_SLEEP !== 'false' ? 'on' : 'off'}`);
+      console.log(`  ${c.cyan}auto-react:${c.reset}          ${process.env.PAW_COMPANION_REACT !== 'false' ? 'on' : 'off'}`);
+      console.log(`  ${c.cyan}size:${c.reset}                ${process.env.PAW_COMPANION_SIZE ?? '96'}px`);
+      console.log('');
+      console.log(`  ${c.dim}Toggle features:${c.reset} paw companion config <feature> <on|off>`);
+      console.log(`  ${c.dim}Example:         paw companion config sounds off${c.reset}\n`);
+      break;
+    case 'status':
+    default:
+      console.log(`  ${c.cyan}Companion:${c.reset}   Pawl 🐕`);
+      console.log(`  ${c.cyan}Enabled:${c.reset}     ${process.env.PAW_COMPANION_ENABLED !== 'false' ? `${c.green}Yes${c.reset}` : `${c.yellow}No${c.reset}`}`);
+      console.log(`  ${c.cyan}Sounds:${c.reset}      ${process.env.PAW_COMPANION_SOUNDS !== 'false' ? 'On' : 'Off'}`);
+      console.log(`  ${c.cyan}Animations:${c.reset}  ${process.env.PAW_COMPANION_IDLE !== 'false' ? 'On' : 'Off'}`);
+      console.log(`  ${c.cyan}Walking:${c.reset}     ${process.env.PAW_COMPANION_WALK !== 'false' ? 'On' : 'Off'}`);
+      console.log(`  ${c.cyan}Bubbles:${c.reset}     ${process.env.PAW_COMPANION_NOTIF !== 'false' ? 'On' : 'Off'}`);
+      console.log('');
+      console.log(`  ${c.dim}Use 'paw companion on|off' to toggle.${c.reset}`);
+      console.log(`  ${c.dim}Use 'paw companion config' to see all options.${c.reset}\n`);
+      break;
+  }
+}
+
 // ─── Main ───
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -238,6 +284,9 @@ async function main(): Promise<void> {
       break;
     case 'models':
       showModels();
+      break;
+    case 'companion':
+      companionCommand(args);
       break;
     case 'version':
     case '--version':

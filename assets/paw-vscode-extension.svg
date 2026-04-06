@@ -41,7 +41,7 @@
     <text x="91" y="208" fill="#6b6880" font-family="Inter, system-ui, sans-serif" font-size="16">🐛</text>
     <rect x="80" y="225" width="40" height="32" fill="rgba(124,58,237,0.15)"/>
     <rect x="80" y="225" width="3" height="32" fill="#7c3aed"/>
-    <text x="91" y="246" fill="#a78bfa" font-family="Inter, system-ui, sans-serif" font-size="16">🐾</text>
+    <image href="logo-transparent.png" x="88" y="230" width="22" height="22" />
 
     <!-- PAW Sidebar -->
     <rect x="120" y="92" width="200" height="428" fill="#252526"/>
@@ -119,7 +119,7 @@
 
     <!-- Status Bar -->
     <rect x="80" y="510" width="740" height="20" fill="#7c3aed"/>
-    <text x="100" y="524" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="10">🐾 PAW: Connected</text>
+    <text x="100" y="524" fill="#ffffff" font-family="Inter, system-ui, sans-serif" font-size="10">PAW: Connected</text>
     <text x="660" y="524" fill="rgba(255,255,255,0.7)" font-family="Inter, system-ui, sans-serif" font-size="10">TypeScript · UTF-8</text>
   </g>
 

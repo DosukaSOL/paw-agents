@@ -30,7 +30,8 @@
 
     <!-- Navigation Header -->
     <rect x="310" y="70" width="280" height="44" fill="#0e0e16"/>
-    <text x="412" y="97" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">🐾 PAW Chat</text>
+    <image href="logo-transparent.png" x="368" y="77" width="22" height="22" />
+    <text x="426" y="97" fill="#f0eef5" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="700" text-anchor="middle">PAW Chat</text>
     <line x1="310" y1="114" x2="590" y2="114" stroke="rgba(124,58,237,0.12)" stroke-width="1"/>
 
     <!-- Status Indicator -->

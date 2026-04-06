@@ -508,6 +508,41 @@ Chrome/Firefox extension (Manifest v3):
 - Floating 🐾 button on text selection
 - Settings panel for gateway configuration
 
+### 🐕 Pawl — Desktop Companion
+
+Meet **Pawl**, your friendly PAW desktop companion — a cute purple dog that lives right on your screen.
+
+<p align="center">
+  <img src="assets/pawl-mascot-features.svg" alt="Pawl Mascot Features" width="800" />
+</p>
+
+Pawl sits on your desktop as a transparent always-on-top widget and reacts to your work:
+
+<p align="center">
+  <img src="assets/pawl-desktop-companion.svg" alt="Pawl Desktop Companion" width="800" />
+</p>
+
+**What Pawl can do:**
+- **Click reactions** — Click Pawl for a random RNG emotion (happy, excited, mad, confused, love)
+- **Notification bubbles** — Barks with text bubbles for build completions, errors, bugs, and alerts
+- **Walk around** — Roams across your desktop between tasks
+- **Idle animations** — Blinks, looks around, wags tail
+- **Sleep mode** — Curls up and dozes off after 5 minutes of inactivity
+- **Sound effects** — Cute barks and yips via Web Audio API
+- **Double-click** — Opens the PAW app, or jumps straight to a notification
+- **Drag & drop** — Move Pawl anywhere on your screen
+- **25 sprite frames** — 5 idle states, 5 emotions, 5 actions, 5 movement, 5 special
+
+**Toggle from CLI:**
+```bash
+paw companion on          # Enable Pawl
+paw companion off         # Disable Pawl
+paw companion status      # Show current settings
+paw companion config      # View all toggleable features
+```
+
+**Toggle from Dashboard:** Use the 🐕 Pawl Companion section in the sidebar to flip individual features on/off.
+
 ---
 
 ## Built-in Tools (45+)
@@ -732,9 +767,11 @@ paw-agents/
 │   ├── self-healing/
 │       └── index.ts                # Failure recovery
 ├── desktop/                        # Electron desktop app
-│   ├── src/main.ts                 # Main process + system tray
-│   ├── src/preload.ts              # Secure IPC bridge
-│   └── renderer/index.html         # Chat UI
+│   ├── src/main.ts                 # Main process + system tray + Pawl init
+│   ├── src/companion.ts            # Pawl companion system (sprite, animations, IPC)
+│   ├── src/preload.ts              # Secure IPC bridge (PAW + Pawl APIs)
+│   ├── renderer/index.html         # Chat UI
+│   └── renderer/pawl.html          # Companion overlay (transparent widget)
 ├── mobile/                         # React Native mobile app
 │   ├── App.tsx                     # Navigation + screens
 │   └── src/                        # Services + screens

@@ -6,7 +6,12 @@
   "permissions": ["activeTab", "storage", "contextMenus"],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "PAW Agents"
+    "default_title": "PAW Agents",
+    "default_icon": {
+      "16": "icons/paw-16.png",
+      "48": "icons/paw-48.png",
+      "128": "icons/paw-128.png"
+    }
   },
   "background": {
     "service_worker": "background.js"

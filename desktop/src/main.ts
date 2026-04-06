@@ -4,6 +4,7 @@
 import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron';
 import * as path from 'path';
 import WebSocket from 'ws';
+import { PawlCompanion } from './companion';
 
 const GATEWAY_URL = process.env.PAW_GATEWAY_URL ?? 'ws://127.0.0.1:18789';
 const AUTH_TOKEN = process.env.PAW_AUTH_TOKEN ?? '';
@@ -12,6 +13,7 @@ let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let ws: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+let pawl: PawlCompanion | null = null;
 
 // ─── Create main window ───
 function createWindow(): void {
@@ -22,7 +24,8 @@ function createWindow(): void {
     minHeight: 400,
     title: 'PAW Agents',
     titleBarStyle: 'hiddenInset',
-    backgroundColor: '#0f0f23',
+    icon: path.join(__dirname, '..', 'icon.png'),
+    backgroundColor: '#08080d',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -123,14 +126,23 @@ function setupIPC(): void {
 
 // ─── System tray ───
 function createTray(): void {
-  // Use a simple icon (16x16 paw emoji equivalent)
-  const icon = nativeImage.createEmpty();
+  const trayIconPath = path.join(__dirname, '..', 'icon.png');
+  const icon = nativeImage.createFromPath(trayIconPath).resize({ width: 18, height: 18 });
   tray = new Tray(icon);
-  tray.setTitle('🐾');
   tray.setToolTip('PAW Agents');
 
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Show PAW', click: () => mainWindow?.show() },
+    { type: 'separator' },
+    { label: 'Pawl Companion', type: 'checkbox', checked: true, click: (item) => {
+      if (item.checked) {
+        pawl = new PawlCompanion();
+        pawl.show();
+      } else {
+        pawl?.hide();
+        pawl = null;
+      }
+    }},
     { type: 'separator' },
     { label: 'Status', enabled: false },
     { type: 'separator' },
@@ -147,6 +159,16 @@ app.whenReady().then(() => {
   createTray();
   setupIPC();
   connectGateway();
+
+  // Start Pawl companion
+  pawl = new PawlCompanion();
+  pawl.show();
+
+  // Listen for Pawl double-click → show main window
+  ipcMain.on('pawl:open-app', () => {
+    mainWindow?.show();
+    mainWindow?.focus();
+  });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
