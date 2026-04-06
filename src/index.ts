@@ -4,6 +4,10 @@
 
 import { PawAgent } from './agent/loop';
 import { TelegramBot } from './integrations/telegram/bot';
+import { DiscordAdapter } from './integrations/discord/adapter';
+import { SlackAdapter } from './integrations/slack/adapter';
+import { EmailAdapter } from './integrations/email/adapter';
+import { SMSAdapter } from './integrations/sms/adapter';
 import { PawGateway } from './gateway/index';
 import { CronEngine } from './cron/index';
 import { config } from './core/config';
@@ -45,6 +49,78 @@ async function main(): Promise<void> {
     await bot.start();
   } catch (err) {
     console.warn('[PAW] Telegram not configured or failed:', (err as Error).message);
+  }
+
+  // Start Discord adapter
+  try {
+    const discord = new DiscordAdapter();
+    discord.onMessage(async (userId: string, message: string) => {
+      const response = await agent.process(userId, message);
+      await discord.send(userId, response.message);
+    });
+    await discord.start();
+  } catch (err) {
+    console.warn('[PAW] Discord not configured or failed:', (err as Error).message);
+  }
+
+  // Start Slack adapter
+  try {
+    const slack = new SlackAdapter();
+    slack.onMessage(async (userId: string, message: string) => {
+      const response = await agent.process(userId, message);
+      await slack.send(userId, response.message);
+    });
+    await slack.start();
+  } catch (err) {
+    console.warn('[PAW] Slack not configured or failed:', (err as Error).message);
+  }
+
+  // Start Email adapter (if configured)
+  if (config.email?.imapHost) {
+    try {
+      const email = new EmailAdapter({
+        imap: {
+          host: config.email.imapHost,
+          port: config.email.imapPort,
+          user: config.email.user,
+          password: config.email.password,
+          tls: true,
+        },
+        smtp: {
+          host: config.email.smtpHost,
+          port: config.email.smtpPort,
+          user: config.email.user,
+          password: config.email.password,
+          secure: true,
+        },
+        fromAddress: config.email.user,
+      });
+      email.onMessage(async (userId: string, message: string) => {
+        const response = await agent.process(userId, message);
+        await email.send(userId, response.message);
+      });
+      await email.start();
+    } catch (err) {
+      console.warn('[PAW] Email not configured or failed:', (err as Error).message);
+    }
+  }
+
+  // Start SMS adapter (if configured)
+  if (config.sms?.accountSid) {
+    try {
+      const sms = new SMSAdapter({
+        accountSid: config.sms.accountSid,
+        authToken: config.sms.authToken,
+        fromNumber: config.sms.fromNumber,
+      });
+      sms.onMessage(async (userId: string, message: string) => {
+        const response = await agent.process(userId, message);
+        await sms.send(userId, response.message);
+      });
+      await sms.start();
+    } catch (err) {
+      console.warn('[PAW] SMS not configured or failed:', (err as Error).message);
+    }
   }
 
   console.log('[PAW] 🐾 All systems online.');

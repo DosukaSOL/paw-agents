@@ -116,9 +116,9 @@ export class PawGateway {
         try {
           const msg = JSON.parse(data.toString()) as GatewayMessage & { auth_token?: string };
 
-          // Handle auth
+          // Handle auth — accept auth_token on any message type
           if (!client.authenticated) {
-            if (msg.type === 'command' && msg.payload && (msg as { auth_token?: string }).auth_token === config.gateway.authToken) {
+            if (msg.auth_token === config.gateway.authToken) {
               client.authenticated = true;
               this.sendToClient(clientId, {
                 type: 'event',
@@ -127,16 +127,18 @@ export class PawGateway {
                 payload: { event: 'authenticated' },
                 timestamp: new Date().toISOString(),
               });
+              // Fall through to process the message if it has content
+              if (msg.type !== 'message' && msg.type !== 'command') return;
+            } else {
+              this.sendToClient(clientId, {
+                type: 'event',
+                channel: 'webchat',
+                from: 'system',
+                payload: { event: 'auth_required' },
+                timestamp: new Date().toISOString(),
+              });
               return;
             }
-            this.sendToClient(clientId, {
-              type: 'event',
-              channel: 'webchat',
-              from: 'system',
-              payload: { event: 'auth_required' },
-              timestamp: new Date().toISOString(),
-            });
-            return;
           }
 
           // Route message to agent
@@ -259,12 +261,27 @@ export class PawGateway {
 
   // ─── Handle webhook requests ───
   private handleWebhook(req: IncomingMessage, res: ServerResponse): void {
+    // Validate webhook secret from Authorization header or query param
+    const authHeader = req.headers['authorization'];
+    const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
+    const querySecret = url.searchParams.get('secret');
+    const webhookSecret = config.gateway.authToken;
+
+    if (webhookSecret) {
+      const providedSecret = authHeader?.replace(/^Bearer\s+/i, '') ?? querySecret;
+      if (providedSecret !== webhookSecret) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Unauthorized' }));
+        return;
+      }
+    }
+
     let body = '';
     req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
     req.on('end', async () => {
       try {
         const data = JSON.parse(body);
-        const webhookId = req.url?.split('/webhook/')[1];
+        const webhookId = req.url?.split('/webhook/')[1]?.split('?')[0];
 
         // Process the webhook as a system message
         const response = await this.agent.process(
@@ -275,8 +292,8 @@ export class PawGateway {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify(response));
       } catch (err) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Invalid webhook payload' }));
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal server error' }));
       }
     });
   }

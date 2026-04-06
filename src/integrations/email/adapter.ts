@@ -73,6 +73,12 @@ export class EmailAdapter implements ChannelAdapter {
         },
       });
 
+      const safeHtml = message
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+
       await transporter.sendMail({
         from: this.config.fromAddress,
         to,
@@ -80,7 +86,7 @@ export class EmailAdapter implements ChannelAdapter {
         text: message,
         html: `<div style="font-family: sans-serif; padding: 16px;">
           <h3 style="color: #7c3aed;">🐾 PAW Agent</h3>
-          <div style="white-space: pre-wrap;">${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+          <div style="white-space: pre-wrap;">${safeHtml}</div>
         </div>`,
       });
 
@@ -136,7 +142,9 @@ export class EmailAdapter implements ChannelAdapter {
                 if (from && body && this.handler) {
                   const userId = from.replace(/.*<(.+)>.*/, '$1');
                   this.pendingReplies.set(userId, { to: userId, subject });
-                  this.handler(userId, body, 'email');
+                  this.handler(userId, body, 'email').catch((err) => {
+                    console.error('[EMAIL] Handler error:', err);
+                  });
                 }
               });
             });

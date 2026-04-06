@@ -187,7 +187,7 @@ export class PawAgent {
           `Validation failed: ${validation.errors.map(e => e.message).join(', ')}`,
           plan,
           (hint) => this.brain.generatePlan(sanitized.sanitized, relevantSkills, availableTools, hint),
-          (p) => this.validator.validate(p),
+          (p) => this.validator.validate(p, userMode),
           (p) => this.executor.execute(p),
         );
 
@@ -296,19 +296,37 @@ export class PawAgent {
         result.error.message,
         plan,
         (hint) => this.brain.generatePlan(plan.intent, [], ['solana_transfer', 'solana_balance', 'api_call', 'internal_log'], hint),
-        (p) => this.validator.validate(p),
+        (p) => this.validator.validate(p, this.getUserMode(`webhook:${plan.id}`)),
         (p) => this.executor.execute(p),
       );
 
-      if (healResult.final_status !== 'healed') {
+      if (healResult.final_status === 'healed' && healResult.fixed_plan) {
+        // Use the healed plan and re-execute
+        const healedResult = await this.executor.execute(healResult.fixed_plan);
+        trace.log('logging', {
+          execution: healedResult,
+          output: healedResult.final_output,
+          duration_ms: Date.now() - startTime,
+        });
+        trace.log('response', {
+          output: healedResult.final_output,
+          duration_ms: Date.now() - startTime,
+        });
         return {
-          success: false,
-          message: `Action failed: ${result.error.message}`,
-          plan_id: plan.id,
-          error: result.error.code,
+          success: healedResult.success,
+          message: this.formatResult(healResult.fixed_plan, healedResult),
+          plan_id: healResult.fixed_plan.id,
           trace_id: trace.getSessionId(),
         };
       }
+
+      return {
+        success: false,
+        message: `Action failed: ${result.error.message}`,
+        plan_id: plan.id,
+        error: result.error.code,
+        trace_id: trace.getSessionId(),
+      };
     }
 
     // ═══ STEP 10: Log (Clawtrace) ═══

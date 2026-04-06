@@ -125,8 +125,8 @@ export class SkillEngine {
     // Validate execution type
     if (obj.execution && typeof obj.execution === 'object') {
       const exec = obj.execution as Record<string, unknown>;
-      if (exec.execution_type && !['purp', 'js', 'api'].includes(exec.execution_type as string)) {
-        errors.push({ field: 'execution.execution_type', message: 'execution_type must be purp, js, or api' });
+      if (exec.execution_type && !['purp', 'js', 'api', 'system'].includes(exec.execution_type as string)) {
+        errors.push({ field: 'execution.execution_type', message: 'execution_type must be purp, js, api, or system' });
       }
     }
 

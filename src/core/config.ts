@@ -53,6 +53,19 @@ export const config = {
       return process.env.WHATSAPP_SESSION_PATH ?? './data/whatsapp';
     },
   },
+  email: {
+    imapHost: optionalEnv('EMAIL_IMAP_HOST', ''),
+    imapPort: parseInt(optionalEnv('EMAIL_IMAP_PORT', '993'), 10),
+    smtpHost: optionalEnv('EMAIL_SMTP_HOST', ''),
+    smtpPort: parseInt(optionalEnv('EMAIL_SMTP_PORT', '587'), 10),
+    user: optionalEnv('EMAIL_USER', ''),
+    password: optionalEnv('EMAIL_PASSWORD', ''),
+  },
+  sms: {
+    accountSid: optionalEnv('TWILIO_ACCOUNT_SID', ''),
+    authToken: optionalEnv('TWILIO_AUTH_TOKEN', ''),
+    fromNumber: optionalEnv('TWILIO_FROM_NUMBER', ''),
+  },
   // ─── Gateway ───
   gateway: {
     port: parseInt(optionalEnv('GATEWAY_PORT', '18789'), 10),

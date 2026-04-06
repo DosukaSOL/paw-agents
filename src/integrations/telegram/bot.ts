@@ -28,7 +28,11 @@ export class TelegramBot {
       // Try as command first
       const cmdResult = this.commands.handle(userId, message);
       if (cmdResult.handled && cmdResult.response) {
-        await ctx.reply(cmdResult.response, { parse_mode: 'Markdown' });
+        try {
+          await ctx.reply(cmdResult.response, { parse_mode: 'Markdown' });
+        } catch {
+          await ctx.reply(cmdResult.response);
+        }
         return;
       }
 
@@ -39,7 +43,12 @@ export class TelegramBot {
         const response = await this.agent.process(userId, message);
 
         if (response.success) {
-          await ctx.reply(response.message, { parse_mode: 'Markdown' });
+          try {
+            await ctx.reply(response.message, { parse_mode: 'Markdown' });
+          } catch {
+            // Fallback to plain text if Markdown parsing fails
+            await ctx.reply(response.message);
+          }
         } else {
           await ctx.reply(`❌ ${response.message}`);
         }

@@ -10,6 +10,7 @@ export class DiscordAdapter implements ChannelAdapter {
   name: ChannelType = 'discord';
   private handler: MessageHandler | null = null;
   private client: unknown = null;
+  private channelMap = new Map<string, string>(); // userId -> last channelId
 
   async start(): Promise<void> {
     const token = config.discord.botToken;
@@ -30,10 +31,13 @@ export class DiscordAdapter implements ChannelAdapter {
         ],
       });
 
-      client.on(Events.MessageCreate, async (message: { author: { bot: boolean; id: string }; content: string }) => {
+      client.on(Events.MessageCreate, async (message: { author: { bot: boolean; id: string }; content: string; channel: { id: string } }) => {
         if (message.author.bot) return;
+        const userId = `discord:${message.author.id}`;
+        // Store the source channel for reply routing
+        this.channelMap.set(userId, message.channel.id);
         if (this.handler) {
-          await this.handler(`discord:${message.author.id}`, message.content, 'discord');
+          await this.handler(userId, message.content, 'discord');
         }
       });
 
@@ -56,8 +60,18 @@ export class DiscordAdapter implements ChannelAdapter {
 
   async send(userId: string, message: string): Promise<void> {
     if (!this.client) return;
-    const discordId = userId.replace('discord:', '');
     try {
+      // Try to reply in the source channel first
+      const channelId = this.channelMap.get(userId);
+      if (channelId) {
+        const channel = await (this.client as { channels: { fetch: (id: string) => Promise<{ send: (msg: string) => Promise<void> } | null> } }).channels.fetch(channelId);
+        if (channel && 'send' in channel) {
+          await (channel as { send: (msg: string) => Promise<void> }).send(message);
+          return;
+        }
+      }
+      // Fallback to DM
+      const discordId = userId.replace('discord:', '');
       const user = await (this.client as { users: { fetch: (id: string) => Promise<{ send: (msg: string) => Promise<void> }> } }).users.fetch(discordId);
       await user.send(message);
     } catch (err) {

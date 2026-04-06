@@ -4,12 +4,14 @@
 import type { ChannelAdapter, ChannelType } from '../../core/types';
 import * as http from 'http';
 import * as https from 'https';
+import * as crypto from 'crypto';
 
 export interface SMSConfig {
   accountSid: string;
   authToken: string;
   fromNumber: string;
   webhookPort?: number;
+  webhookUrl?: string; // Full URL for Twilio signature validation
 }
 
 export class SMSAdapter implements ChannelAdapter {
@@ -31,6 +33,17 @@ export class SMSAdapter implements ChannelAdapter {
         req.on('data', (chunk) => { body += chunk; });
         req.on('end', () => {
           const params = new URLSearchParams(body);
+
+          // Validate Twilio signature
+          const twilioSignature = req.headers['x-twilio-signature'] as string | undefined;
+          if (this.config.authToken && this.config.webhookUrl) {
+            if (!twilioSignature || !this.validateTwilioSignature(twilioSignature, this.config.webhookUrl, params)) {
+              res.writeHead(403);
+              res.end('Invalid signature');
+              return;
+            }
+          }
+
           const from = params.get('From') ?? '';
           const text = params.get('Body') ?? '';
 
@@ -69,6 +82,20 @@ export class SMSAdapter implements ChannelAdapter {
 
   onMessage(handler: (userId: string, message: string, channel: ChannelType) => Promise<void>): void {
     this.handler = handler;
+  }
+
+  private validateTwilioSignature(signature: string, url: string, params: URLSearchParams): boolean {
+    // Twilio signature = Base64(HMAC-SHA1(authToken, url + sorted POST params))
+    const sortedKeys = Array.from(params.keys()).sort();
+    let data = url;
+    for (const key of sortedKeys) {
+      data += key + (params.get(key) ?? '');
+    }
+    const expected = crypto
+      .createHmac('sha1', this.config.authToken)
+      .update(data)
+      .digest('base64');
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
   }
 
   async send(userId: string, message: string): Promise<void> {
