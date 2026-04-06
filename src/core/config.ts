@@ -1,6 +1,6 @@
 // ─── PAW Agents Configuration ───
 import { config as loadEnv } from 'dotenv';
-import { SecurityPolicy } from './types';
+import { SecurityPolicy, AgentMode } from './types';
 
 loadEnv();
 
@@ -8,7 +8,26 @@ function optionalEnv(key: string, fallback: string): string {
   return process.env[key] ?? fallback;
 }
 
+function optionalBool(key: string, fallback: boolean): boolean {
+  const val = process.env[key];
+  if (!val) return fallback;
+  return val === 'true' || val === '1';
+}
+
 export const config = {
+  // ─── Agent Mode ───
+  agent: {
+    mode: (optionalEnv('AGENT_MODE', 'supervised') as AgentMode),
+    // When true, validation pipeline is mandatory. When false, agent runs fully autonomous.
+    requireValidation: optionalBool('REQUIRE_VALIDATION', true),
+    // When true, risky actions still require confirmation even in autonomous mode.
+    confirmHighRisk: optionalBool('CONFIRM_HIGH_RISK', true),
+    // Max conversation history per session
+    maxHistoryLength: parseInt(optionalEnv('MAX_HISTORY_LENGTH', '50'), 10),
+    // Thinking level: off, low, medium, high
+    thinkingLevel: optionalEnv('THINKING_LEVEL', 'medium'),
+  },
+  // ─── Channels ───
   telegram: {
     get botToken(): string {
       const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -16,6 +35,32 @@ export const config = {
       return token;
     },
   },
+  discord: {
+    get botToken(): string {
+      return process.env.DISCORD_BOT_TOKEN ?? '';
+    },
+  },
+  slack: {
+    get botToken(): string {
+      return process.env.SLACK_BOT_TOKEN ?? '';
+    },
+    get appToken(): string {
+      return process.env.SLACK_APP_TOKEN ?? '';
+    },
+  },
+  whatsapp: {
+    get sessionPath(): string {
+      return process.env.WHATSAPP_SESSION_PATH ?? './data/whatsapp';
+    },
+  },
+  // ─── Gateway ───
+  gateway: {
+    port: parseInt(optionalEnv('GATEWAY_PORT', '18789'), 10),
+    host: optionalEnv('GATEWAY_HOST', '127.0.0.1'),
+    authToken: optionalEnv('GATEWAY_AUTH_TOKEN', ''),
+    corsOrigins: optionalEnv('GATEWAY_CORS_ORIGINS', '*').split(','),
+  },
+  // ─── Models ───
   models: {
     openai: {
       apiKey: optionalEnv('OPENAI_API_KEY', ''),
@@ -26,18 +71,34 @@ export const config = {
     },
     defaultProvider: optionalEnv('DEFAULT_MODEL_PROVIDER', 'openai'),
   },
+  // ─── Solana ───
   solana: {
     rpcUrl: optionalEnv('SOLANA_RPC_URL', 'https://api.mainnet-beta.solana.com'),
     walletEncryptionKey: optionalEnv('SOLANA_WALLET_ENCRYPTION_KEY', ''),
+    network: optionalEnv('SOLANA_NETWORK', 'mainnet-beta'),
   },
+  // ─── Purp ───
+  purp: {
+    compilerPath: optionalEnv('PURP_COMPILER_PATH', ''),
+    projectDir: optionalEnv('PURP_PROJECT_DIR', './purp'),
+    autoCompile: optionalBool('PURP_AUTO_COMPILE', true),
+  },
+  // ─── Security ───
   security: {
     maxTransactionLamports: parseInt(optionalEnv('MAX_TRANSACTION_LAMPORTS', '1000000000'), 10),
     requireConfirmationAboveSol: parseFloat(optionalEnv('REQUIRE_CONFIRMATION_ABOVE_SOL', '1.0')),
     rateLimitPerMinute: parseInt(optionalEnv('RATE_LIMIT_PER_MINUTE', '30'), 10),
+    sandboxMode: optionalEnv('SANDBOX_MODE', 'strict'),
   },
+  // ─── Clawtrace ───
   clawtrace: {
     logDir: optionalEnv('CLAWTRACE_LOG_DIR', './logs/clawtrace'),
     retentionDays: parseInt(optionalEnv('CLAWTRACE_RETENTION_DAYS', '90'), 10),
+  },
+  // ─── Cron ───
+  cron: {
+    enabled: optionalBool('CRON_ENABLED', true),
+    maxTasks: parseInt(optionalEnv('CRON_MAX_TASKS', '50'), 10),
   },
   env: optionalEnv('NODE_ENV', 'production'),
   logLevel: optionalEnv('LOG_LEVEL', 'info'),

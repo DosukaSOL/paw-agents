@@ -6,6 +6,9 @@ import { ValidationEngine } from '../src/validation/engine';
 import { PurpEngine } from '../src/integrations/purp/engine';
 import { SkillEngine } from '../src/skills/engine';
 import { SelfHealingSystem } from '../src/self-healing/index';
+import { MemorySystem } from '../src/memory/index';
+import { CommandHandler } from '../src/commands/index';
+import { CronEngine } from '../src/cron/index';
 import { AgentPlan, RiskLevel } from '../src/core/types';
 import { SecureSigner, encryptKey, decryptKey } from '../src/security/keystore';
 import { v4 as uuid } from 'uuid';
@@ -234,7 +237,7 @@ describe('Malicious Skill Defense', () => {
     const purp = new PurpEngine();
     const program = purp.parse(JSON.stringify({
       name: 'overflow',
-      instructions: [{ type: 'log', params: { message: 'x'.repeat(1000) } }],
+      instructions: [{ type: 'log', params: { message: 'x'.repeat(2000) } }],
     }));
     const result = purp.validate(program);
     expect(result.valid).toBe(false);
@@ -311,5 +314,310 @@ describe('Validation Edge Cases', () => {
     const plan = makePlan({ plan: [] });
     const result = await engine.validate(plan);
     expect(result.errors.some(e => e.code === 'EMPTY_PLAN')).toBe(true);
+  });
+});
+
+// ═══════════════════════════════════════
+// TEST 8: Autonomous Mode
+// ═══════════════════════════════════════
+describe('Autonomous Mode', () => {
+  test('supervised mode requires confirmation for medium risk', async () => {
+    const engine = new ValidationEngine();
+    const plan = makePlan({
+      risks: [{ category: 'financial', level: 'medium', description: 'test', mitigation: 'test' }],
+      execution_mode: 'purp',
+    });
+    const result = await engine.validate(plan, 'supervised');
+    expect(result.requires_confirmation).toBe(true);
+  });
+
+  test('autonomous mode skips confirmation for low risk', async () => {
+    const engine = new ValidationEngine();
+    const plan = makePlan({
+      risks: [{ category: 'data', level: 'low', description: 'test', mitigation: 'test' }],
+      execution_mode: 'js',
+      requires_confirmation: false,
+    });
+    const result = await engine.validate(plan, 'autonomous');
+    expect(result.requires_confirmation).toBe(false);
+  });
+
+  test('autonomous mode still confirms critical risks', async () => {
+    const engine = new ValidationEngine();
+    const plan = makePlan({
+      risks: [{ category: 'financial', level: 'critical', description: 'test', mitigation: 'test' }],
+    });
+    const result = await engine.validate(plan, 'autonomous');
+    expect(result.requires_confirmation).toBe(true);
+  });
+
+  test('validates system execution mode', async () => {
+    const engine = new ValidationEngine();
+    const plan = makePlan({ execution_mode: 'system' });
+    const result = await engine.validate(plan);
+    expect(result.errors.some(e => e.code === 'INVALID_EXEC_MODE')).toBe(false);
+  });
+});
+
+// ═══════════════════════════════════════
+// TEST 9: Memory System
+// ═══════════════════════════════════════
+describe('Memory System', () => {
+  test('stores and retrieves values', () => {
+    const mem = new MemorySystem();
+    mem.set('session', 'user1', 'key1', 'hello');
+    expect(mem.get('session', 'user1', 'key1')).toBe('hello');
+  });
+
+  test('returns null for missing keys', () => {
+    const mem = new MemorySystem();
+    expect(mem.get('session', 'user1', 'nonexistent')).toBeNull();
+  });
+
+  test('respects TTL expiration', () => {
+    const mem = new MemorySystem();
+    mem.set('session', 'user1', 'ttl_key', 'value', -1); // Already expired
+    expect(mem.get('session', 'user1', 'ttl_key')).toBeNull();
+  });
+
+  test('lists entries by scope', () => {
+    const mem = new MemorySystem();
+    mem.set('user', 'u1', 'a', 1);
+    mem.set('user', 'u1', 'b', 2);
+    mem.set('global', 'system', 'c', 3);
+    expect(mem.list('user', 'u1').length).toBe(2);
+    expect(mem.list('global', 'system').length).toBe(1);
+  });
+
+  test('clears scope', () => {
+    const mem = new MemorySystem();
+    mem.set('session', 's1', 'a', 1);
+    mem.set('session', 's1', 'b', 2);
+    const cleared = mem.clearScope('session', 's1');
+    expect(cleared).toBe(2);
+    expect(mem.get('session', 's1', 'a')).toBeNull();
+  });
+
+  test('reports stats', () => {
+    const mem = new MemorySystem();
+    mem.set('session', 'x', 'a', 1);
+    mem.set('user', 'x', 'b', 2);
+    mem.set('global', 'x', 'c', 3);
+    const stats = mem.stats();
+    expect(stats.total).toBe(3);
+    expect(stats.by_scope.session).toBe(1);
+    expect(stats.by_scope.user).toBe(1);
+    expect(stats.by_scope.global).toBe(1);
+  });
+});
+
+// ═══════════════════════════════════════
+// TEST 10: Purp v0.3 Parser
+// ═══════════════════════════════════════
+describe('Purp v0.3 Parser', () => {
+  test('parses native Purp v0.3 syntax', () => {
+    const purp = new PurpEngine();
+    const source = `
+program TokenVault {
+}
+
+account VaultState {
+  owner: pubkey
+  balance: u64
+  is_locked: bool
+}
+
+instruction Initialize {
+  accounts:
+    #[mut] vault_state
+    #[signer] owner
+  args:
+    initial_balance: u64
+  body:
+    vault_state.owner = owner.key
+    vault_state.balance = initial_balance
+}
+
+event VaultCreated {
+  owner: pubkey
+  balance: u64
+}
+
+error VaultErrors {
+  InsufficientFunds = "Not enough funds in vault"
+  Unauthorized = "Only the owner can perform this action"
+}
+`;
+    const program = purp.parse(source);
+    expect('accounts' in program).toBe(true);
+    const prog = program as any;
+    expect(prog.name).toBe('TokenVault');
+    expect(prog.accounts.length).toBe(1);
+    expect(prog.accounts[0].name).toBe('VaultState');
+    expect(prog.accounts[0].fields.length).toBe(3);
+    expect(prog.instructions.length).toBe(1);
+    expect(prog.instructions[0].name).toBe('Initialize');
+    expect(prog.events.length).toBe(1);
+    expect(prog.errors.length).toBe(2);
+  });
+
+  test('still parses legacy JSON format', () => {
+    const purp = new PurpEngine();
+    const program = purp.parse(JSON.stringify({
+      name: 'legacy',
+      instructions: [{ type: 'log', params: { message: 'hello' } }],
+    }));
+    expect(program.name).toBe('legacy');
+  });
+
+  test('compiles Purp v0.3 to Anchor Rust', () => {
+    const purp = new PurpEngine();
+    const source = `
+program SimpleToken {
+}
+account TokenAccount {
+  balance: u64
+}
+instruction Mint {
+  accounts:
+    #[mut] token_account
+  args:
+    amount: u64
+  body:
+    token_account.balance += amount
+}
+`;
+    const program = purp.parse(source);
+    const result = purp.compile(program as any);
+    expect(result.success).toBe(true);
+    expect(result.rust_output).toContain('anchor_lang');
+    expect(result.rust_output).toContain('pub mod simple_token');
+    expect(result.rust_output).toContain('pub fn mint');
+    expect(result.typescript_sdk).toContain('SimpleTokenClient');
+  });
+
+  test('validates Purp v0.3 types', () => {
+    const purp = new PurpEngine();
+    const source = `
+program Bad {
+}
+account TestAccount {
+  field1: invalidtype
+}
+`;
+    const program = purp.parse(source) as any;
+    const result = purp.validate(program);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e: string) => e.includes('unknown type'))).toBe(true);
+  });
+});
+
+// ═══════════════════════════════════════
+// TEST 11: Cron Engine
+// ═══════════════════════════════════════
+describe('Cron Engine', () => {
+  test('adds and lists tasks', () => {
+    const cron = new CronEngine();
+    cron.addTask({
+      id: 'test-1',
+      name: 'Test Task',
+      schedule: 'every 5m',
+      action: 'check balance',
+      params: {},
+      enabled: false,
+      created_by: 'test',
+    });
+    expect(cron.listTasks().length).toBe(1);
+    expect(cron.listTasks()[0].name).toBe('Test Task');
+  });
+
+  test('removes tasks', () => {
+    const cron = new CronEngine();
+    cron.addTask({
+      id: 'test-2',
+      name: 'Removable',
+      schedule: 'every 1h',
+      action: 'test',
+      params: {},
+      enabled: false,
+      created_by: 'test',
+    });
+    expect(cron.removeTask('test-2')).toBe(true);
+    expect(cron.listTasks().length).toBe(0);
+  });
+
+  test('stops all tasks', () => {
+    const cron = new CronEngine();
+    cron.addTask({
+      id: 'test-3',
+      name: 'Stoppable',
+      schedule: 'every 30s',
+      action: 'test',
+      params: {},
+      enabled: false,
+      created_by: 'test',
+    });
+    cron.stopAll();
+    expect(cron.listTasks().length).toBe(1); // Tasks still exist, just timers cleared
+  });
+});
+
+// ═══════════════════════════════════════
+// TEST 12: Chat Commands
+// ═══════════════════════════════════════
+describe('Chat Commands', () => {
+  // Create a minimal mock agent for commands
+  const mockAgent = {
+    getUserMode: (userId: string) => 'supervised' as const,
+    setUserMode: jest.fn(),
+  };
+
+  test('handles /help command', () => {
+    const handler = new CommandHandler(mockAgent as any);
+    const result = handler.handle('user1', '/help');
+    expect(result.handled).toBe(true);
+    expect(result.response).toContain('PAW Agent Commands');
+  });
+
+  test('handles /mode command', () => {
+    const handler = new CommandHandler(mockAgent as any);
+    const result = handler.handle('user1', '/mode');
+    expect(result.handled).toBe(true);
+    expect(result.response).toContain('supervised');
+  });
+
+  test('handles /mode autonomous', () => {
+    const handler = new CommandHandler(mockAgent as any);
+    const result = handler.handle('user1', '/mode autonomous');
+    expect(result.handled).toBe(true);
+    expect(result.response).toContain('Autonomous Mode Activated');
+    expect(mockAgent.setUserMode).toHaveBeenCalledWith('user1', 'autonomous');
+  });
+
+  test('ignores non-command messages', () => {
+    const handler = new CommandHandler(mockAgent as any);
+    const result = handler.handle('user1', 'check my balance');
+    expect(result.handled).toBe(false);
+  });
+
+  test('handles unknown commands', () => {
+    const handler = new CommandHandler(mockAgent as any);
+    const result = handler.handle('user1', '/unknown');
+    expect(result.handled).toBe(true);
+    expect(result.response).toContain('Unknown command');
+  });
+
+  test('handles /version command', () => {
+    const handler = new CommandHandler(mockAgent as any);
+    const result = handler.handle('user1', '/version');
+    expect(result.handled).toBe(true);
+    expect(result.response).toContain('v2.0.0');
+  });
+
+  test('handles /status command', () => {
+    const handler = new CommandHandler(mockAgent as any);
+    const result = handler.handle('user1', '/status');
+    expect(result.handled).toBe(true);
+    expect(result.response).toContain('Online');
   });
 });

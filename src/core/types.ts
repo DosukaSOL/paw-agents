@@ -1,10 +1,13 @@
 // ─── PAW Agents Core Types ───
 // Every type in the system flows through these definitions.
 
-export type ExecutionMode = 'purp' | 'js' | 'api';
+export type ExecutionMode = 'purp' | 'js' | 'api' | 'system';
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
 export type PlanStatus = 'pending' | 'validated' | 'rejected' | 'executing' | 'completed' | 'failed' | 'rolled_back';
 export type AgentPhase = 'intake' | 'planning' | 'validation' | 'confirmation' | 'execution' | 'verification' | 'logging' | 'response';
+export type ChannelType = 'telegram' | 'discord' | 'slack' | 'whatsapp' | 'webchat' | 'api';
+export type AgentMode = 'autonomous' | 'supervised';
+export type MemoryScope = 'session' | 'user' | 'global';
 
 // ─── Agent Brain Output ───
 
@@ -247,8 +250,139 @@ export interface UserSession {
   user_id: string;
   chat_id: number;
   session_id: string;
+  channel: ChannelType;
+  agent_mode: AgentMode;
   created_at: string;
   last_activity: string;
   message_count: number;
   rate_limit_remaining: number;
+  context: SessionContext;
+}
+
+export interface SessionContext {
+  history: ConversationMessage[];
+  memory: MemoryEntry[];
+  active_skills: string[];
+  variables: Record<string, unknown>;
+}
+
+export interface ConversationMessage {
+  role: 'user' | 'agent';
+  content: string;
+  timestamp: string;
+  plan_id?: string;
+}
+
+export interface MemoryEntry {
+  key: string;
+  value: unknown;
+  scope: MemoryScope;
+  created_at: string;
+  ttl_ms?: number;
+}
+
+// ─── Gateway ───
+
+export interface GatewayConfig {
+  port: number;
+  host: string;
+  auth_token?: string;
+  cors_origins: string[];
+}
+
+export interface GatewayClient {
+  id: string;
+  channel: ChannelType;
+  connected_at: string;
+  user_id?: string;
+  session_id: string;
+}
+
+export interface GatewayMessage {
+  type: 'message' | 'command' | 'event' | 'response';
+  channel: ChannelType;
+  from: string;
+  payload: unknown;
+  timestamp: string;
+}
+
+// ─── Channel Interface ───
+
+export interface ChannelAdapter {
+  name: ChannelType;
+  start(): Promise<void>;
+  stop(): Promise<void>;
+  send(userId: string, message: string): Promise<void>;
+  onMessage(handler: (userId: string, message: string, channel: ChannelType) => Promise<void>): void;
+}
+
+// ─── Cron / Automation ───
+
+export interface CronTask {
+  id: string;
+  name: string;
+  schedule: string;
+  action: string;
+  params: Record<string, unknown>;
+  enabled: boolean;
+  last_run?: string;
+  next_run?: string;
+  created_by: string;
+}
+
+export interface WebhookConfig {
+  id: string;
+  path: string;
+  secret?: string;
+  action: string;
+  params: Record<string, unknown>;
+  enabled: boolean;
+}
+
+// ─── Multi-Agent ───
+
+export interface AgentSession {
+  agent_id: string;
+  session_id: string;
+  name: string;
+  status: 'active' | 'idle' | 'terminated';
+  created_at: string;
+  last_message_at: string;
+  message_count: number;
+}
+
+export interface AgentToAgentMessage {
+  from_agent: string;
+  to_agent: string;
+  message: string;
+  reply_to?: string;
+  timestamp: string;
+}
+
+// ─── Purp v0.3 ───
+
+export interface PurpCompileResult {
+  success: boolean;
+  rust_output?: string;
+  typescript_sdk?: string;
+  errors: PurpError[];
+  warnings: string[];
+  source_map?: Record<number, number>;
+}
+
+export interface PurpError {
+  line: number;
+  column: number;
+  message: string;
+  severity: 'error' | 'warning';
+  suggestion?: string;
+}
+
+export interface PurpProjectConfig {
+  name: string;
+  version: string;
+  description?: string;
+  author?: string;
+  dependencies: Record<string, string>;
+  network: 'devnet' | 'testnet' | 'mainnet-beta';
 }

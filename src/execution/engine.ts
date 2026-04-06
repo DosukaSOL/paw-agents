@@ -1,14 +1,20 @@
 // ─── Execution Engine ───
 // Executes ONLY validated plans. Supports Solana, Purp, JS tools, APIs.
 // Includes retry, rollback, and error recovery.
+// Extended with file ops, HTTP, data transforms, system tools, and memory.
 
 import { AgentPlan, ExecutionResult, StepResult, PlanStep, ExecutionError } from '../core/types';
 import { SolanaExecutor } from '../integrations/solana/executor';
 import { PurpEngine } from '../integrations/purp/engine';
 import { PublicKey, Transaction } from '@solana/web3.js';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 1000;
+
+// In-process key-value memory store for agent tools
+const memoryStore = new Map<string, unknown>();
 
 export type ToolHandler = (params: Record<string, unknown>) => Promise<unknown>;
 
@@ -195,6 +201,138 @@ export class ExecutionEngine {
         status: response.status,
         body: await response.json().catch(() => response.text()),
       };
+    });
+
+    // ─── HTTP convenience tools ───
+    this.registerTool('http_get', async (params) => {
+      const url = params.url as string;
+      if (!url.startsWith('https://')) throw new Error('HTTP calls must use HTTPS');
+      const hostname = new URL(url).hostname;
+      if (['localhost', '127.0.0.1', '0.0.0.0'].includes(hostname) || hostname.startsWith('10.') || hostname.startsWith('192.168.')) {
+        throw new Error('Blocked: internal address');
+      }
+      const response = await fetch(url, {
+        headers: params.headers as Record<string, string> ?? {},
+      });
+      return { status: response.status, body: await response.json().catch(() => response.text()) };
+    });
+
+    this.registerTool('http_post', async (params) => {
+      const url = params.url as string;
+      if (!url.startsWith('https://')) throw new Error('HTTP calls must use HTTPS');
+      const hostname = new URL(url).hostname;
+      if (['localhost', '127.0.0.1', '0.0.0.0'].includes(hostname) || hostname.startsWith('10.') || hostname.startsWith('192.168.')) {
+        throw new Error('Blocked: internal address');
+      }
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(params.headers as Record<string, string> ?? {}) },
+        body: JSON.stringify(params.body),
+      });
+      return { status: response.status, body: await response.json().catch(() => response.text()) };
+    });
+
+    // ─── File operations (sandboxed to working directory) ───
+    const SANDBOX_ROOT = path.resolve(process.cwd(), 'data');
+
+    const resolveSafe = (filePath: string): string => {
+      const resolved = path.resolve(SANDBOX_ROOT, filePath);
+      if (!resolved.startsWith(SANDBOX_ROOT)) {
+        throw new Error('File access denied: path traversal blocked');
+      }
+      return resolved;
+    };
+
+    this.registerTool('file_read', async (params) => {
+      const safePath = resolveSafe(params.path as string);
+      if (!fs.existsSync(safePath)) throw new Error(`File not found: ${params.path}`);
+      const content = fs.readFileSync(safePath, 'utf-8');
+      return { path: params.path, content, size: content.length };
+    });
+
+    this.registerTool('file_write', async (params) => {
+      const safePath = resolveSafe(params.path as string);
+      const content = String(params.content);
+      if (content.length > 1_000_000) throw new Error('File content too large (1MB max)');
+      const dir = path.dirname(safePath);
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      fs.writeFileSync(safePath, content, 'utf-8');
+      return { path: params.path, written: content.length };
+    });
+
+    this.registerTool('file_list', async (params) => {
+      const safePath = resolveSafe((params.path as string) ?? '.');
+      if (!fs.existsSync(safePath)) throw new Error(`Directory not found: ${params.path}`);
+      const entries = fs.readdirSync(safePath, { withFileTypes: true });
+      return entries.map(e => ({
+        name: e.name,
+        type: e.isDirectory() ? 'directory' : 'file',
+      }));
+    });
+
+    // ─── Data tools ───
+    this.registerTool('data_transform', async (params) => {
+      const data = params.data;
+      const operation = params.operation as string;
+
+      switch (operation) {
+        case 'json_parse':
+          return JSON.parse(String(data));
+        case 'json_stringify':
+          return JSON.stringify(data, null, 2);
+        case 'base64_encode':
+          return Buffer.from(String(data)).toString('base64');
+        case 'base64_decode':
+          return Buffer.from(String(data), 'base64').toString('utf-8');
+        case 'uppercase':
+          return String(data).toUpperCase();
+        case 'lowercase':
+          return String(data).toLowerCase();
+        default:
+          throw new Error(`Unknown transform: ${operation}`);
+      }
+    });
+
+    this.registerTool('data_filter', async (params) => {
+      const data = params.data as unknown[];
+      const field = params.field as string;
+      const value = params.value;
+
+      if (!Array.isArray(data)) throw new Error('data must be an array');
+      return data.filter((item: unknown) => {
+        if (typeof item === 'object' && item !== null) {
+          return (item as Record<string, unknown>)[field] === value;
+        }
+        return item === value;
+      });
+    });
+
+    // ─── System tools ───
+    this.registerTool('system_time', async () => {
+      return {
+        iso: new Date().toISOString(),
+        unix: Date.now(),
+        utc: new Date().toUTCString(),
+      };
+    });
+
+    this.registerTool('system_sleep', async (params) => {
+      const ms = Math.min(params.ms as number, 10000); // Max 10s
+      await this.delay(ms);
+      return { slept_ms: ms };
+    });
+
+    // ─── Memory tools (in-process key-value store) ───
+    this.registerTool('memory_set', async (params) => {
+      const key = String(params.key);
+      const value = params.value;
+      memoryStore.set(key, value);
+      return { key, stored: true };
+    });
+
+    this.registerTool('memory_get', async (params) => {
+      const key = String(params.key);
+      return { key, value: memoryStore.get(key) ?? null, found: memoryStore.has(key) };
     });
   }
 

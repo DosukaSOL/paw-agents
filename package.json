@@ -1,7 +1,7 @@
 {
   "name": "paw-agents",
-  "version": "1.0.0",
-  "description": "PAW Agents — The operating system for autonomous AI workers",
+  "version": "2.0.0",
+  "description": "PAW Agents — The operating system for autonomous AI agents",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -18,33 +18,46 @@
     "blockchain",
     "telegram-bot",
     "purp",
-    "paw"
+    "paw",
+    "multi-channel",
+    "websocket",
+    "discord-bot",
+    "slack-bot",
+    "whatsapp",
+    "smart-contracts"
   ],
   "author": "PAW Team",
   "license": "MIT",
   "dependencies": {
-    "@solana/web3.js": "^1.95.0",
     "@solana/spl-token": "^0.4.0",
-    "telegraf": "^4.16.0",
-    "openai": "^4.60.0",
-    "zod": "^3.23.0",
-    "yaml": "^2.5.0",
-    "tweetnacl": "^1.0.3",
+    "@solana/web3.js": "^1.95.0",
     "bs58": "^6.0.0",
     "dotenv": "^16.4.0",
+    "openai": "^4.60.0",
+    "sanitize-html": "^2.13.0",
+    "telegraf": "^4.16.0",
+    "tweetnacl": "^1.0.3",
     "uuid": "^10.0.0",
-    "sanitize-html": "^2.13.0"
+    "ws": "^8.20.0",
+    "yaml": "^2.5.0",
+    "zod": "^3.23.0"
+  },
+  "optionalDependencies": {
+    "@slack/bolt": "^4.1.0",
+    "@whiskeysockets/baileys": "^6.7.0",
+    "discord.js": "^14.16.0"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.0",
     "@types/node": "^22.0.0",
-    "@types/uuid": "^10.0.0",
     "@types/sanitize-html": "^2.13.0",
-    "typescript": "^5.6.0",
-    "ts-node": "^10.9.0",
+    "@types/uuid": "^10.0.0",
+    "@types/ws": "^8.18.1",
+    "eslint": "^9.0.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.0",
-    "@types/jest": "^29.5.0",
-    "eslint": "^9.0.0"
+    "ts-node": "^10.9.0",
+    "typescript": "^5.6.0"
   },
   "engines": {
     "node": ">=20.0.0"

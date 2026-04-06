@@ -1,0 +1,283 @@
+// ─── PAW Gateway ───
+// WebSocket-based control plane for real-time agent communication.
+// Supports multi-client connections, authentication, and channel routing.
+
+import { createServer, IncomingMessage, ServerResponse } from 'http';
+import { WebSocketServer, WebSocket } from 'ws';
+import { v4 as uuid } from 'uuid';
+import { config } from '../core/config';
+import { GatewayClient, GatewayMessage, ChannelType } from '../core/types';
+import { PawAgent } from '../agent/loop';
+
+interface ConnectedClient {
+  ws: WebSocket;
+  info: GatewayClient;
+  authenticated: boolean;
+}
+
+export class PawGateway {
+  private wss: WebSocketServer | null = null;
+  private httpServer: ReturnType<typeof createServer> | null = null;
+  private clients = new Map<string, ConnectedClient>();
+  private agent: PawAgent;
+
+  constructor(agent: PawAgent) {
+    this.agent = agent;
+  }
+
+  async start(): Promise<void> {
+    const { port, host, corsOrigins } = config.gateway;
+
+    // HTTP server for health checks + webhook endpoints
+    this.httpServer = createServer((req: IncomingMessage, res: ServerResponse) => {
+      // CORS headers
+      const origin = req.headers.origin ?? '*';
+      if (corsOrigins.includes('*') || corsOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+      }
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+      if (req.method === 'OPTIONS') {
+        res.writeHead(204);
+        res.end();
+        return;
+      }
+
+      if (req.url === '/health') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          status: 'ok',
+          version: '2.0.0',
+          clients: this.clients.size,
+          uptime: process.uptime(),
+        }));
+        return;
+      }
+
+      if (req.url === '/api/status') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          agent: 'online',
+          channels: this.getActiveChannels(),
+          clients: this.clients.size,
+          mode: config.agent.mode,
+        }));
+        return;
+      }
+
+      // Webhook endpoint for external triggers
+      if (req.url?.startsWith('/webhook/') && req.method === 'POST') {
+        this.handleWebhook(req, res);
+        return;
+      }
+
+      res.writeHead(404);
+      res.end('Not found');
+    });
+
+    // WebSocket server
+    this.wss = new WebSocketServer({ server: this.httpServer });
+
+    this.wss.on('connection', (ws: WebSocket, req: IncomingMessage) => {
+      const clientId = uuid();
+      const client: ConnectedClient = {
+        ws,
+        info: {
+          id: clientId,
+          channel: 'webchat' as ChannelType,
+          connected_at: new Date().toISOString(),
+          session_id: uuid(),
+        },
+        authenticated: !config.gateway.authToken, // If no auth token set, auto-auth
+      };
+
+      this.clients.set(clientId, client);
+      console.log(`[Gateway] Client connected: ${clientId}`);
+
+      // Send welcome message
+      this.sendToClient(clientId, {
+        type: 'event',
+        channel: 'webchat',
+        from: 'system',
+        payload: { event: 'connected', client_id: clientId, requires_auth: !!config.gateway.authToken },
+        timestamp: new Date().toISOString(),
+      });
+
+      ws.on('message', async (data: Buffer) => {
+        try {
+          const msg = JSON.parse(data.toString()) as GatewayMessage & { auth_token?: string };
+
+          // Handle auth
+          if (!client.authenticated) {
+            if (msg.type === 'command' && msg.payload && (msg as { auth_token?: string }).auth_token === config.gateway.authToken) {
+              client.authenticated = true;
+              this.sendToClient(clientId, {
+                type: 'event',
+                channel: 'webchat',
+                from: 'system',
+                payload: { event: 'authenticated' },
+                timestamp: new Date().toISOString(),
+              });
+              return;
+            }
+            this.sendToClient(clientId, {
+              type: 'event',
+              channel: 'webchat',
+              from: 'system',
+              payload: { event: 'auth_required' },
+              timestamp: new Date().toISOString(),
+            });
+            return;
+          }
+
+          // Route message to agent
+          if (msg.type === 'message') {
+            const userId = client.info.user_id ?? `webchat:${clientId}`;
+            const response = await this.agent.process(userId, String(msg.payload));
+
+            this.sendToClient(clientId, {
+              type: 'response',
+              channel: 'webchat',
+              from: 'agent',
+              payload: response,
+              timestamp: new Date().toISOString(),
+            });
+          }
+
+          // Handle commands
+          if (msg.type === 'command') {
+            await this.handleCommand(clientId, msg);
+          }
+        } catch (err) {
+          this.sendToClient(clientId, {
+            type: 'event',
+            channel: 'webchat',
+            from: 'system',
+            payload: { event: 'error', message: 'Invalid message format' },
+            timestamp: new Date().toISOString(),
+          });
+        }
+      });
+
+      ws.on('close', () => {
+        this.clients.delete(clientId);
+        console.log(`[Gateway] Client disconnected: ${clientId}`);
+      });
+
+      ws.on('error', (err: Error) => {
+        console.error(`[Gateway] Client error ${clientId}:`, err.message);
+        this.clients.delete(clientId);
+      });
+    });
+
+    this.httpServer.listen(port, host, () => {
+      console.log(`[PAW:Gateway] 🌐 Gateway running on ws://${host}:${port}`);
+      console.log(`[PAW:Gateway] 🏥 Health check: http://${host}:${port}/health`);
+    });
+  }
+
+  async stop(): Promise<void> {
+    for (const [id, client] of this.clients) {
+      client.ws.close();
+    }
+    this.clients.clear();
+    this.wss?.close();
+    this.httpServer?.close();
+  }
+
+  // ─── Send message to a specific client ───
+  private sendToClient(clientId: string, msg: GatewayMessage): void {
+    const client = this.clients.get(clientId);
+    if (client && client.ws.readyState === WebSocket.OPEN) {
+      client.ws.send(JSON.stringify(msg));
+    }
+  }
+
+  // ─── Broadcast to all authenticated clients ───
+  broadcast(msg: GatewayMessage): void {
+    for (const [, client] of this.clients) {
+      if (client.authenticated && client.ws.readyState === WebSocket.OPEN) {
+        client.ws.send(JSON.stringify(msg));
+      }
+    }
+  }
+
+  // ─── Handle gateway commands ───
+  private async handleCommand(clientId: string, msg: GatewayMessage): Promise<void> {
+    const payload = msg.payload as { command?: string; [key: string]: unknown };
+    const command = payload?.command;
+
+    switch (command) {
+      case 'status':
+        this.sendToClient(clientId, {
+          type: 'response',
+          channel: 'webchat',
+          from: 'system',
+          payload: {
+            clients: this.clients.size,
+            mode: config.agent.mode,
+            channels: this.getActiveChannels(),
+          },
+          timestamp: new Date().toISOString(),
+        });
+        break;
+
+      case 'set_mode':
+        const mode = payload.mode as string;
+        if (mode === 'autonomous' || mode === 'supervised') {
+          const userId = `webchat:${clientId}`;
+          this.agent.setUserMode(userId, mode);
+          this.sendToClient(clientId, {
+            type: 'response',
+            channel: 'webchat',
+            from: 'system',
+            payload: { event: 'mode_changed', mode },
+            timestamp: new Date().toISOString(),
+          });
+        }
+        break;
+
+      default:
+        this.sendToClient(clientId, {
+          type: 'response',
+          channel: 'webchat',
+          from: 'system',
+          payload: { error: 'Unknown command' },
+          timestamp: new Date().toISOString(),
+        });
+    }
+  }
+
+  // ─── Handle webhook requests ───
+  private handleWebhook(req: IncomingMessage, res: ServerResponse): void {
+    let body = '';
+    req.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+    req.on('end', async () => {
+      try {
+        const data = JSON.parse(body);
+        const webhookId = req.url?.split('/webhook/')[1];
+
+        // Process the webhook as a system message
+        const response = await this.agent.process(
+          `webhook:${webhookId}`,
+          `Webhook trigger: ${JSON.stringify(data)}`
+        );
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(response));
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid webhook payload' }));
+      }
+    });
+  }
+
+  private getActiveChannels(): string[] {
+    const channels = new Set<string>();
+    for (const [, client] of this.clients) {
+      channels.add(client.info.channel);
+    }
+    return Array.from(channels);
+  }
+}

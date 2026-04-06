@@ -1,9 +1,10 @@
 // ─── Validation Engine ───
 // Schema validation, logical validation, safety policy, blockchain simulation.
 // This is the GATEKEEPER — nothing executes without passing through here.
+// In autonomous mode, validation still runs but confirmation threshold is raised.
 
-import { AgentPlan, ValidationResult, ValidationError, ValidationWarning, SecurityPolicy, RiskLevel } from '../core/types';
-import { getSecurityPolicy } from '../core/config';
+import { AgentPlan, ValidationResult, ValidationError, ValidationWarning, SecurityPolicy, RiskLevel, AgentMode } from '../core/types';
+import { config, getSecurityPolicy } from '../core/config';
 
 export class ValidationEngine {
   private policy: SecurityPolicy;
@@ -12,7 +13,7 @@ export class ValidationEngine {
     this.policy = policy ?? getSecurityPolicy();
   }
 
-  async validate(plan: AgentPlan): Promise<ValidationResult> {
+  async validate(plan: AgentPlan, modeOverride?: AgentMode): Promise<ValidationResult> {
     const errors: ValidationError[] = [];
     const warnings: ValidationWarning[] = [];
     let risk_score = 0;
@@ -27,7 +28,8 @@ export class ValidationEngine {
     risk_score = this.enforceSafetyPolicy(plan, errors, warnings);
 
     // 4. Risk assessment
-    const requires_confirmation = this.requiresConfirmation(plan, risk_score);
+    const mode = modeOverride ?? config.agent.mode;
+    const requires_confirmation = this.requiresConfirmation(plan, risk_score, mode);
 
     return {
       valid: errors.length === 0,
@@ -49,7 +51,7 @@ export class ValidationEngine {
     if (!Array.isArray(plan.plan) || plan.plan.length === 0) {
       errors.push({ code: 'EMPTY_PLAN', field: 'plan', message: 'Plan must have at least one step', severity: 'fatal' });
     }
-    if (!plan.execution_mode || !['purp', 'js', 'api'].includes(plan.execution_mode)) {
+    if (!plan.execution_mode || !['purp', 'js', 'api', 'system'].includes(plan.execution_mode)) {
       errors.push({ code: 'INVALID_EXEC_MODE', field: 'execution_mode', message: 'Invalid execution mode', severity: 'fatal' });
     }
 
@@ -156,7 +158,19 @@ export class ValidationEngine {
   }
 
   // ─── Confirmation Check ───
-  private requiresConfirmation(plan: AgentPlan, risk_score: number): boolean {
+  private requiresConfirmation(plan: AgentPlan, risk_score: number, mode: AgentMode): boolean {
+    // In autonomous mode: only confirm for critical risks or when confirmHighRisk is set
+    if (mode === 'autonomous') {
+      // Critical risks ALWAYS require confirmation regardless of mode
+      if (plan.risks?.some(r => r.level === 'critical')) return true;
+      // If confirmHighRisk is on, also confirm for high-risk actions
+      if (config.agent.confirmHighRisk && risk_score >= 70) return true;
+      if (config.agent.confirmHighRisk && plan.risks?.some(r => r.level === 'high')) return true;
+      // Autonomous mode: skip confirmation for everything else
+      return false;
+    }
+
+    // Supervised mode: original behavior — confirm for anything above low risk
     if (plan.requires_confirmation) return true;
     if (risk_score >= 30) return true;
     if (plan.risks?.some(r => r.level === 'high' || r.level === 'critical')) return true;

@@ -14,7 +14,8 @@ import { PurpEngine } from '../integrations/purp/engine';
 import { SelfHealingSystem } from '../self-healing/index';
 import { sanitizeInput } from '../security/sanitizer';
 import { checkRateLimit } from '../security/rate-limiter';
-import { AgentPlan, ExecutionResult, ValidationResult } from '../core/types';
+import { config } from '../core/config';
+import { AgentPlan, ExecutionResult, ValidationResult, AgentMode } from '../core/types';
 
 export interface AgentResponse {
   success: boolean;
@@ -28,6 +29,9 @@ export interface AgentResponse {
 
 // Pending confirmations stored per user
 const pendingConfirmations = new Map<string, { plan: AgentPlan; trace: Clawtrace }>();
+
+// Per-user mode overrides (defaults to config)
+const userModes = new Map<string, AgentMode>();
 
 export class PawAgent {
   private brain: AgentBrain;
@@ -62,6 +66,15 @@ export class PawAgent {
   // ─── Register custom tools ───
   registerTool(name: string, handler: ToolHandler): void {
     this.executor.registerTool(name, handler);
+  }
+
+  // ─── Set user mode ───
+  setUserMode(userId: string, mode: AgentMode): void {
+    userModes.set(userId, mode);
+  }
+
+  getUserMode(userId: string): AgentMode {
+    return userModes.get(userId) ?? config.agent.mode;
   }
 
   // ─── Main agent loop ───
@@ -113,6 +126,11 @@ export class PawAgent {
       const availableTools = [
         'solana_transfer', 'solana_balance', 'api_call',
         'internal_log', 'internal_assert', 'internal_variable',
+        'file_read', 'file_write', 'file_list',
+        'http_get', 'http_post',
+        'data_transform', 'data_filter',
+        'system_time', 'system_sleep',
+        'memory_get', 'memory_set',
       ];
 
       // ═══ STEP 5: Generate plan (LLM reasoning) ═══
@@ -149,7 +167,8 @@ export class PawAgent {
       });
 
       // ═══ STEP 6: Validate plan ═══
-      const validation = await this.validator.validate(plan);
+      const userMode = this.getUserMode(userId);
+      const validation = await this.validator.validate(plan, userMode);
 
       trace.log('validation', {
         validation,
@@ -183,10 +202,13 @@ export class PawAgent {
         pendingConfirmations.set(userId, { plan, trace });
 
         const summary = this.summarizePlan(plan, validation);
+        const modeHint = userMode === 'autonomous'
+          ? '\n\n🤖 _Running in autonomous mode — only critical actions require confirmation._'
+          : '';
 
         return {
           success: true,
-          message: `⚠️ This action requires your confirmation:\n\n${summary}\n\nRisk score: ${validation.risk_score}/100\n\nReply "yes" to confirm or "no" to cancel.`,
+          message: `⚠️ This action requires your confirmation:\n\n${summary}\n\nRisk score: ${validation.risk_score}/100${modeHint}\n\nReply "yes" to confirm or "no" to cancel.`,
           plan_id: plan.id,
           requires_confirmation: true,
           plan_summary: summary,
