@@ -107,7 +107,7 @@ npm start
 | **Channels** | Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat, Webhooks |
 | **Models** | OpenAI (GPT-4o), Anthropic (Claude) with automatic failover |
 | **Blockchain** | Native Solana support: transfers, balance checks, SPL tokens, tx simulation |
-| **Purp SCL** | v1.0.0 parser, Anchor Rust codegen, TypeScript SDK generation |
+| **Purp SCL** | v1.1.0 parser, Anchor Rust codegen, TypeScript SDK + IDL generation |
 | **Browser** | Puppeteer-based automation: navigate, click, type, extract, screenshot |
 | **Multi-Agent** | Agent registry, capability routing, task delegation, multi-step orchestration |
 | **Vector Memory** | Persistent semantic memory with cosine similarity search |
@@ -186,7 +186,7 @@ CONFIRM_HIGH_RISK=true       # Confirm high-risk even in autonomous mode
 ---
 
 <a id="purp-scl"></a>
-## Purp SCL v1.0 Integration
+## Purp SCL v1.1 Integration
 
 PAW ships with a built-in [Purp Smart Contract Language](https://github.com/DosukaSOL/purp-scl) integration — letting agents compile, validate, and deploy Solana programs without leaving the chat:
 
@@ -233,7 +233,7 @@ error VaultErrors {
 
 - **Types**: `u8`–`u128`, `i8`–`i128`, `f32`, `f64`, `bool`, `string`, `pubkey`, `bytes`
 - **Blocks**: `program`, `account`, `instruction`, `event`, `error`, `client`, `frontend`
-- **v1.0 Syntax**: `pub instruction name(params) { body }` with inline params
+- **v1.1 Syntax**: `pub instruction name(params) { body }` with inline params, `**`, `??`, `...` spread
 - **Attributes**: `#[mut]`, `#[signer]`, `#[init]` for account declarations
 - **Context Structs**: Auto-generated `<InstructionName>Context` pattern
 - **Output**: Anchor-compatible Rust + ready-to-use TypeScript SDK
@@ -317,7 +317,7 @@ See [Security Model](docs/SECURITY.md) for the full threat model.
 | `workflow_execute` | Execute workflow by ID | Per-step error handling |
 | `tx_simulate` | Simulate Solana transaction | Read-only dry run |
 | `system_time` | Current UTC time | Read-only |
-| `purp_compile` | Compile Purp SCL v1.0 programs | Validated output |
+| `purp_compile` | Compile Purp SCL v1.1 programs | Validated output + IDL |
 
 Register custom tools:
 ```typescript
@@ -476,7 +476,7 @@ paw-agents/
 │   │   ├── email/adapter.ts        # Email adapter (IMAP/SMTP)
 │   │   ├── sms/adapter.ts          # SMS adapter (Twilio)
 │   │   ├── solana/executor.ts      # Blockchain execution
-│   │   └── purp/engine.ts          # Purp SCL v1.0 engine
+│   │   └── purp/engine.ts          # Purp SCL v1.1 engine
 │   ├── security/
 │   │   ├── sanitizer.ts            # Input sanitization
 │   │   ├── keystore.ts             # AES-256-GCM keys
@@ -576,7 +576,7 @@ Every action is logged in structured JSONL with auto-redacted secrets:
 | Blockchain simulation | ✅ Before every tx | ❌ |
 | On-chain agent registry | ✅ PDA-derived identity | ❌ |
 | Token-gated access | ✅ SPL tiered permissions | ❌ |
-| Purp SCL integration | ✅ v1.0 compiler | ❌ |
+| Purp SCL integration | ✅ v1.1 compiler + IDL | ❌ |
 | Encrypted key management | ✅ AES-256-GCM | ❌ Plaintext keys |
 | Prompt injection defense | ✅ 15+ patterns | ❌ |
 | WebSocket gateway + dashboard | ✅ Real-time UI | ❌ |
@@ -607,7 +607,7 @@ Every action is logged in structured JSONL with auto-redacted secrets:
 | **Transaction safety** | ✅ Simulate → warn → send pipeline | ❌ Direct send |
 | **Prompt injection defense** | ✅ 15+ detection patterns at input layer | ⚠️ Basic filtering |
 | **Key management** | ✅ AES-256-GCM encrypted, zeroed after use | ⚠️ Environment variables |
-| **Smart contract language** | ✅ Purp SCL v1.0 — `pub instruction`, `#[init]`, SDK gen | ❌ No integrated SCL |
+| **Smart contract language** | ✅ Purp SCL v1.1 — `pub instruction`, `#[init]`, SDK + IDL gen | ❌ No integrated SCL |
 | **Browser automation** | ✅ Puppeteer — navigate, click, type, extract, screenshot | ✅ Puppeteer/Playwright |
 | **Multi-agent orchestration** | ✅ Registry, capability routing, delegation depth 3 | ❌ Single-agent only |
 | **Vector memory** | ✅ Persistent TF-IDF semantic search, scoped | ❌ No semantic memory |

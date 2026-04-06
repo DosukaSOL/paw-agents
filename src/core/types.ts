@@ -365,6 +365,7 @@ export interface PurpCompileResult {
   success: boolean;
   rust_output?: string;
   typescript_sdk?: string;
+  idl?: string;
   errors: PurpError[];
   warnings: string[];
   source_map?: Record<number, number>;
