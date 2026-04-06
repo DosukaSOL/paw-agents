@@ -506,6 +506,61 @@ Every action is logged in structured JSONL with auto-redacted secrets:
 
 ---
 
+## PAW Agents vs OpenClaw Agents
+
+[OpenClaw](https://github.com/openclaw) is a well-known agent framework in the Solana ecosystem. Here's how PAW differentiates — and where it goes further.
+
+### Architecture Philosophy
+
+**OpenClaw** follows a *channel-first* architecture: it connects to 25+ platforms and routes messages to a single execution backend. The LLM can directly trigger actions, and safety is handled through post-hoc guardrails.
+
+**PAW** follows a *safety-first* architecture: every action — without exception — passes through a six-stage pipeline (`INTENT → PLAN → VALIDATE → EXECUTE → VERIFY → LOG`). The LLM only generates structured plans; it never executes anything. This separation is enforced at the type system level, not by convention.
+
+### Head-to-Head Comparison
+
+| Capability | PAW Agents | OpenClaw Agents |
+|-----------|-----------|-----------------|
+| **Validation pipeline** | ✅ Mandatory 6-stage pipeline, always on | ⚠️ Optional guardrails, can be bypassed |
+| **LLM/Execution separation** | ✅ Strict — LLM plans, system executes | ❌ LLM can trigger actions directly |
+| **Autonomous mode** | ✅ Per-user toggle with risk-aware gates | ❌ Single execution mode |
+| **Blockchain simulation** | ✅ Mandatory before every transaction | ⚠️ Available but not enforced |
+| **Prompt injection defense** | ✅ 15+ detection patterns at input layer | ⚠️ Basic filtering |
+| **Key management** | ✅ AES-256-GCM encrypted, zeroed after use | ⚠️ Environment variables |
+| **Smart contract language** | ✅ Purp SCL v0.3 — parse, compile, deploy | ❌ No integrated SCL |
+| **Audit trail** | ✅ Clawtrace — full JSONL with auto-redaction | ⚠️ Standard logging |
+| **Self-healing** | ✅ Diagnose → fix → retry → escalate | ⚠️ Basic retry logic |
+| **Risk scoring** | ✅ Per-action score with confirmation gates | ❌ No granular scoring |
+| **Channel support** | ✅ 6 channels + WebSocket gateway | ✅ 25+ channels |
+| **Browser automation** | ❌ Not included | ✅ Puppeteer/Playwright |
+| **Companion apps** | ❌ Not included | ✅ Mobile + desktop |
+| **Test coverage** | ✅ 53 tests across 12 suites | ⚠️ Varies by module |
+
+### Where PAW Wins
+
+1. **Safety is non-negotiable.** OpenClaw lets you skip guardrails for speed. PAW doesn't — the validation pipeline runs on every single action, in every mode. You can make it *less intrusive* (autonomous mode), but you can't turn it off.
+
+2. **The LLM never touches execution.** In OpenClaw, the LLM can directly invoke tools and trigger side effects. In PAW, the LLM produces a JSON plan, the system validates it, and only then does execution happen. This eliminates an entire class of prompt injection attacks.
+
+3. **Autonomous doesn't mean unsafe.** PAW's autonomous mode is risk-aware: low and medium risk actions auto-execute, but critical actions always require confirmation. OpenClaw's execution model doesn't distinguish — it's either all-manual or all-automatic.
+
+4. **Purp SCL is a first-class citizen.** PAW can parse `.purp` files, validate them, compile to Anchor Rust, and generate TypeScript SDKs — all within the agent pipeline. OpenClaw has no smart contract language integration.
+
+5. **Every action is traceable.** Clawtrace logs every phase of every action with automatic secret redaction. If something goes wrong six months from now, you can reconstruct exactly what happened, what the LLM reasoned, and why the system made each decision.
+
+6. **Self-healing is intelligent.** When an action fails, PAW doesn't just retry blindly. It diagnoses the failure (network? insufficient funds? permission?), determines if it's recoverable, applies a fix strategy, and only escalates to the user when it genuinely can't recover.
+
+### Where OpenClaw Wins
+
+OpenClaw has broader **channel coverage** (25+ platforms vs PAW's 6), built-in **browser automation** (Puppeteer/Playwright), and **companion apps** for mobile and desktop. If you need to control a browser or need a native app, OpenClaw has that today.
+
+### Bottom Line
+
+If you want the **widest platform reach** and **browser control**, OpenClaw is strong.
+
+If you want **safety guarantees you can prove**, **blockchain-grade security**, and a **validation pipeline that never sleeps** — PAW is the better foundation for autonomous agents that handle real value.
+
+---
+
 ## Contributing
 
 1. Fork the repo
