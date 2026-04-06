@@ -1,0 +1,117 @@
+// ─── Clawtrace — Full Agent Reasoning Trace Logger ───
+// Logs EVERYTHING: input, reasoning, plan, validation, execution, result.
+// Fully structured, fully auditable.
+
+import * as fs from 'fs';
+import * as path from 'path';
+import { v4 as uuid } from 'uuid';
+import { ClawtraceEntry, AgentPhase } from '../core/types';
+import { config } from '../core/config';
+
+const LOG_DIR = config.clawtrace.logDir;
+
+function ensureLogDir(): void {
+  if (!fs.existsSync(LOG_DIR)) {
+    fs.mkdirSync(LOG_DIR, { recursive: true });
+  }
+}
+
+function getLogFilePath(sessionId: string): string {
+  const date = new Date().toISOString().split('T')[0];
+  return path.join(LOG_DIR, `${date}_${sessionId}.jsonl`);
+}
+
+// Scrub sensitive data before logging
+function scrub(data: unknown): unknown {
+  if (data === null || data === undefined) return data;
+  if (typeof data === 'string') {
+    // Redact anything that looks like a key, token, or secret
+    return data
+      .replace(/[1-9A-HJ-NP-Za-km-z]{87,88}/g, '[REDACTED_KEY]')
+      .replace(/\b(sk-|pk-|token_)[A-Za-z0-9\-_]+/g, '[REDACTED_TOKEN]');
+  }
+  if (Array.isArray(data)) return data.map(scrub);
+  if (typeof data === 'object') {
+    const result: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+      const lk = key.toLowerCase();
+      if (lk.includes('secret') || lk.includes('private') || lk.includes('key') || lk.includes('password') || lk.includes('token')) {
+        result[key] = '[REDACTED]';
+      } else {
+        result[key] = scrub(value);
+      }
+    }
+    return result;
+  }
+  return data;
+}
+
+export class Clawtrace {
+  private sessionId: string;
+  private entries: ClawtraceEntry[] = [];
+
+  constructor(sessionId?: string) {
+    this.sessionId = sessionId ?? uuid();
+    ensureLogDir();
+  }
+
+  getSessionId(): string {
+    return this.sessionId;
+  }
+
+  log(phase: AgentPhase, data: Partial<Omit<ClawtraceEntry, 'trace_id' | 'session_id' | 'timestamp' | 'phase'>>): void {
+    const entry: ClawtraceEntry = {
+      trace_id: uuid(),
+      session_id: this.sessionId,
+      timestamp: new Date().toISOString(),
+      phase,
+      duration_ms: data.duration_ms ?? 0,
+      metadata: data.metadata ?? {},
+      ...data,
+    };
+
+    // Scrub before storing/writing
+    const scrubbed = scrub(entry) as ClawtraceEntry;
+    this.entries.push(scrubbed);
+
+    // Append to file
+    try {
+      const filePath = getLogFilePath(this.sessionId);
+      fs.appendFileSync(filePath, JSON.stringify(scrubbed) + '\n');
+    } catch (err) {
+      // Logging failure must not crash the agent
+      console.error('[Clawtrace] Write error:', (err as Error).message);
+    }
+  }
+
+  getEntries(): ClawtraceEntry[] {
+    return [...this.entries];
+  }
+
+  getTrace(): object {
+    return {
+      session_id: this.sessionId,
+      entry_count: this.entries.length,
+      phases: this.entries.map(e => e.phase),
+      entries: this.entries,
+    };
+  }
+
+  // Load a previous session's trace from disk
+  static loadSession(sessionId: string): ClawtraceEntry[] {
+    ensureLogDir();
+    const entries: ClawtraceEntry[] = [];
+    const files = fs.readdirSync(LOG_DIR).filter(f => f.includes(sessionId));
+    for (const file of files) {
+      const content = fs.readFileSync(path.join(LOG_DIR, file), 'utf-8');
+      for (const line of content.split('\n').filter(Boolean)) {
+        try {
+          entries.push(JSON.parse(line));
+        } catch {
+          // Skip malformed entries
+        }
+      }
+    }
+    return entries;
+  }
+}
