@@ -81,6 +81,177 @@ class AnthropicProvider implements ModelProvider {
   }
 }
 
+// ─── Google AI Provider (Gemma 3) ───
+class GoogleProvider implements ModelProvider {
+  name = 'google';
+  model: string;
+  private apiKey: string;
+
+  constructor(cfg: { apiKey: string; model: string }) {
+    this.apiKey = cfg.apiKey;
+    this.model = cfg.model;
+  }
+
+  async available(): Promise<boolean> {
+    return this.apiKey.length > 0;
+  }
+
+  async generate(system: string, prompt: string): Promise<string> {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent?key=${encodeURIComponent(this.apiKey)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: system }] },
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 4096 },
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Google AI API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json() as { candidates: Array<{ content: { parts: Array<{ text: string }> } }> };
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) throw new Error('Empty response from Google AI');
+    return text;
+  }
+}
+
+// ─── Mistral Provider ───
+class MistralProvider implements ModelProvider {
+  name = 'mistral';
+  model: string;
+  private apiKey: string;
+
+  constructor(cfg: { apiKey: string; model: string }) {
+    this.apiKey = cfg.apiKey;
+    this.model = cfg.model;
+  }
+
+  async available(): Promise<boolean> {
+    return this.apiKey.length > 0;
+  }
+
+  async generate(system: string, prompt: string): Promise<string> {
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.model,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.1,
+        max_tokens: 4096,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Mistral API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json() as { choices: Array<{ message: { content: string } }> };
+    const text = data.choices?.[0]?.message?.content;
+    if (!text) throw new Error('Empty response from Mistral');
+    return text;
+  }
+}
+
+// ─── DeepSeek Provider ───
+class DeepSeekProvider implements ModelProvider {
+  name = 'deepseek';
+  model: string;
+  private apiKey: string;
+
+  constructor(cfg: { apiKey: string; model: string }) {
+    this.apiKey = cfg.apiKey;
+    this.model = cfg.model;
+  }
+
+  async available(): Promise<boolean> {
+    return this.apiKey.length > 0;
+  }
+
+  async generate(system: string, prompt: string): Promise<string> {
+    // DeepSeek uses OpenAI-compatible API
+    const response = await fetch('https://api.deepseek.com/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.model,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.1,
+        max_tokens: 4096,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`DeepSeek API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json() as { choices: Array<{ message: { content: string } }> };
+    const text = data.choices?.[0]?.message?.content;
+    if (!text) throw new Error('Empty response from DeepSeek');
+    return text;
+  }
+}
+
+// ─── Groq Provider (Llama, fast inference) ───
+class GroqProvider implements ModelProvider {
+  name = 'groq';
+  model: string;
+  private apiKey: string;
+
+  constructor(cfg: { apiKey: string; model: string }) {
+    this.apiKey = cfg.apiKey;
+    this.model = cfg.model;
+  }
+
+  async available(): Promise<boolean> {
+    return this.apiKey.length > 0;
+  }
+
+  async generate(system: string, prompt: string): Promise<string> {
+    // Groq uses OpenAI-compatible API
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.model,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.1,
+        max_tokens: 4096,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Groq API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json() as { choices: Array<{ message: { content: string } }> };
+    const text = data.choices?.[0]?.message?.content;
+    if (!text) throw new Error('Empty response from Groq');
+    return text;
+  }
+}
+
 // ─── Router ───
 export class ModelRouter {
   private providers: ModelProvider[] = [];
@@ -100,6 +271,34 @@ export class ModelRouter {
     if (config.models.anthropic.apiKey) {
       this.providers.push(new AnthropicProvider({
         apiKey: config.models.anthropic.apiKey,
+      }));
+    }
+
+    if (config.models.google.apiKey) {
+      this.providers.push(new GoogleProvider({
+        apiKey: config.models.google.apiKey,
+        model: config.models.google.model,
+      }));
+    }
+
+    if (config.models.mistral.apiKey) {
+      this.providers.push(new MistralProvider({
+        apiKey: config.models.mistral.apiKey,
+        model: config.models.mistral.model,
+      }));
+    }
+
+    if (config.models.deepseek.apiKey) {
+      this.providers.push(new DeepSeekProvider({
+        apiKey: config.models.deepseek.apiKey,
+        model: config.models.deepseek.model,
+      }));
+    }
+
+    if (config.models.groq.apiKey) {
+      this.providers.push(new GroqProvider({
+        apiKey: config.models.groq.apiKey,
+        model: config.models.groq.model,
       }));
     }
   }

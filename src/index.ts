@@ -1,4 +1,4 @@
-// ─── PAW Agents v3.0 — Entry Point ───
+// ─── PAW Agents v3.1 — Entry Point ───
 // The operating system for autonomous AI workers.
 // Multi-channel, multi-agent, with WebSocket gateway + dashboard.
 
@@ -8,6 +8,9 @@ import { DiscordAdapter } from './integrations/discord/adapter';
 import { SlackAdapter } from './integrations/slack/adapter';
 import { EmailAdapter } from './integrations/email/adapter';
 import { SMSAdapter } from './integrations/sms/adapter';
+import { LINEAdapter } from './integrations/line/adapter';
+import { RedditAdapter } from './integrations/reddit/adapter';
+import { MatrixAdapter } from './integrations/matrix/adapter';
 import { PawGateway } from './gateway/index';
 import { CronEngine } from './cron/index';
 import { config } from './core/config';
@@ -16,7 +19,7 @@ async function main(): Promise<void> {
   console.log(`
   ╔═══════════════════════════════════════════════════╗
   ║                                                   ║
-  ║   🐾  PAW AGENTS v3.0                             ║
+  ║   🐾  PAW AGENTS v3.1                             ║
   ║   Purp Autonomous Workers                         ║
   ║                                                   ║
   ║   The operating system for autonomous AI agents.  ║
@@ -121,6 +124,42 @@ async function main(): Promise<void> {
     } catch (err) {
       console.warn('[PAW] SMS not configured or failed:', (err as Error).message);
     }
+  }
+
+  // Start LINE adapter (if configured)
+  try {
+    const line = new LINEAdapter();
+    line.onMessage(async (userId: string, message: string) => {
+      const response = await agent.process(userId, message);
+      await line.send(userId, response.message);
+    });
+    await line.start();
+  } catch (err) {
+    console.warn('[PAW] LINE not configured or failed:', (err as Error).message);
+  }
+
+  // Start Reddit adapter (if configured)
+  try {
+    const reddit = new RedditAdapter();
+    reddit.onMessage(async (userId: string, message: string) => {
+      const response = await agent.process(userId, message);
+      await reddit.send(userId, response.message);
+    });
+    await reddit.start();
+  } catch (err) {
+    console.warn('[PAW] Reddit not configured or failed:', (err as Error).message);
+  }
+
+  // Start Matrix / Element adapter (if configured)
+  try {
+    const matrix = new MatrixAdapter();
+    matrix.onMessage(async (userId: string, message: string) => {
+      const response = await agent.process(userId, message);
+      await matrix.send(userId, response.message);
+    });
+    await matrix.start();
+  } catch (err) {
+    console.warn('[PAW] Matrix not configured or failed:', (err as Error).message);
   }
 
   console.log('[PAW] 🐾 All systems online.');

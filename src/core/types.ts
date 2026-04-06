@@ -5,7 +5,7 @@ export type ExecutionMode = 'purp' | 'js' | 'api' | 'system';
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
 export type PlanStatus = 'pending' | 'validated' | 'rejected' | 'executing' | 'completed' | 'failed' | 'rolled_back';
 export type AgentPhase = 'intake' | 'planning' | 'validation' | 'confirmation' | 'execution' | 'verification' | 'logging' | 'response';
-export type ChannelType = 'telegram' | 'discord' | 'slack' | 'whatsapp' | 'webchat' | 'api' | 'email' | 'sms';
+export type ChannelType = 'telegram' | 'discord' | 'slack' | 'whatsapp' | 'webchat' | 'api' | 'email' | 'sms' | 'line' | 'reddit' | 'matrix';
 export type AgentMode = 'autonomous' | 'supervised';
 export type MemoryScope = 'session' | 'user' | 'global';
 

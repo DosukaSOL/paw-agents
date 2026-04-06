@@ -11,10 +11,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/DosukaSOL/paw-agents/releases"><img src="https://img.shields.io/badge/version-3.0.0-blue?style=flat-square" alt="Version" /></a>
+  <a href="https://github.com/DosukaSOL/paw-agents/releases"><img src="https://img.shields.io/badge/version-3.1.0-blue?style=flat-square" alt="Version" /></a>
   <a href="https://github.com/DosukaSOL/paw-agents/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" /></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square" alt="Node" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.6-blue?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://x.com/PAWagents"><img src="https://img.shields.io/badge/𝕏-PAWagents-000000?style=flat-square&logo=x&logoColor=white" alt="X" /></a>
 </p>
 
 <p align="center">
@@ -37,6 +38,9 @@
   <a href="https://www.twilio.com/docs/sms"><img src="https://img.shields.io/badge/SMS-FF6600?style=for-the-badge&logo=twilio&logoColor=white" alt="SMS" /></a>
   <a href="#channels"><img src="https://img.shields.io/badge/WebChat-000000?style=for-the-badge&logo=socketdotio&logoColor=white" alt="WebChat" /></a>
   <a href="#channels"><img src="https://img.shields.io/badge/Webhooks-FF4088?style=for-the-badge&logo=webhooks&logoColor=white" alt="Webhooks" /></a>
+  <a href="#channels"><img src="https://img.shields.io/badge/LINE-00C300?style=for-the-badge&logo=line&logoColor=white" alt="LINE" /></a>
+  <a href="#channels"><img src="https://img.shields.io/badge/Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white" alt="Reddit" /></a>
+  <a href="#channels"><img src="https://img.shields.io/badge/Matrix-000000?style=for-the-badge&logo=element&logoColor=white" alt="Matrix" /></a>
 </p>
 
 ---
@@ -93,8 +97,8 @@ npm start
 
 ### Requirements
 - **Node.js 20+**
-- At least one AI API key (OpenAI or Anthropic)
-- At least one channel token (Telegram, Discord, Slack, or use WebChat)
+- At least one AI API key (OpenAI, Anthropic, Google AI, Mistral, DeepSeek, or Groq)
+- At least one channel token (Telegram, Discord, Slack, LINE, Reddit, Matrix, or use WebChat)
 
 ---
 
@@ -104,8 +108,8 @@ npm start
 | Category | Capabilities |
 |----------|-------------|
 | **Agent Modes** | Autonomous / Supervised toggle per user. Validation pipeline configurable. |
-| **Channels** | Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat, Webhooks |
-| **Models** | OpenAI (GPT-4o), Anthropic (Claude) with automatic failover |
+| **Channels** | Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat, Webhooks, LINE, Reddit, Matrix |
+| **Models** | OpenAI (GPT-4o), Anthropic (Claude), Google (Gemma 3), Mistral, DeepSeek, Groq (Llama) with automatic failover |
 | **Blockchain** | Native Solana support: transfers, balance checks, SPL tokens, tx simulation |
 | **Purp SCL** | v1.1.0 parser, Anchor Rust codegen, TypeScript SDK + IDL generation |
 | **Browser** | Puppeteer-based automation: navigate, click, type, extract, screenshot |
@@ -143,6 +147,9 @@ PAW connects to users wherever they are. Configure one or all:
 | <img src="https://img.shields.io/badge/-FF6600?style=flat-square&logo=twilio&logoColor=white" /> | **SMS** | Twilio credentials | Twilio REST API + webhooks |
 | <img src="https://img.shields.io/badge/-000000?style=flat-square&logo=socketdotio&logoColor=white" /> | **WebChat** | Built-in via Gateway | WebSocket |
 | <img src="https://img.shields.io/badge/-FF4088?style=flat-square&logo=webhooks&logoColor=white" /> | **Webhooks** | `POST /webhook/:id` | HTTP |
+| <img src="https://img.shields.io/badge/-00C300?style=flat-square&logo=line&logoColor=white" /> | **LINE** | `LINE_CHANNEL_ACCESS_TOKEN` + `LINE_CHANNEL_SECRET` | LINE Messaging API (webhook) |
+| <img src="https://img.shields.io/badge/-FF4500?style=flat-square&logo=reddit&logoColor=white" /> | **Reddit** | `REDDIT_CLIENT_ID` + credentials | Reddit API (OAuth2 polling) |
+| <img src="https://img.shields.io/badge/-000000?style=flat-square&logo=element&logoColor=white" /> | **Matrix** | `MATRIX_HOMESERVER_URL` + `MATRIX_ACCESS_TOKEN` | Matrix Client-Server API (sync) |
 
 All channels share the same agent brain, tools, and safety pipeline. Channel adapters are loaded dynamically — install only what you need.
 
@@ -475,6 +482,9 @@ paw-agents/
 │   │   ├── webchat/adapter.ts      # WebChat adapter
 │   │   ├── email/adapter.ts        # Email adapter (IMAP/SMTP)
 │   │   ├── sms/adapter.ts          # SMS adapter (Twilio)
+│   │   ├── line/adapter.ts         # LINE adapter (Messaging API)
+│   │   ├── reddit/adapter.ts       # Reddit adapter (OAuth2 API)
+│   │   ├── matrix/adapter.ts       # Matrix / Element adapter
 │   │   ├── solana/executor.ts      # Blockchain execution
 │   │   └── purp/engine.ts          # Purp SCL v1.1 engine
 │   ├── security/
@@ -497,13 +507,23 @@ paw-agents/
 
 | Provider | Models | Failover |
 |----------|--------|----------|
-| **OpenAI** | GPT-4o, GPT-4 Turbo | ✅ Primary → Anthropic |
-| **Anthropic** | Claude Sonnet 4 | ✅ Primary → OpenAI |
+| **OpenAI** | GPT-4o, GPT-4 Turbo | ✅ Automatic |
+| **Anthropic** | Claude Sonnet 4 | ✅ Automatic |
+| **Google AI** | Gemma 3 27B | ✅ Automatic |
+| **Mistral** | Mistral Large | ✅ Automatic |
+| **DeepSeek** | DeepSeek Chat / R1 | ✅ Automatic |
+| **Groq** | Llama 3.3 70B (fast inference) | ✅ Automatic |
+
+Configure one or many — PAW routes to your preferred provider and auto-fails over to the next available.
 
 ```env
 DEFAULT_MODEL_PROVIDER=openai
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
+GOOGLE_AI_API_KEY=AI...
+MISTRAL_API_KEY=...
+DEEPSEEK_API_KEY=sk-...
+GROQ_API_KEY=gsk_...
 ```
 
 ---
@@ -619,7 +639,7 @@ Every action is logged in structured JSONL with auto-redacted secrets:
 | **Audit trail** | ✅ Clawtrace — full JSONL with auto-redaction | ⚠️ Standard logging |
 | **Self-healing** | ✅ Diagnose → fix → retry → escalate | ⚠️ Basic retry logic |
 | **Risk scoring** | ✅ Per-action score with confirmation gates | ❌ No granular scoring |
-| **Channel support** | ✅ 8 channels (Discord, Telegram, Slack, Twitter, WebSocket, Web, Email, SMS) | ✅ 25+ channels |
+| **Channel support** | ✅ 11 channels (Discord, Telegram, Slack, WhatsApp, LINE, Reddit, Matrix, WebSocket, Web, Email, SMS) | ✅ 25+ channels |
 | **Companion apps** | ❌ Not included | ✅ Mobile + desktop |
 | **Built-in tools** | ✅ 30+ tools across 10 categories | ⚠️ ~15 tools |
 | **Test coverage** | ✅ 79 tests across 18 suites | ⚠️ Varies by module |
@@ -668,14 +688,14 @@ If you want a **framework that maximizes capability, security, and extensibility
 ## Roadmap
 
 ### v3.1 — Channels & Reach
-- [ ] <img src="https://img.shields.io/badge/-E4405F?style=flat-square&logo=instagram&logoColor=white" height="16" /> Instagram DM channel adapter
-- [ ] <img src="https://img.shields.io/badge/-0866FF?style=flat-square&logo=messenger&logoColor=white" height="16" /> Facebook Messenger channel adapter
-- [ ] <img src="https://img.shields.io/badge/-00C300?style=flat-square&logo=line&logoColor=white" height="16" /> LINE channel adapter
-- [ ] <img src="https://img.shields.io/badge/-07C160?style=flat-square&logo=wechat&logoColor=white" height="16" /> WeChat channel adapter
-- [ ] <img src="https://img.shields.io/badge/-FF4500?style=flat-square&logo=reddit&logoColor=white" height="16" /> Reddit channel adapter
-- [ ] <img src="https://img.shields.io/badge/-000000?style=flat-square&logo=element&logoColor=white" height="16" /> Matrix / Element channel adapter
-- [ ] <img src="https://img.shields.io/badge/-F22F46?style=flat-square&logo=twilio&logoColor=white" height="16" /> Voice channel (Twilio Voice / WebRTC)
-- [ ] Custom webhook builder UI in dashboard
+- [x] <img src="https://img.shields.io/badge/-00C300?style=flat-square&logo=line&logoColor=white" height="16" /> LINE channel adapter
+- [x] <img src="https://img.shields.io/badge/-FF4500?style=flat-square&logo=reddit&logoColor=white" height="16" /> Reddit channel adapter
+- [x] <img src="https://img.shields.io/badge/-000000?style=flat-square&logo=element&logoColor=white" height="16" /> Matrix / Element channel adapter
+- [x] Custom webhook builder UI in dashboard
+- [x] <img src="https://img.shields.io/badge/-4285F4?style=flat-square&logo=google&logoColor=white" height="16" /> Google AI (Gemma 3) model provider
+- [x] <img src="https://img.shields.io/badge/-FF7000?style=flat-square&logo=mistral&logoColor=white" height="16" /> Mistral model provider
+- [x] <img src="https://img.shields.io/badge/-0A0A0A?style=flat-square&logo=deepseek&logoColor=white" height="16" /> DeepSeek model provider
+- [x] <img src="https://img.shields.io/badge/-F55036?style=flat-square&logo=groq&logoColor=white" height="16" /> Groq (Llama) model provider
 
 ### v3.2 — Apps & Companions
 - [ ] <img src="https://img.shields.io/badge/-47848F?style=flat-square&logo=electron&logoColor=white" height="16" /> PAW Desktop app (Electron — macOS, Windows, Linux)
@@ -732,7 +752,7 @@ MIT
 ---
 
 <p align="center">
-  <strong>PAW Agents v3.0 — Programmable Autonomous Workers</strong><br>
+  <strong>PAW Agents v3.1 — Programmable Autonomous Workers</strong><br>
   <em>The operating system for autonomous AI agents.</em><br><br>
   Ships with native <a href="https://solana.com">Solana</a> support and the <a href="https://github.com/DosukaSOL/purp-scl">Purp SCL</a> smart contract language.
 </p>

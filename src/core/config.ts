@@ -66,6 +66,22 @@ export const config = {
     authToken: optionalEnv('TWILIO_AUTH_TOKEN', ''),
     fromNumber: optionalEnv('TWILIO_FROM_NUMBER', ''),
   },
+  line: {
+    channelAccessToken: optionalEnv('LINE_CHANNEL_ACCESS_TOKEN', ''),
+    channelSecret: optionalEnv('LINE_CHANNEL_SECRET', ''),
+  },
+  reddit: {
+    clientId: optionalEnv('REDDIT_CLIENT_ID', ''),
+    clientSecret: optionalEnv('REDDIT_CLIENT_SECRET', ''),
+    username: optionalEnv('REDDIT_USERNAME', ''),
+    password: optionalEnv('REDDIT_PASSWORD', ''),
+    subreddit: optionalEnv('REDDIT_SUBREDDIT', ''),
+  },
+  matrix: {
+    homeserverUrl: optionalEnv('MATRIX_HOMESERVER_URL', ''),
+    accessToken: optionalEnv('MATRIX_ACCESS_TOKEN', ''),
+    userId: optionalEnv('MATRIX_USER_ID', ''),
+  },
   // ─── Gateway ───
   gateway: {
     port: parseInt(optionalEnv('GATEWAY_PORT', '18789'), 10),
@@ -81,6 +97,22 @@ export const config = {
     },
     anthropic: {
       apiKey: optionalEnv('ANTHROPIC_API_KEY', ''),
+    },
+    google: {
+      apiKey: optionalEnv('GOOGLE_AI_API_KEY', ''),
+      model: optionalEnv('GOOGLE_AI_MODEL', 'gemma-3-27b-it'),
+    },
+    mistral: {
+      apiKey: optionalEnv('MISTRAL_API_KEY', ''),
+      model: optionalEnv('MISTRAL_MODEL', 'mistral-large-latest'),
+    },
+    deepseek: {
+      apiKey: optionalEnv('DEEPSEEK_API_KEY', ''),
+      model: optionalEnv('DEEPSEEK_MODEL', 'deepseek-chat'),
+    },
+    groq: {
+      apiKey: optionalEnv('GROQ_API_KEY', ''),
+      model: optionalEnv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
     },
     defaultProvider: optionalEnv('DEFAULT_MODEL_PROVIDER', 'openai'),
   },
