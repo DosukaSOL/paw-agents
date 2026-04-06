@@ -116,7 +116,7 @@ npm start
 | **Agent Modes** | Supervised / Autonomous / Free — three modes per user. Free mode requires 2 safety warning layers. |
 | **Channels** | Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat, Webhooks, LINE, Reddit, Matrix |
 | **Models** | OpenAI (GPT-4o), Anthropic (Claude), Google (Gemma 3), Mistral, DeepSeek, Groq (Llama) with automatic failover |
-| **Blockchain** | Native Solana support: transfers, balance checks, SPL tokens, tx simulation |
+| **Blockchain** | Native Solana support: transfers, balances, SPL tokens, tx simulation, composable DeFi |
 | **Purp SCL** | v1.1.0 parser, Anchor Rust codegen, TypeScript SDK + IDL generation |
 | **Browser** | Puppeteer-based automation: navigate, click, type, extract, screenshot |
 | **Multi-Agent** | Agent registry, capability routing, task delegation, multi-step orchestration |
@@ -126,7 +126,7 @@ npm start
 | **On-Chain Registry** | Agent identity verification with PDA-derived keys (Solana) |
 | **Token Gate** | SPL token-gated access control with tiered permissions |
 | **Tx Simulation** | Full dry-run sandbox with balance change analysis + warning detection |
-| **Tools** | 30+ built-in tools: HTTP, file, data, browser, memory, MCP, workflows |
+| **Tools** | 36+ built-in tools: HTTP, file, data, browser, memory, MCP, workflows, DeFi |
 | **Safety** | Prompt injection (15+ patterns), rate limiting, risk scoring, URL sandboxing |
 | **Keys** | AES-256-GCM encryption, Ed25519 signing, zeroed after use |
 | **Logging** | Clawtrace JSONL audit trail, auto-redacted secrets |
@@ -277,6 +277,57 @@ spl-token = "0.4"
 
 ---
 
+## Composable DeFi Execution Layer
+
+PAW ships with a composable DeFi execution layer for Solana — multi-DEX swap routing, token balance management, and position tracking. Every DeFi operation goes through the same six-stage pipeline as everything else.
+
+### How It Works
+
+1. **Quote** — Fetch the optimal swap route across Jupiter's DEX aggregator (Raydium, Orca, and more)
+2. **Simulate** — Dry-run the swap: check balances, validate slippage, verify price impact, cap route legs
+3. **Validate** — Full pipeline validation: schema, safety policy, risk scoring, DeFi-specific checks
+4. **Execute** — Submit the transaction on-chain (pre-signed, simulated before broadcast)
+5. **Confirm** — Wait for on-chain confirmation, verify output matches expected result
+6. **Log** — Clawtrace audit trail with full route, amounts, and fees logged
+
+### Safety Guarantees
+
+| Check | Limit | Enforcement |
+|-------|-------|-------------|
+| Max slippage | 5% (500 bps) | Hard cap — cannot be overridden |
+| Max price impact | 10% | Hard cap — blocks swap if exceeded |
+| Max route legs | 5 hops | Prevents deep routing exploits |
+| Min output ratio | 90% | Rejects swaps with extreme loss |
+| Max swap amount | 100 SOL | Hard ceiling per swap |
+| Balance check | Pre-execution | Fails before broadcast if insufficient |
+| Blocked tokens | Configurable | Block specific mints via environment |
+| Quote expiry | 15 seconds | Stale quotes are never executed |
+
+### All Three Modes
+
+DeFi operations work in every agent mode:
+
+- **Supervised** — You confirm every swap before it executes
+- **Autonomous** — Small swaps auto-execute; large or high-impact swaps ask for confirmation
+- **Free** — Full autonomy; validation pipeline still enforces all safety limits
+
+### Supported Tokens
+
+SOL, USDC, USDT, RAY, ORCA, MNDE, JUP, BONK, WIF — plus any valid SPL token mint address.
+
+### Environment Variables
+
+```env
+DEFI_MAX_SLIPPAGE_BPS=100          # Default max slippage (1%)
+DEFI_MAX_PRICE_IMPACT_PCT=3        # Default max price impact
+DEFI_MAX_SWAP_LAMPORTS=5000000000  # Default max swap (5 SOL)
+DEFI_MAX_ROUTE_LEGS=4              # Default max route hops
+DEFI_MIN_OUTPUT_RATIO=0.95         # Default min output ratio
+DEFI_BLOCKED_MINTS=                # Comma-separated blocked mints
+```
+
+---
+
 ## How It Works
 
 ```
@@ -308,6 +359,7 @@ spl-token = "0.4"
 | **Keys** | AES-256-GCM encrypted at rest, zeroed after use, never logged |
 | **Execution** | Sandboxed — Purp whitelist, file sandbox, HTTPS-only APIs, blocked internal IPs |
 | **Blockchain** | Simulation before every transaction, risk scoring, confirmation gate |
+| **DeFi** | Slippage caps, price impact limits, route depth limits, balance pre-checks, quote expiry |
 | **Logging** | All secrets auto-redacted from Clawtrace |
 | **Recovery** | Self-healing: diagnose → fix → retry → escalate |
 | **Rate Limit** | Per-user token bucket with configurable limits |
@@ -316,12 +368,18 @@ See [Security Model](docs/SECURITY.md) for the full threat model.
 
 ---
 
-## Built-in Tools (30+)
+## Built-in Tools (36+)
 
 | Tool | Description | Safety |
 |------|------------|--------|
 | `solana_transfer` | Transfer SOL between wallets | Simulation + confirmation |
 | `solana_balance` | Check wallet balance | Read-only |
+| `defi_quote` | Get multi-DEX swap quote via Jupiter | Read-only, cached 15s |
+| `defi_swap` | Execute composable swap across DEXes | Simulation + slippage + price impact checks |
+| `defi_simulate` | Dry-run a swap without executing | Read-only simulation |
+| `defi_balance` | Check token balance (SOL + SPL) | Read-only |
+| `defi_positions` | List DeFi positions (LP, staking) | Read-only |
+| `defi_resolve_token` | Resolve token symbol to mint address | Read-only |
 | `api_call` / `http_get` / `http_post` | Call external APIs | HTTPS-only, no internal IPs |
 | `file_read` / `file_write` / `file_list` | File operations | Sandboxed to `data/` directory |
 | `data_transform` | JSON, base64, case transforms | Pure functions |
@@ -491,7 +549,9 @@ paw-agents/
 │   ├── validation/
 │   │   └── engine.ts               # Plan validation & safety
 │   ├── execution/
-│   │   └── engine.ts               # Plan executor + 30+ tools
+│   │   └── engine.ts               # Plan executor + 36+ tools
+│   ├── defi/
+│   │   └── engine.ts               # Composable DeFi execution layer
 │   ├── integrations/
 │   │   ├── telegram/bot.ts         # Telegram adapter
 │   │   ├── discord/adapter.ts      # Discord adapter
@@ -659,7 +719,7 @@ Every action is logged in structured JSONL with auto-redacted secrets:
 | **Risk scoring** | ✅ Per-action score with confirmation gates | ❌ No granular scoring |
 | **Channel support** | ✅ 11 channels (Discord, Telegram, Slack, WhatsApp, LINE, Reddit, Matrix, WebSocket, Web, Email, SMS) | ✅ 25+ channels |
 | **Companion apps** | ❌ Not included | ✅ Mobile + desktop |
-| **Built-in tools** | ✅ 30+ tools across 10 categories | ⚠️ ~15 tools |
+| **Built-in tools** | ✅ 36+ tools across 11 categories | ⚠️ ~15 tools |
 | **Test coverage** | ✅ 79 tests across 18 suites | ⚠️ Varies by module |
 
 ### Where PAW Wins

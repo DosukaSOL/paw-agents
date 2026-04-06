@@ -128,6 +128,15 @@ export const config = {
     projectDir: optionalEnv('PURP_PROJECT_DIR', './purp'),
     autoCompile: optionalBool('PURP_AUTO_COMPILE', true),
   },
+  // ─── DeFi ───
+  defi: {
+    maxSlippageBps: parseInt(optionalEnv('DEFI_MAX_SLIPPAGE_BPS', '100'), 10),
+    maxPriceImpactPct: parseFloat(optionalEnv('DEFI_MAX_PRICE_IMPACT_PCT', '3')),
+    maxSwapLamports: parseInt(optionalEnv('DEFI_MAX_SWAP_LAMPORTS', '5000000000'), 10),
+    maxRoutLegs: parseInt(optionalEnv('DEFI_MAX_ROUTE_LEGS', '4'), 10),
+    minOutputRatio: parseFloat(optionalEnv('DEFI_MIN_OUTPUT_RATIO', '0.95')),
+    blockedMints: optionalEnv('DEFI_BLOCKED_MINTS', '').split(',').filter(Boolean),
+  },
   // ─── Security ───
   security: {
     maxTransactionLamports: parseInt(optionalEnv('MAX_TRANSACTION_LAMPORTS', '1000000000'), 10),

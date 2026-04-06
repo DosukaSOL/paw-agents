@@ -387,3 +387,89 @@ export interface PurpProjectConfig {
   dependencies: Record<string, string>;
   network: 'devnet' | 'testnet' | 'mainnet-beta';
 }
+
+// ─── Composable DeFi ───
+
+export type DeFiProtocol = 'jupiter' | 'raydium' | 'orca' | 'marinade' | 'drift';
+export type DeFiAction = 'swap' | 'add_liquidity' | 'remove_liquidity' | 'stake' | 'unstake';
+
+export interface DeFiQuote {
+  protocol: DeFiProtocol;
+  input_mint: string;
+  output_mint: string;
+  input_amount: number;
+  output_amount: number;
+  price_impact_pct: number;
+  fee_amount: number;
+  fee_mint: string;
+  route_plan: DeFiRouteLeg[];
+  expires_at: number;
+}
+
+export interface DeFiRouteLeg {
+  protocol: DeFiProtocol;
+  pool: string;
+  input_mint: string;
+  output_mint: string;
+  input_amount: number;
+  output_amount: number;
+  fee_pct: number;
+}
+
+export interface DeFiSwapParams {
+  input_mint: string;
+  output_mint: string;
+  amount: number;
+  slippage_bps: number;
+  max_accounts?: number;
+  only_direct_routes?: boolean;
+  user_wallet: string;
+}
+
+export interface DeFiSwapResult {
+  success: boolean;
+  signature?: string;
+  input_amount: number;
+  output_amount: number;
+  price_impact_pct: number;
+  fee_lamports: number;
+  route_used: DeFiRouteLeg[];
+  simulation: DeFiSimulationResult;
+  error?: string;
+}
+
+export interface DeFiSimulationResult {
+  passed: boolean;
+  estimated_output: number;
+  minimum_output: number;
+  price_impact_pct: number;
+  fee_estimate: number;
+  slippage_check: boolean;
+  balance_sufficient: boolean;
+  warnings: string[];
+  error?: string;
+}
+
+export interface DeFiPositionInfo {
+  protocol: DeFiProtocol;
+  position_type: 'liquidity' | 'stake' | 'lending';
+  pool_address: string;
+  token_a_mint: string;
+  token_b_mint?: string;
+  token_a_amount: number;
+  token_b_amount?: number;
+  value_usd_estimate: number;
+  apy_estimate?: number;
+  opened_at?: string;
+}
+
+export interface DeFiSafetyConfig {
+  max_slippage_bps: number;
+  max_price_impact_pct: number;
+  max_swap_lamports: number;
+  allowed_protocols: DeFiProtocol[];
+  blocked_mints: string[];
+  require_simulation: boolean;
+  max_route_legs: number;
+  min_output_ratio: number;
+}

@@ -13,6 +13,7 @@ import { VectorMemory } from '../vector-memory/index';
 import { MCPClient } from '../mcp/index';
 import { WorkflowEngine } from '../workflow/index';
 import { TransactionSimulator } from '../simulation/index';
+import { DeFiEngine } from '../defi/engine';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -34,6 +35,7 @@ export class ExecutionEngine {
   private mcpClient: MCPClient;
   private workflowEngine: WorkflowEngine;
   private simulator: TransactionSimulator;
+  private defi: DeFiEngine;
 
   constructor(solana: SolanaExecutor, purp: PurpEngine) {
     this.solana = solana;
@@ -44,6 +46,7 @@ export class ExecutionEngine {
     this.mcpClient = new MCPClient();
     this.workflowEngine = new WorkflowEngine();
     this.simulator = new TransactionSimulator({ rpcUrl: process.env.SOLANA_RPC_URL ?? 'https://api.devnet.solana.com' });
+    this.defi = new DeFiEngine(solana);
     this.registerBuiltinTools();
   }
 
@@ -54,6 +57,7 @@ export class ExecutionEngine {
   getMCPClient(): MCPClient { return this.mcpClient; }
   getWorkflowEngine(): WorkflowEngine { return this.workflowEngine; }
   getSimulator(): TransactionSimulator { return this.simulator; }
+  getDeFi(): DeFiEngine { return this.defi; }
 
   // ─── Register a tool handler ───
   registerTool(name: string, handler: ToolHandler): void {
@@ -470,6 +474,56 @@ export class ExecutionEngine {
 
     this.registerTool('tx_history', async () => {
       return this.simulator.getHistory();
+    });
+
+    // ─── Composable DeFi tools ───
+    this.registerTool('defi_quote', async (params) => {
+      return this.defi.getQuote({
+        input_mint: String(params.input_mint ?? params.from),
+        output_mint: String(params.output_mint ?? params.to),
+        amount: Number(params.amount),
+        slippage_bps: Number(params.slippage_bps ?? 50),
+        only_direct_routes: Boolean(params.only_direct_routes ?? false),
+        user_wallet: String(params.user_wallet ?? params.wallet),
+      });
+    });
+
+    this.registerTool('defi_swap', async (params) => {
+      return this.defi.executeSwap({
+        input_mint: String(params.input_mint ?? params.from),
+        output_mint: String(params.output_mint ?? params.to),
+        amount: Number(params.amount),
+        slippage_bps: Number(params.slippage_bps ?? 50),
+        only_direct_routes: Boolean(params.only_direct_routes ?? false),
+        user_wallet: String(params.user_wallet ?? params.wallet),
+      });
+    });
+
+    this.registerTool('defi_simulate', async (params) => {
+      return this.defi.simulateSwap({
+        input_mint: String(params.input_mint ?? params.from),
+        output_mint: String(params.output_mint ?? params.to),
+        amount: Number(params.amount),
+        slippage_bps: Number(params.slippage_bps ?? 50),
+        only_direct_routes: Boolean(params.only_direct_routes ?? false),
+        user_wallet: String(params.user_wallet ?? params.wallet),
+      });
+    });
+
+    this.registerTool('defi_balance', async (params) => {
+      return this.defi.getTokenBalance(
+        String(params.wallet ?? params.address),
+        String(params.mint ?? params.token ?? 'SOL'),
+      );
+    });
+
+    this.registerTool('defi_positions', async (params) => {
+      return this.defi.getPositions(String(params.wallet ?? params.address));
+    });
+
+    this.registerTool('defi_resolve_token', async (params) => {
+      const mint = this.defi.resolveMint(String(params.token ?? params.symbol));
+      return { token: params.token ?? params.symbol, mint };
     });
   }
 

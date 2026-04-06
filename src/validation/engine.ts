@@ -153,6 +153,54 @@ export class ValidationEngine {
       }
     }
 
+    // DeFi-specific safety checks
+    if (plan.tools.some(t => t.startsWith('defi_'))) {
+      risk_score += 15; // DeFi operations carry inherent risk
+
+      for (const step of plan.plan) {
+        if (!step.tool.startsWith('defi_')) continue;
+
+        // Validate slippage is within bounds
+        const slippage = Number(step.params.slippage_bps ?? 0);
+        if (slippage > 500) {
+          errors.push({
+            code: 'DEFI_EXCESSIVE_SLIPPAGE',
+            field: `plan[${step.step}].params.slippage_bps`,
+            message: `Slippage ${slippage}bps exceeds maximum 500bps (5%)`,
+            severity: 'fatal',
+          });
+        } else if (slippage > 200) {
+          warnings.push({
+            code: 'DEFI_HIGH_SLIPPAGE',
+            field: `plan[${step.step}].params.slippage_bps`,
+            message: `Slippage ${slippage}bps is elevated (${slippage / 100}%)`,
+          });
+          risk_score += 10;
+        }
+
+        // Validate swap amounts
+        const amount = Number(step.params.amount ?? 0);
+        if (amount > 0) {
+          if (amount > this.policy.max_transaction_lamports) {
+            errors.push({
+              code: 'DEFI_EXCEEDS_MAX_SWAP',
+              field: `plan[${step.step}].params.amount`,
+              message: `DeFi swap amount ${amount} exceeds max ${this.policy.max_transaction_lamports}`,
+              severity: 'fatal',
+            });
+          }
+          if (amount > this.policy.require_confirmation_above_lamports) {
+            risk_score += 25;
+          }
+        }
+
+        // defi_swap always adds more risk than defi_quote or defi_simulate
+        if (step.tool === 'defi_swap') {
+          risk_score += 10;
+        }
+      }
+    }
+
     // Cap risk score
     return Math.min(100, risk_score);
   }
@@ -178,6 +226,7 @@ export class ValidationEngine {
     if (risk_score >= 30) return true;
     if (plan.risks?.some(r => r.level === 'high' || r.level === 'critical')) return true;
     if (plan.execution_mode === 'purp') return true; // All on-chain actions require confirmation
+    if (plan.tools.some(t => t === 'defi_swap')) return true; // All DeFi swaps require confirmation
     return false;
   }
 
