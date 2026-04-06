@@ -15,9 +15,9 @@ const INJECTION_PATTERNS = [
   /\bDAN\b/,
   /\b(reveal|show|print|output)\b.*\b(system\s*prompt|secret|key|password|token)\b/i,
   /```\s*(system|admin|root)/i,
-  /\{\{.*\}\}/,
+  /\{\{[^}]*\}\}/,
   /<\s*script/i,
-  /\$\{.*\}/,
+  /\$\{[^}]*\}/,
 ];
 
 const MAX_INPUT_LENGTH = 4096;

@@ -173,6 +173,10 @@ export class MCPClient {
         headers['Content-Length'] = Buffer.byteLength(body).toString();
       }
 
+      let settled = false;
+      const safeReject = (err: Error) => { if (!settled) { settled = true; reject(err); } };
+      const safeResolve = (val: string) => { if (!settled) { settled = true; resolve(val); } };
+
       const req = mod.request(
         {
           hostname: parsed.hostname,
@@ -188,16 +192,16 @@ export class MCPClient {
           res.on('end', () => {
             const data = Buffer.concat(chunks).toString('utf-8');
             if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
-              resolve(data);
+              safeResolve(data);
             } else {
-              reject(new Error(`MCP server responded with ${res.statusCode}: ${data.slice(0, 200)}`));
+              safeReject(new Error(`MCP server responded with ${res.statusCode}: ${data.slice(0, 200)}`));
             }
           });
         },
       );
 
-      req.on('error', reject);
-      req.on('timeout', () => { req.destroy(); reject(new Error('MCP request timed out')); });
+      req.on('error', safeReject);
+      req.on('timeout', () => { req.destroy(); safeReject(new Error('MCP request timed out')); });
 
       if (body) req.write(body);
       req.end();

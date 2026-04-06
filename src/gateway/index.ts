@@ -188,7 +188,7 @@ export class PawGateway {
   }
 
   async stop(): Promise<void> {
-    for (const [id, client] of this.clients) {
+    for (const [, client] of this.clients) {
       client.ws.close();
     }
     this.clients.clear();
@@ -281,7 +281,14 @@ export class PawGateway {
     req.on('end', async () => {
       try {
         const data = JSON.parse(body);
-        const webhookId = req.url?.split('/webhook/')[1]?.split('?')[0];
+        const webhookId = req.url?.split('/webhook/')[1]?.split('?')[0] ?? '';
+
+        // Validate webhook ID format (alphanumeric, hyphens, underscores only)
+        if (!webhookId || !/^[a-zA-Z0-9_-]+$/.test(webhookId)) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid webhook ID' }));
+          return;
+        }
 
         // Process the webhook as a system message
         const response = await this.agent.process(

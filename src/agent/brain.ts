@@ -185,7 +185,7 @@ Generate the execution plan as strict JSON. Nothing else.`;
         mitigation: String(r.mitigation ?? ''),
       })) : [],
       requires_confirmation: Boolean(parsed.requires_confirmation ?? true),
-      execution_mode: (['purp', 'js', 'api'].includes(String(parsed.execution_mode)) ? parsed.execution_mode : 'js') as 'purp' | 'js' | 'api',
+      execution_mode: (['purp', 'js', 'api', 'system'].includes(String(parsed.execution_mode)) ? parsed.execution_mode : 'js') as 'purp' | 'js' | 'api' | 'system',
       purp_program: parsed.purp_program ? String(parsed.purp_program) : undefined,
     };
   }

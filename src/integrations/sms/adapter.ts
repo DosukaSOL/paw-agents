@@ -95,7 +95,10 @@ export class SMSAdapter implements ChannelAdapter {
       .createHmac('sha1', this.config.authToken)
       .update(data)
       .digest('base64');
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+    const sigBuf = Buffer.from(signature);
+    const expBuf = Buffer.from(expected);
+    if (sigBuf.length !== expBuf.length) return false;
+    return crypto.timingSafeEqual(sigBuf, expBuf);
   }
 
   async send(userId: string, message: string): Promise<void> {

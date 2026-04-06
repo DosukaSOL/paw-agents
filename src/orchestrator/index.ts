@@ -37,6 +37,7 @@ export class AgentOrchestrator {
   private messageLog: AgentToAgentMessage[] = [];
   private delegations: TaskDelegation[] = [];
   private maxDelegationDepth = 3;
+  private maxLogSize = 1000;
 
   // ─── Register a specialist agent ───
   registerAgent(spec: AgentSpec): void {
@@ -113,6 +114,9 @@ export class AgentOrchestrator {
       message,
       timestamp: new Date().toISOString(),
     });
+    if (this.messageLog.length > this.maxLogSize) {
+      this.messageLog.splice(0, this.messageLog.length - this.maxLogSize);
+    }
 
     const start = Date.now();
     try {
