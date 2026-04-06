@@ -248,6 +248,33 @@ export function getDashboardHTML(): string {
       border-color: var(--border-standard);
     }
 
+    .mode-option.mode-free { border-color: transparent; }
+    .mode-option.mode-free:hover { border-color: #ef4444; background: rgba(239, 68, 68, 0.08); color: #ef4444; }
+    .mode-option.mode-free.active { background: rgba(239, 68, 68, 0.12); color: #ef4444; border-color: #ef4444; }
+    .mode-option.mode-free.active .mode-icon { background: rgba(239, 68, 68, 0.12); border-color: #ef4444; color: #ef4444; }
+
+    .free-modal-overlay {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7); z-index: 9999; align-items: center; justify-content: center;
+    }
+    .free-modal-overlay.visible { display: flex; }
+    .free-modal {
+      background: var(--bg-secondary); border: 1px solid #ef4444; border-radius: 12px;
+      padding: 32px; max-width: 480px; width: 90%;
+    }
+    .free-modal h3 { color: #ef4444; margin: 0 0 16px; font-family: var(--font-serif); }
+    .free-modal p { color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6; margin: 0 0 12px; }
+    .free-modal .warn-text { color: #ef4444; font-weight: 600; font-size: 0.85rem; }
+    .free-modal-actions { display: flex; gap: 12px; margin-top: 20px; }
+    .free-modal-actions button {
+      flex: 1; padding: 10px; border-radius: 8px; border: 1px solid var(--border-subtle);
+      font-family: var(--font-sans); font-size: 0.82rem; cursor: pointer; font-weight: 600;
+    }
+    .btn-cancel-free { background: var(--bg-card); color: var(--text-primary); }
+    .btn-cancel-free:hover { border-color: var(--brand); }
+    .btn-proceed-free { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: #ef4444 !important; }
+    .btn-proceed-free:hover { background: rgba(239, 68, 68, 0.2); }
+
     .mode-icon {
       width: 24px; height: 24px;
       display: flex; align-items: center; justify-content: center;
@@ -513,6 +540,10 @@ export function getDashboardHTML(): string {
               <span class="mode-icon">🤖</span>
               <span>Autonomous</span>
             </button>
+            <button class="mode-option mode-free" id="btn-free" onclick="requestFreeMode()">
+              <span class="mode-icon">🔓</span>
+              <span>Free</span>
+            </button>
           </div>
         </div>
 
@@ -547,6 +578,35 @@ export function getDashboardHTML(): string {
           <button class="log-clear" onclick="clearLog()">Clear</button>
         </div>
         <div class="log-entries" id="log-entries"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Free Mode Warning Modals -->
+  <div class="free-modal-overlay" id="free-modal-1">
+    <div class="free-modal">
+      <h3>⚠️ Warning — Free Mode (1/2)</h3>
+      <p>You are about to enable <strong>Free Mode</strong>.</p>
+      <p>Free Mode grants the agent <strong>full autonomy</strong> over:</p>
+      <p>• All actions on your device<br>• All connected APIs and services<br>• All blockchain transactions (no confirmation gate)<br>• All file operations<br>• All browser sessions and logged-in accounts<br>• All external tool calls</p>
+      <p><strong>No actions will require confirmation.</strong></p>
+      <p class="warn-text">⚠️ It is strongly advised to use Supervised or Autonomous mode instead.</p>
+      <div class="free-modal-actions">
+        <button class="btn-cancel-free" onclick="cancelFreeMode()">Cancel</button>
+        <button class="btn-proceed-free" onclick="showFreeWarning2()">Proceed to Final Warning →</button>
+      </div>
+    </div>
+  </div>
+  <div class="free-modal-overlay" id="free-modal-2">
+    <div class="free-modal">
+      <h3>🚨 Final Warning — Free Mode (2/2)</h3>
+      <p>This is your <strong>last chance</strong> to reconsider.</p>
+      <p>By proceeding, you accept that:</p>
+      <p>1. The agent will execute <strong>all actions without asking permission</strong><br>2. This includes <strong>irreversible actions</strong> (transfers, deletions, deployments)<br>3. The agent has unrestricted access to <strong>all connected systems</strong><br>4. You assume <strong>full responsibility</strong> for all actions taken</p>
+      <p class="warn-text">⚠️ We strongly recommend Supervised or Autonomous mode.<br>Autonomous already auto-executes most actions while keeping you safe.</p>
+      <div class="free-modal-actions">
+        <button class="btn-cancel-free" onclick="cancelFreeMode()">Cancel — Stay Safe</button>
+        <button class="btn-proceed-free" onclick="activateFreeMode()">Activate Free Mode</button>
       </div>
     </div>
   </div>
@@ -640,6 +700,25 @@ export function getDashboardHTML(): string {
         ws.send(JSON.stringify({ type: 'command', payload: { command: 'set_mode', mode: mode }, timestamp: new Date().toISOString() }));
       }
       addLog('system', 'mode → ' + mode);
+    }
+
+    function requestFreeMode() {
+      document.getElementById('free-modal-1').classList.add('visible');
+    }
+
+    function showFreeWarning2() {
+      document.getElementById('free-modal-1').classList.remove('visible');
+      document.getElementById('free-modal-2').classList.add('visible');
+    }
+
+    function cancelFreeMode() {
+      document.getElementById('free-modal-1').classList.remove('visible');
+      document.getElementById('free-modal-2').classList.remove('visible');
+    }
+
+    function activateFreeMode() {
+      document.getElementById('free-modal-2').classList.remove('visible');
+      setMode('free');
     }
 
     function addUserMsg(text) {

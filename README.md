@@ -22,7 +22,7 @@
   <a href="#quick-start">Quick Start</a> ·
   <a href="#features">Features</a> ·
   <a href="#channels">Channels</a> ·
-  <a href="#autonomous-mode">Autonomous Mode</a> ·
+  <a href=\"#autonomous-mode\">Agent Modes</a> ·
   <a href="#purp-scl">Purp SCL</a> ·
   <a href="#safety">Safety</a> ·
   <a href="#roadmap">Roadmap</a> ·
@@ -107,7 +107,7 @@ npm start
 
 | Category | Capabilities |
 |----------|-------------|
-| **Agent Modes** | Autonomous / Supervised toggle per user. Validation pipeline configurable. |
+| **Agent Modes** | Supervised / Autonomous / Free — three modes per user. Free mode requires 2 safety warning layers. |
 | **Channels** | Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat, Webhooks, LINE, Reddit, Matrix |
 | **Models** | OpenAI (GPT-4o), Anthropic (Claude), Google (Gemma 3), Mistral, DeepSeek, Groq (Llama) with automatic failover |
 | **Blockchain** | Native Solana support: transfers, balance checks, SPL tokens, tx simulation |
@@ -156,25 +156,37 @@ All channels share the same agent brain, tools, and safety pipeline. Channel ada
 ---
 
 <a id="autonomous-mode"></a>
-## Autonomous Mode
+## Agent Modes
 
-The validation pipeline is **always active** — but the confirmation gate is configurable.
+PAW offers **three execution modes**. The validation pipeline is **always active** — but the confirmation gate is configurable.
 
 ```
-/mode autonomous    → Auto-execute, confirm only critical risks
 /mode supervised    → Confirm all risky actions (default)
+/mode autonomous    → Auto-execute, confirm only critical risks
+/mode free          → Full autonomy — no confirmation gates (requires 2 safety warnings)
 ```
 
 ### How It Works
 
-| Risk Level | Supervised | Autonomous |
-|------------|-----------|------------|
-| Low | ✅ Auto | ✅ Auto |
-| Medium | ⚠️ Confirm | ✅ Auto |
-| High | ⚠️ Confirm | ⚠️ Confirm* |
-| Critical | 🛑 Confirm | 🛑 Confirm |
+| Risk Level | Supervised | Autonomous | Free |
+|------------|-----------|------------|------|
+| Low | ✅ Auto | ✅ Auto | ✅ Auto |
+| Medium | ⚠️ Confirm | ✅ Auto | ✅ Auto |
+| High | ⚠️ Confirm | ⚠️ Confirm* | ✅ Auto |
+| Critical | 🛑 Confirm | 🛑 Confirm | ✅ Auto |
 
 \* High-risk confirmation in autonomous mode is controlled by `CONFIRM_HIGH_RISK=true|false`
+
+### Free Mode — Two-Layer Safety Gate
+
+Free Mode gives the agent **full autonomy** over all actions — including irreversible ones like transfers, deletions, and deployments. To prevent accidental activation, Free Mode requires passing **two consecutive warning layers**:
+
+1. **Warning Layer 1**: Explains what Free Mode grants access to (device, APIs, blockchain, files, browser sessions, accounts). Advises using Supervised or Autonomous mode instead.
+2. **Warning Layer 2**: Final warning. User must accept full responsibility for all actions. Strongly recommends staying on Autonomous mode instead.
+
+Only after explicitly confirming both layers can Free Mode be activated. The dashboard enforces this with a two-step modal flow.
+
+> ⚠️ **We strongly recommend Supervised or Autonomous mode for most users.** Autonomous mode already auto-executes low and medium risk actions while keeping critical safety gates active.
 
 **What's always enforced regardless of mode:**
 - Schema validation
@@ -185,7 +197,7 @@ The validation pipeline is **always active** — but the confirmation gate is co
 - Full Clawtrace logging
 
 ```env
-AGENT_MODE=autonomous        # Default mode for new users
+AGENT_MODE=supervised        # Default mode for new users (supervised | autonomous | free)
 REQUIRE_VALIDATION=true      # Can't be turned off — safety always on
 CONFIRM_HIGH_RISK=true       # Confirm high-risk even in autonomous mode
 ```
@@ -343,7 +355,7 @@ Available across all channels:
 |---------|------------|
 | `/start` | Welcome message |
 | `/help` | Command reference |
-| `/mode [autonomous\|supervised]` | View or switch agent mode |
+| `/mode [supervised\|autonomous\|free]` | View or switch agent mode |
 | `/status` | System health and current settings |
 | `/new` / `/reset` | Clear conversation |
 | `/skills` | List loaded skills |
@@ -586,7 +598,7 @@ Every action is logged in structured JSONL with auto-redacted secrets:
 | Feature | PAW Agents | Typical Agent Frameworks |
 |---------|-----------|-------------------------|
 | Validation pipeline | ✅ Always on | ❌ Execute directly |
-| Autonomous + Supervised modes | ✅ Per-user toggle | ❌ One mode only |
+| 3 Agent Modes (Supervised, Autonomous, Free) | ✅ Per-user toggle + 2-layer safety gate for Free mode | ❌ One mode only |
 | Multi-channel | ✅ 8 channels | ⚠️ Usually 1 |
 | Browser automation | ✅ Puppeteer | ❌ |
 | Multi-agent orchestration | ✅ Registry, routing, delegation | ❌ |
@@ -622,7 +634,7 @@ Every action is logged in structured JSONL with auto-redacted secrets:
 |-----------|-----------|-----------------|
 | **Validation pipeline** | ✅ Mandatory 6-stage pipeline, always on | ⚠️ Optional guardrails, can be bypassed |
 | **LLM/Execution separation** | ✅ Strict — LLM plans, system executes | ❌ LLM can trigger actions directly |
-| **Autonomous mode** | ✅ Per-user toggle with risk-aware gates | ❌ Single execution mode |
+| **Agent modes** | ✅ 3 modes (Supervised, Autonomous, Free) with risk-aware gates + 2-layer safety for Free | ❌ Single execution mode |
 | **Blockchain simulation** | ✅ Dedicated simulator with dry-run sandbox | ⚠️ Available but not enforced |
 | **Transaction safety** | ✅ Simulate → warn → send pipeline | ❌ Direct send |
 | **Prompt injection defense** | ✅ 15+ detection patterns at input layer | ⚠️ Basic filtering |
@@ -646,11 +658,11 @@ Every action is logged in structured JSONL with auto-redacted secrets:
 
 ### Where PAW Wins
 
-1. **Safety is non-negotiable.** OpenClaw lets you skip guardrails for speed. PAW doesn't — the validation pipeline runs on every single action, in every mode. You can make it *less intrusive* (autonomous mode), but you can't turn it off.
+1. **Safety is non-negotiable.** OpenClaw lets you skip guardrails for speed. PAW doesn't — the validation pipeline runs on every single action, in every mode — even Free mode. You can remove confirmation gates, but you can't turn off validation, simulation, or logging.
 
 2. **The LLM never touches execution.** In OpenClaw, the LLM can directly invoke tools and trigger side effects. In PAW, the LLM produces a JSON plan, the system validates it, and only then does execution happen. This eliminates an entire class of prompt injection attacks.
 
-3. **Autonomous doesn't mean unsafe.** PAW's autonomous mode is risk-aware: low and medium risk actions auto-execute, but critical actions always require confirmation. OpenClaw's execution model doesn't distinguish — it's either all-manual or all-automatic.
+3. **Three modes, not two.** PAW offers Supervised (confirm everything), Autonomous (smart confirmation — only critical risks), and Free (full autonomy with zero gates). Even Free mode still runs the full validation pipeline — it just removes the confirmation step. And Free mode can't be activated without passing two consecutive safety warning layers. OpenClaw gives you a binary choice: manual or automatic.
 
 4. **Purp SCL is a first-class citizen.** PAW can parse `.purp` files, validate them, compile to Anchor Rust, and generate TypeScript SDKs — all within the agent pipeline. OpenClaw has no smart contract language integration.
 

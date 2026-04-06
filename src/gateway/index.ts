@@ -251,7 +251,7 @@ export class PawGateway {
 
       case 'set_mode':
         const mode = payload.mode as string;
-        if (mode === 'autonomous' || mode === 'supervised') {
+        if (mode === 'autonomous' || mode === 'supervised' || mode === 'free') {
           const userId = `webchat:${clientId}`;
           this.agent.setUserMode(userId, mode);
           this.sendToClient(clientId, {

@@ -6,6 +6,10 @@ import { PawAgent } from '../agent/loop';
 import { config } from '../core/config';
 import { AgentMode } from '../core/types';
 
+// Track two-step Free mode confirmation per user
+// 0 = not started, 1 = first warning shown, 2 = second warning shown (ready to activate)
+const freeModeWarnings = new Map<string, number>();
+
 export interface CommandResult {
   handled: boolean;
   response?: string;
@@ -52,7 +56,7 @@ export class CommandHandler {
 
   private cmdStart(): string {
     return [
-      '🐾 *PAW Agent Active — v3.0*',
+      '🐾 *PAW Agent Active — v3.1*',
       '',
       'I am your autonomous AI worker. I can:',
       '',
@@ -71,6 +75,7 @@ export class CommandHandler {
       '*Modes:*',
       '🔒 `/mode supervised` — Review & confirm all actions (default)',
       '🤖 `/mode autonomous` — Auto-execute, confirm only critical risks',
+      '🔓 `/mode free` — Full autonomy, no confirmation gates (2 safety warnings required)',
       '',
       'Type /help for all commands.',
     ].join('\n');
@@ -82,7 +87,7 @@ export class CommandHandler {
       '',
       '`/start` — Welcome message',
       '`/help` — This help text',
-      '`/mode [autonomous|supervised]` — View or change agent mode',
+      '`/mode [autonomous|supervised|free]` — View or change agent mode',
       '`/status` — Agent status & system health',
       '`/new` or `/reset` — Start a fresh conversation',
       '`/skills` — List loaded skills',
@@ -94,7 +99,8 @@ export class CommandHandler {
       '2. I create a validated execution plan',
       '3. In supervised mode: you confirm risky actions',
       '4. In autonomous mode: only critical risks need confirmation',
-      '5. All actions are logged to Clawtrace',
+      '5. In free mode: full autonomy — no confirmation gates',
+      '6. All actions are logged to Clawtrace',
       '',
       '*Safety (always active):*',
       '• Blockchain tx simulation before execution',
@@ -111,17 +117,93 @@ export class CommandHandler {
       return [
         `🐾 *Current Mode: ${currentMode}*`,
         '',
-        currentMode === 'autonomous'
+        currentMode === 'free'
+          ? '🔓 Running in free mode. Full autonomy — no confirmation gates.'
+          : currentMode === 'autonomous'
           ? '🤖 Running autonomously. Only critical risks require confirmation.'
           : '🔒 Running supervised. All risky actions require confirmation.',
         '',
-        'Change with: `/mode autonomous` or `/mode supervised`',
+        'Change with: `/mode supervised`, `/mode autonomous`, or `/mode free`',
       ].join('\n');
     }
 
     const requested = args[0].toLowerCase();
+
+    // Handle Free mode confirmation flow
+    if (requested === 'free') {
+      const warningStep = freeModeWarnings.get(userId) ?? 0;
+
+      if (warningStep === 0) {
+        // First warning layer
+        freeModeWarnings.set(userId, 1);
+        return [
+          '⚠️ *WARNING: Free Mode — Layer 1 of 2*',
+          '',
+          'You are about to enable *Free Mode*.',
+          '',
+          'Free Mode grants the agent *full autonomy* over:',
+          '• All actions on your device',
+          '• All connected APIs and services',
+          '• All blockchain transactions (no simulation gate)',
+          '• All file operations',
+          '• All browser sessions and logged-in accounts',
+          '• All external tool calls',
+          '',
+          '*No actions will require confirmation. All safety confirmation gates are disabled.*',
+          '',
+          '⚠️ It is *strongly advised* to use *Supervised* or *Autonomous* mode instead.',
+          'These modes keep you protected while still being highly capable.',
+          '',
+          'To proceed to the final warning, type `/mode free` again.',
+          'To cancel, type `/mode supervised` or `/mode autonomous`.',
+        ].join('\n');
+      }
+
+      if (warningStep === 1) {
+        // Second and final warning layer
+        freeModeWarnings.set(userId, 2);
+        return [
+          '🚨 *FINAL WARNING: Free Mode — Layer 2 of 2*',
+          '',
+          'This is your *last chance* to reconsider.',
+          '',
+          'By proceeding, you accept that:',
+          '1. The agent will execute *all actions without asking for permission*',
+          '2. This includes *irreversible actions* (transfers, deletions, deployments)',
+          '3. The agent will have unrestricted access to *all connected systems*',
+          '4. You assume *full responsibility* for all actions taken in this mode',
+          '',
+          '⚠️ *We strongly recommend using Supervised or Autonomous mode.*',
+          'Autonomous mode already auto-executes low and medium risk actions.',
+          'Only critical risks require confirmation — offering speed with safety.',
+          '',
+          'To *activate Free Mode*, type `/mode free` one final time.',
+          'To cancel, type `/mode supervised` or `/mode autonomous`.',
+        ].join('\n');
+      }
+
+      // warningStep === 2: User passed both warning layers — activate Free mode
+      freeModeWarnings.delete(userId);
+      this.agent.setUserMode(userId, 'free');
+      return [
+        '🔓 *Free Mode Activated*',
+        '',
+        'The agent now has *full autonomy*. No actions will require confirmation.',
+        '',
+        'All safety *checks* still run (validation, injection detection, logging)',
+        'but all confirmation *gates* are disabled.',
+        '',
+        '⚠️ Switch back anytime: `/mode supervised` or `/mode autonomous`',
+      ].join('\n');
+    }
+
+    // Reset Free mode warnings if switching to other modes
+    if (requested === 'supervised' || requested === 'autonomous') {
+      freeModeWarnings.delete(userId);
+    }
+
     if (requested !== 'autonomous' && requested !== 'supervised') {
-      return '❌ Invalid mode. Use `/mode autonomous` or `/mode supervised`.';
+      return '❌ Invalid mode. Use `/mode supervised`, `/mode autonomous`, or `/mode free`.';
     }
 
     this.agent.setUserMode(userId, requested as AgentMode);
@@ -219,7 +301,7 @@ export class CommandHandler {
 
   private cmdVersion(): string {
     return [
-      '🐾 *PAW Agents v3.0.0*',
+      '🐾 *PAW Agents v3.1.0*',
       '',
       'Purp Autonomous Workers',
       'The operating system for autonomous AI agents.',
@@ -235,7 +317,7 @@ export class CommandHandler {
       '• Transaction simulation sandbox',
       '• On-chain agent registry',
       '• Token-gated access control',
-      '• Autonomous & Supervised modes',
+      '• Supervised, Autonomous & Free modes',
       '',
       'https://github.com/DosukaSOL/paw-agents',
     ].join('\n');

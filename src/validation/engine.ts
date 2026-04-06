@@ -159,6 +159,9 @@ export class ValidationEngine {
 
   // ─── Confirmation Check ───
   private requiresConfirmation(plan: AgentPlan, risk_score: number, mode: AgentMode): boolean {
+    // Free mode: no confirmation gates — full autonomy over all actions
+    if (mode === 'free') return false;
+
     // In autonomous mode: only confirm for critical risks or when confirmHighRisk is set
     if (mode === 'autonomous') {
       // Critical risks ALWAYS require confirmation regardless of mode

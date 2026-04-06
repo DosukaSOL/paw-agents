@@ -208,7 +208,9 @@ export class PawAgent {
         pendingConfirmations.set(userId, { plan, trace });
 
         const summary = this.summarizePlan(plan, validation);
-        const modeHint = userMode === 'autonomous'
+        const modeHint = userMode === 'free'
+          ? '\n\n🔓 _Running in free mode — this confirmation should not appear. Please report this bug._'
+          : userMode === 'autonomous'
           ? '\n\n🤖 _Running in autonomous mode — only critical actions require confirmation._'
           : '';
 
