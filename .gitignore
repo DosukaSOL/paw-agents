@@ -7,7 +7,6 @@ logs/
 *.log
 .DS_Store
 dashboard-preview.html
-website/
 
 # Build outputs
 desktop/dist/

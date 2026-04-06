@@ -1,0 +1,2405 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PAW Agents — Programmable Autonomous Workers</title>
+  <meta name="description" content="The operating system for autonomous AI agents. Multi-channel, multi-agent, safety-first, extensible." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ═══════════════════════════════════════════
+       CSS RESET & ROOT VARIABLES
+       ═══════════════════════════════════════════ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --radius-full: 9999px;
+      --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --transition-slow: 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      --max-width: 1200px;
+    }
+
+    /* ─── Dark Theme (Default) ─── */
+    [data-theme="dark"] {
+      --bg-primary: #08080d;
+      --bg-secondary: #0e0e16;
+      --bg-card: #13131f;
+      --bg-card-hover: #1a1a2e;
+      --bg-elevated: #1e1e32;
+      --border-subtle: rgba(124, 58, 237, 0.12);
+      --border-standard: rgba(124, 58, 237, 0.2);
+      --border-bright: rgba(124, 58, 237, 0.35);
+      --text-primary: #f0eef5;
+      --text-secondary: #a8a4b8;
+      --text-tertiary: #6b6880;
+      --brand: #7c3aed;
+      --brand-light: #a78bfa;
+      --brand-dark: #6d28d9;
+      --brand-glow: rgba(124, 58, 237, 0.15);
+      --accent: #22d3ee;
+      --accent-glow: rgba(34, 211, 238, 0.1);
+      --success: #34d399;
+      --warning: #fbbf24;
+      --error: #f87171;
+      --surface-glass: rgba(19, 19, 31, 0.8);
+      --shadow-card: 0 4px 32px rgba(0, 0, 0, 0.3);
+      --shadow-glow: 0 0 40px rgba(124, 58, 237, 0.08);
+      --ring: 0 0 0 1px var(--border-subtle);
+      --nav-bg: rgba(8, 8, 13, 0.85);
+      --code-bg: #0c0c14;
+    }
+
+    /* ─── Light Theme ─── */
+    [data-theme="light"] {
+      --bg-primary: #f8f7fc;
+      --bg-secondary: #efedf6;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f5f3fa;
+      --bg-elevated: #ffffff;
+      --border-subtle: rgba(124, 58, 237, 0.08);
+      --border-standard: rgba(124, 58, 237, 0.15);
+      --border-bright: rgba(124, 58, 237, 0.3);
+      --text-primary: #1a1a2e;
+      --text-secondary: #5e5b6e;
+      --text-tertiary: #8a879a;
+      --brand: #7c3aed;
+      --brand-light: #8b5cf6;
+      --brand-dark: #6d28d9;
+      --brand-glow: rgba(124, 58, 237, 0.06);
+      --accent: #0891b2;
+      --accent-glow: rgba(8, 145, 178, 0.06);
+      --success: #059669;
+      --warning: #d97706;
+      --error: #dc2626;
+      --surface-glass: rgba(255, 255, 255, 0.85);
+      --shadow-card: 0 4px 32px rgba(0, 0, 0, 0.06);
+      --shadow-glow: 0 0 40px rgba(124, 58, 237, 0.04);
+      --ring: 0 0 0 1px var(--border-subtle);
+      --nav-bg: rgba(248, 247, 252, 0.9);
+      --code-bg: #f0eef5;
+    }
+
+    /* ═══════════════════════════════════════════
+       BASE STYLES
+       ═══════════════════════════════════════════ */
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      transition: background var(--transition), color var(--transition);
+    }
+
+    a { color: var(--brand-light); text-decoration: none; transition: color var(--transition); }
+    a:hover { color: var(--accent); }
+
+    ::selection { background: rgba(124, 58, 237, 0.3); color: var(--text-primary); }
+
+    .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+
+    /* ═══════════════════════════════════════════
+       ANIMATIONS
+       ═══════════════════════════════════════════ */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.1); }
+      50% { box-shadow: 0 0 40px rgba(124, 58, 237, 0.2); }
+    }
+
+    @keyframes gradient-shift {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    @keyframes typing {
+      0%, 60% { opacity: 1; }
+      61%, 100% { opacity: 0; }
+    }
+
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+
+    /* ═══════════════════════════════════════════
+       NAVIGATION
+       ═══════════════════════════════════════════ */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: var(--nav-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background var(--transition), border-color var(--transition);
+    }
+
+    .nav-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .nav-logo img { height: 32px; width: auto; }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      transition: color var(--transition);
+      position: relative;
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--brand);
+      transition: width var(--transition);
+      border-radius: 1px;
+    }
+
+    .nav-links a:hover { color: var(--text-primary); }
+    .nav-links a:hover::after { width: 100%; }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .theme-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-standard);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      transition: all var(--transition);
+    }
+
+    .theme-toggle:hover {
+      border-color: var(--brand);
+      color: var(--brand);
+      background: var(--brand-glow);
+    }
+
+    .github-link {
+      display: flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-standard);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+
+    .github-link:hover {
+      border-color: var(--brand);
+      color: var(--text-primary);
+      background: var(--brand-glow);
+      box-shadow: 0 0 16px rgba(124, 58, 237, 0.15);
+    }
+
+    .github-link svg {
+      width: 20px; height: 20px;
+      fill: currentColor;
+    }
+
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .hamburger span {
+      display: block;
+      width: 24px;
+      height: 2px;
+      background: var(--text-primary);
+      transition: all var(--transition);
+      border-radius: 1px;
+    }
+
+    /* ═══════════════════════════════════════════
+       HERO SECTION
+       ═══════════════════════════════════════════ */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      padding: 120px 24px 80px;
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+
+    .hero-bg::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(ellipse at 30% 20%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+                  radial-gradient(ellipse at 70% 60%, rgba(34, 211, 238, 0.04) 0%, transparent 50%),
+                  radial-gradient(ellipse at 50% 80%, rgba(124, 58, 237, 0.05) 0%, transparent 40%);
+      animation: gradient-shift 15s ease infinite;
+      background-size: 200% 200%;
+    }
+
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(124, 58, 237, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(124, 58, 237, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero-logo {
+      width: 200px;
+      height: auto;
+      margin-bottom: 32px;
+      animation: float 6s ease-in-out infinite;
+      filter: drop-shadow(0 0 30px rgba(124, 58, 237, 0.2));
+    }
+
+    [data-theme="light"] .hero-logo {
+      filter: drop-shadow(0 0 20px rgba(124, 58, 237, 0.15));
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-standard);
+      background: var(--brand-glow);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--brand-light);
+      margin-bottom: 24px;
+      animation: fadeIn 0.8s ease 0.2s both;
+    }
+
+    .hero-badge-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse-glow 2s infinite;
+    }
+
+    .hero h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 16px;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .hero-gradient-text {
+      background: linear-gradient(135deg, var(--brand-light), var(--accent), var(--brand));
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradient-shift 4s ease infinite;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--text-secondary);
+      line-height: 1.6;
+      max-width: 600px;
+      margin: 0 auto 40px;
+      animation: fadeInUp 0.8s ease 0.5s both;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.8s ease 0.7s both;
+    }
+
+    .btn {
+      font-family: var(--font-sans);
+      font-size: 0.95rem;
+      font-weight: 500;
+      padding: 12px 28px;
+      border-radius: var(--radius-sm);
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      color: #fff;
+      box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-dark);
+      box-shadow: 0 0 30px rgba(124, 58, 237, 0.35);
+      transform: translateY(-2px);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border-standard);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--brand);
+      background: var(--brand-glow);
+      transform: translateY(-2px);
+      color: var(--text-primary);
+    }
+
+    .hero-terminal {
+      margin-top: 60px;
+      background: var(--code-bg);
+      border: 1px solid var(--border-standard);
+      border-radius: var(--radius-md);
+      padding: 20px 24px;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      max-width: 560px;
+      margin-left: auto;
+      margin-right: auto;
+      animation: fadeInUp 0.8s ease 0.9s both;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-terminal::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(124, 58, 237, 0.03), transparent);
+      animation: shimmer 3s ease-in-out infinite;
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .terminal-dots span {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .terminal-dots span:nth-child(1) { background: #ff5f57; }
+    .terminal-dots span:nth-child(2) { background: #febd2f; }
+    .terminal-dots span:nth-child(3) { background: #28c840; }
+
+    .terminal-line { line-height: 1.7; color: var(--text-secondary); }
+    .terminal-prompt { color: var(--brand-light); }
+    .terminal-cmd { color: var(--text-primary); }
+    .terminal-comment { color: var(--text-tertiary); }
+    .terminal-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 16px;
+      background: var(--brand-light);
+      animation: typing 1s infinite;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+    }
+
+    /* ═══════════════════════════════════════════
+       SECTION SHARED
+       ═══════════════════════════════════════════ */
+    section { padding: 100px 0; position: relative; }
+
+    .section-dark { background: var(--bg-secondary); }
+
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--brand-light);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 600;
+      line-height: 1.2;
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+      max-width: 640px;
+    }
+
+    .section-header {
+      margin-bottom: 64px;
+    }
+
+    .section-header-center {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .section-header-center .section-desc {
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ═══════════════════════════════════════════
+       PIPELINE SECTION
+       ═══════════════════════════════════════════ */
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      position: relative;
+    }
+
+    .pipeline-connector {
+      display: none;
+    }
+
+    .pipeline-step {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 28px 16px;
+      text-align: center;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pipeline-step::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--brand), var(--accent));
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+
+    .pipeline-step:hover {
+      border-color: var(--brand);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .pipeline-step:hover::before { opacity: 1; }
+
+    .pipeline-number {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--brand-light);
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .pipeline-icon {
+      font-size: 1.75rem;
+      margin-bottom: 12px;
+      display: block;
+    }
+
+    .pipeline-name {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .pipeline-desc {
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+      line-height: 1.5;
+    }
+
+    /* ═══════════════════════════════════════════
+       FEATURES GRID
+       ═══════════════════════════════════════════ */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 32px 28px;
+      transition: all var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, var(--brand-glow) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity var(--transition);
+      pointer-events: none;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-bright);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .feature-card:hover::after { opacity: 1; }
+
+    .feature-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-sm);
+      background: var(--brand-glow);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .feature-card h3 {
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .feature-card p {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ═══════════════════════════════════════════
+       CHANNELS
+       ═══════════════════════════════════════════ */
+    .channels-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      margin-top: 48px;
+    }
+
+    .channel-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 24px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-standard);
+      background: var(--bg-card);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      transition: all var(--transition);
+      text-decoration: none;
+    }
+
+    .channel-badge:hover {
+      border-color: var(--brand);
+      background: var(--brand-glow);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow);
+      color: var(--text-primary);
+    }
+
+    .channel-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ═══════════════════════════════════════════
+       COMPARISON / WHY PAW
+       ═══════════════════════════════════════════ */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .comparison-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      transition: all var(--transition);
+    }
+
+    .comparison-card:hover {
+      border-color: var(--border-bright);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .comparison-card h3 {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .comparison-card p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ═══════════════════════════════════════════
+       DASHBOARD SHOWCASE
+       ═══════════════════════════════════════════ */
+    .dashboard-showcase {
+      background: var(--bg-card);
+      border: 1px solid var(--border-standard);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-glow);
+      max-width: 960px;
+      margin: 0 auto 48px;
+    }
+
+    .dashboard-topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 18px;
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--border-subtle);
+      backdrop-filter: blur(12px);
+    }
+
+    .dashboard-topbar-left { display: flex; align-items: center; gap: 10px; }
+
+    .dashboard-topbar-title {
+      font-family: var(--font-serif);
+      font-size: 0.85rem; font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .dashboard-topbar-badge {
+      font-size: 0.6rem; font-family: var(--font-mono); font-weight: 500;
+      color: var(--brand-light);
+      background: var(--brand-glow);
+      border: 1px solid var(--border-standard);
+      padding: 1px 7px; border-radius: 9999px;
+    }
+
+    .dashboard-topbar-right { display: flex; align-items: center; gap: 10px; }
+
+    .dash-status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--success);
+      animation: pulse-glow 2s infinite;
+    }
+
+    .dash-status-text { font-size: 0.68rem; color: var(--text-secondary); font-family: var(--font-mono); }
+
+    .dash-theme-btn {
+      width: 26px; height: 26px; border-radius: 6px;
+      border: 1px solid var(--border-standard);
+      background: var(--bg-card);
+      color: var(--text-secondary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.72rem;
+    }
+
+    .dashboard-body {
+      display: grid;
+      grid-template-columns: 180px 1fr 220px;
+      height: 320px;
+    }
+
+    .dash-sidebar {
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-subtle);
+      padding: 14px 10px;
+      overflow: hidden;
+    }
+
+    .dash-sidebar-label {
+      font-family: var(--font-mono);
+      font-size: 0.55rem; font-weight: 500;
+      text-transform: uppercase; letter-spacing: 1.2px;
+      color: var(--brand-light);
+      margin-bottom: 8px;
+    }
+
+    .dash-stat {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dash-stat::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--brand), var(--accent));
+      opacity: 0.5;
+    }
+
+    .dash-stat-label {
+      font-size: 0.55rem; font-family: var(--font-mono);
+      color: var(--text-tertiary);
+      text-transform: uppercase; letter-spacing: 0.6px;
+      margin-bottom: 3px;
+    }
+
+    .dash-stat-value {
+      font-family: var(--font-serif);
+      font-size: 1rem; font-weight: 700;
+    }
+
+    .dash-stat-value.success { color: var(--success); }
+    .dash-stat-value.brand { color: var(--brand-light); }
+
+    .dash-mode-option {
+      display: flex; align-items: center; gap: 7px;
+      padding: 6px 8px; border-radius: 6px;
+      font-size: 0.7rem; font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 3px;
+    }
+
+    .dash-mode-option.active {
+      background: var(--brand-glow);
+      color: var(--brand-light);
+      border: 1px solid var(--border-standard);
+    }
+
+    .dash-mode-icon {
+      width: 18px; height: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.55rem; font-family: var(--font-mono); font-weight: 600;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px;
+    }
+
+    .dash-mode-option.active .dash-mode-icon {
+      background: var(--brand-glow);
+      border-color: var(--brand);
+      color: var(--brand-light);
+    }
+
+    .dash-chat {
+      display: flex; flex-direction: column;
+      border-right: 1px solid var(--border-subtle);
+      background: var(--bg-primary);
+    }
+
+    .dash-chat-header {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex; align-items: center; justify-content: space-between;
+      background: var(--bg-secondary);
+    }
+
+    .dash-chat-title { font-family: var(--font-serif); font-size: 0.78rem; font-weight: 600; }
+
+    .dash-chat-meta {
+      font-size: 0.55rem; color: var(--text-tertiary);
+      font-family: var(--font-mono);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      padding: 2px 7px; border-radius: 9999px;
+    }
+
+    .dash-messages {
+      flex: 1; overflow: hidden;
+      padding: 12px 16px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+
+    .dash-msg { display: flex; flex-direction: column; }
+    .dash-msg.user { align-items: flex-end; }
+
+    .dash-msg-sender {
+      font-size: 0.5rem; font-weight: 600;
+      font-family: var(--font-mono);
+      text-transform: uppercase; letter-spacing: 0.8px;
+      margin-bottom: 3px; color: var(--text-tertiary);
+    }
+
+    .dash-msg-bubble {
+      padding: 8px 12px; border-radius: 10px;
+      max-width: 85%; font-size: 0.72rem; line-height: 1.5;
+    }
+
+    .dash-msg.user .dash-msg-bubble {
+      background: var(--brand);
+      color: #fff;
+      border-bottom-right-radius: 3px;
+      box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+    }
+
+    .dash-msg.agent .dash-msg-bubble {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-bottom-left-radius: 3px;
+      color: var(--text-secondary);
+    }
+
+    .dash-msg.system .dash-msg-bubble {
+      background: transparent;
+      color: var(--text-tertiary);
+      font-size: 0.55rem;
+      text-align: center; align-self: center;
+      font-family: var(--font-mono);
+    }
+
+    .dash-input-bar {
+      padding: 10px 16px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex; gap: 8px;
+      background: var(--bg-secondary);
+    }
+
+    .dash-input-field {
+      flex: 1; background: var(--bg-primary);
+      border: 1px solid var(--border-standard);
+      border-radius: 6px;
+      padding: 7px 12px; color: var(--text-tertiary);
+      font-size: 0.7rem; font-family: var(--font-sans);
+    }
+
+    .dash-send-btn {
+      background: var(--brand);
+      color: #fff; border: none;
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 0.68rem; font-weight: 500;
+      font-family: var(--font-sans);
+    }
+
+    .dash-log {
+      background: var(--bg-secondary);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    .dash-log-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .dash-log-title { font-family: var(--font-serif); font-size: 0.78rem; font-weight: 600; }
+
+    .dash-log-clear {
+      font-size: 0.55rem; font-family: var(--font-mono);
+      color: var(--text-tertiary);
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 4px; padding: 2px 7px;
+    }
+
+    .dash-log-entries {
+      flex: 1; overflow: hidden;
+      padding: 10px 14px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+
+    .dash-log-entry {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      line-height: 1.6;
+      display: flex; gap: 8px;
+    }
+
+    .dash-log-time { color: var(--text-tertiary); min-width: 42px; }
+    .dash-log-text { color: var(--text-secondary); }
+    .dash-log-entry.info .dash-log-text { color: var(--blue); }
+    .dash-log-entry.success .dash-log-text { color: var(--success); }
+    .dash-log-entry.warn .dash-log-text { color: var(--warning); }
+
+    .dashboard-features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .dashboard-feature {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      transition: all var(--transition);
+    }
+
+    .dashboard-feature:hover {
+      border-color: var(--border-bright);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .dashboard-feature-icon {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--brand-glow);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+    }
+
+    .dashboard-feature h4 {
+      font-family: var(--font-serif);
+      font-size: 0.92rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .dashboard-feature p {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-body { grid-template-columns: 1fr; height: auto; }
+      .dash-sidebar { display: none; }
+      .dash-log { display: none; }
+      .dashboard-features { grid-template-columns: 1fr; }
+    }
+
+    /* ═══════════════════════════════════════════
+       QUICKSTART
+       ═══════════════════════════════════════════ */
+    .quickstart-box {
+      background: var(--code-bg);
+      border: 1px solid var(--border-standard);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      max-width: 700px;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .quickstart-box::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius-lg);
+      padding: 1px;
+      background: linear-gradient(135deg, var(--brand), var(--accent));
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: xor;
+      -webkit-mask-composite: xor;
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .quickstart-box .terminal-dots { margin-bottom: 20px; }
+
+    .quickstart-box pre {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: var(--text-secondary);
+      overflow-x: auto;
+    }
+
+    .quickstart-box pre .cmd { color: var(--text-primary); }
+    .quickstart-box pre .comment { color: var(--text-tertiary); }
+    .quickstart-box pre .prompt { color: var(--brand-light); }
+
+    .copy-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-standard);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all var(--transition);
+      z-index: 2;
+    }
+
+    .copy-btn:hover {
+      border-color: var(--brand);
+      color: var(--brand-light);
+    }
+
+    /* ═══════════════════════════════════════════
+       STATS BAR
+       ═══════════════════════════════════════════ */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+      padding: 48px 0;
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: var(--font-serif);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--brand-light);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-tertiary);
+      margin-top: 6px;
+    }
+
+    /* ═══════════════════════════════════════════
+       PURP SCL
+       ═══════════════════════════════════════════ */
+    .purp-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    .purp-code {
+      background: var(--code-bg);
+      border: 1px solid var(--border-standard);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      overflow-x: auto;
+    }
+
+    .purp-code pre {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      line-height: 1.7;
+      color: var(--text-secondary);
+    }
+
+    .purp-code .keyword { color: var(--brand-light); }
+    .purp-code .type { color: var(--accent); }
+    .purp-code .string { color: var(--success); }
+    .purp-code .attr { color: var(--warning); }
+    .purp-code .fn { color: #f0abfc; }
+
+    .purp-features { list-style: none; }
+
+    .purp-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+    }
+
+    .purp-features li:last-child { border-bottom: none; }
+
+    .purp-check {
+      color: var(--success);
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ═══════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════ */
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 64px 0 40px;
+      background: var(--bg-secondary);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+
+    .footer-brand img { height: 36px; margin-bottom: 16px; }
+
+    .footer-brand p {
+      font-size: 0.88rem;
+      color: var(--text-tertiary);
+      line-height: 1.6;
+      max-width: 280px;
+    }
+
+    .footer-col h4 {
+      font-family: var(--font-serif);
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .footer-col ul { list-style: none; }
+
+    .footer-col ul li {
+      margin-bottom: 10px;
+    }
+
+    .footer-col ul a {
+      font-size: 0.88rem;
+      color: var(--text-tertiary);
+      transition: color var(--transition);
+    }
+
+    .footer-col ul a:hover { color: var(--brand-light); }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-subtle);
+      font-size: 0.8rem;
+      color: var(--text-tertiary);
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 16px;
+    }
+
+    .footer-social a {
+      color: var(--text-tertiary);
+      font-size: 1.1rem;
+      transition: color var(--transition);
+    }
+
+    .footer-social a:hover { color: var(--brand-light); }
+
+    /* ═══════════════════════════════════════════
+       MOBILE
+       ═══════════════════════════════════════════ */
+    @media (max-width: 1024px) {
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .pipeline-grid { grid-template-columns: repeat(3, 1fr); }
+      .purp-split { grid-template-columns: 1fr; }
+      .comparison-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+
+      .nav-links.active {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 64px;
+        left: 0;
+        right: 0;
+        background: var(--nav-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--border-subtle);
+        padding: 24px;
+        gap: 20px;
+      }
+
+      .hero { min-height: auto; padding: 140px 24px 60px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .pipeline-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-bar { gap: 32px; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+
+      section { padding: 64px 0; }
+      .section-header, .section-header-center { margin-bottom: 40px; }
+    }
+
+    @media (max-width: 480px) {
+      .pipeline-grid { grid-template-columns: 1fr; }
+      .hero-actions { flex-direction: column; width: 100%; }
+      .hero-actions .btn { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════ NAVIGATION ═══════════ -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <img src="../assets/logo-transparent.png" alt="PAW" />
+        <span>PAW</span>
+      </a>
+
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#pipeline">Pipeline</a></li>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#channels">Channels</a></li>
+        <li><a href="#hub">Hub</a></li>
+        <li><a href="#ollama">Ollama</a></li>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#quickstart">Quick Start</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+          <span id="themeIcon">☀️</span>
+        </button>
+        <a href="https://x.com/PAWagents" class="github-link" target="_blank" rel="noopener" aria-label="X / Twitter">
+          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+        </a>
+        <a href="https://github.com/DosukaSOL/paw-agents" class="github-link" target="_blank" rel="noopener" aria-label="GitHub">
+          <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        </a>
+        <button class="hamburger" id="hamburger" aria-label="Menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══════════ HERO ═══════════ -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-grid"></div>
+    </div>
+    <div class="hero-content">
+      <img src="../assets/logo-transparent.png" alt="PAW Agents" class="hero-logo" />
+
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        v3.4 · Open Source
+      </div>
+
+      <h1>
+        <span class="hero-gradient-text">Programmable</span><br />
+        Autonomous Workers
+      </h1>
+
+      <p class="hero-subtitle">
+        The operating system for autonomous AI agents. Multi-channel, multi-agent, safety-first.
+        Every action follows a strict six-stage pipeline — the LLM reasons, the system executes.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#quickstart" class="btn btn-primary">Get Started</a>
+        <a href="https://github.com/DosukaSOL/paw-agents" class="btn btn-secondary" target="_blank" rel="noopener">
+          View Source ↗
+        </a>
+      </div>
+
+      <div class="hero-terminal">
+        <div class="terminal-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="terminal-line"><span class="terminal-prompt">you</span> <span class="terminal-comment">›</span> <span class="terminal-cmd">"Scrape competitor pricing and save to a spreadsheet"</span></div>
+        <div class="terminal-line"><span class="terminal-prompt">paw</span> <span class="terminal-comment">›</span> 📋 <span class="terminal-cmd">Plan: 3 steps · navigate → extract → file_write</span></div>
+        <div class="terminal-line"><span class="terminal-prompt">paw</span> <span class="terminal-comment">›</span> ✅ <span class="terminal-cmd">Step 1: Opened target page</span></div>
+        <div class="terminal-line"><span class="terminal-prompt">paw</span> <span class="terminal-comment">›</span> ✅ <span class="terminal-cmd">Step 2: Extracted 47 products</span></div>
+        <div class="terminal-line"><span class="terminal-prompt">paw</span> <span class="terminal-comment">›</span> ✅ <span class="terminal-cmd">Done — saved to data/pricing.csv · 1.2s</span><span class="terminal-cursor"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ STATS BAR ═══════════ -->
+  <div class="section-dark">
+    <div class="container">
+      <div class="stats-bar reveal">
+        <div class="stat-item">
+          <div class="stat-number">30+</div>
+          <div class="stat-label">Built-in Tools</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">11</div>
+          <div class="stat-label">Channels</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">79</div>
+          <div class="stat-label">Tests</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">6</div>
+          <div class="stat-label">Pipeline Stages</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number">7</div>
+          <div class="stat-label">AI Providers</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PIPELINE ═══════════ -->
+  <section id="pipeline">
+    <div class="container">
+      <div class="section-header-center reveal">
+        <div class="section-label">How It Works</div>
+        <h2 class="section-title">Six-Stage Safety Pipeline</h2>
+        <p class="section-desc">
+          Every action — without exception — passes through six validated stages.
+          The LLM generates plans. The system executes them. They never cross.
+        </p>
+      </div>
+
+      <div class="pipeline-grid">
+        <div class="pipeline-step reveal reveal-delay-1">
+          <div class="pipeline-number">01</div>
+          <span class="pipeline-icon">🛡️</span>
+          <div class="pipeline-name">Intent</div>
+          <p class="pipeline-desc">Sanitize input. Rate limit. Detect prompt injection across 15+ patterns.</p>
+        </div>
+
+        <div class="pipeline-step reveal reveal-delay-2">
+          <div class="pipeline-number">02</div>
+          <span class="pipeline-icon">🧠</span>
+          <div class="pipeline-name">Plan</div>
+          <p class="pipeline-desc">LLM generates strict JSON plan. No execution, no side effects, reasoning only.</p>
+        </div>
+
+        <div class="pipeline-step reveal reveal-delay-3">
+          <div class="pipeline-number">03</div>
+          <span class="pipeline-icon">✅</span>
+          <div class="pipeline-name">Validate</div>
+          <p class="pipeline-desc">Schema check. Safety policy. Blockchain simulation. Risk scoring.</p>
+        </div>
+
+        <div class="pipeline-step reveal reveal-delay-4">
+          <div class="pipeline-number">04</div>
+          <span class="pipeline-icon">⚡</span>
+          <div class="pipeline-name">Execute</div>
+          <p class="pipeline-desc">Tools, APIs, browser, blockchain. Sandboxed and scoped. No raw LLM access.</p>
+        </div>
+
+        <div class="pipeline-step reveal reveal-delay-5">
+          <div class="pipeline-number">05</div>
+          <span class="pipeline-icon">🔍</span>
+          <div class="pipeline-name">Verify</div>
+          <p class="pipeline-desc">Confirm results. Self-heal failures. Diagnose → fix → retry → escalate.</p>
+        </div>
+
+        <div class="pipeline-step reveal reveal-delay-5">
+          <div class="pipeline-number">06</div>
+          <span class="pipeline-icon">📋</span>
+          <div class="pipeline-name">Log</div>
+          <p class="pipeline-desc">Full Clawtrace audit trail. Auto-redacted secrets. JSONL structured output.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ FEATURES ═══════════ -->
+  <section id="features" class="section-dark">
+    <div class="container">
+      <div class="section-header-center reveal">
+        <div class="section-label">Capabilities</div>
+        <h2 class="section-title">Everything You Need,<br />Nothing You Don't</h2>
+        <p class="section-desc">
+          Production-grade components that work together. Extend with skills, MCP servers, or custom tools.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-icon">🤖</div>
+          <h3>Three Agent Modes</h3>
+          <p>Supervised, Autonomous, and Free mode. Per-user toggle. Free mode requires two safety warning layers to activate. Validation pipeline runs in all modes.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-2">
+          <div class="feature-icon">🌐</div>
+          <h3>Browser Automation</h3>
+          <p>Puppeteer-based control. Navigate, click, type, extract, screenshot. Full headless browser in the agent pipeline.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-3">
+          <div class="feature-icon">🔗</div>
+          <h3>Multi-Agent Orchestration</h3>
+          <p>Agent registry with capability routing. Delegate tasks, coordinate work, enforce depth limits across sub-agents.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-icon">🧠</div>
+          <h3>Vector Memory</h3>
+          <p>Persistent semantic memory. TF-IDF embeddings with cosine similarity search. Scoped by session, user, or global.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-2">
+          <div class="feature-icon">⛓️</div>
+          <h3>Solana Native</h3>
+          <p>Transfers, balance checks, SPL tokens, transaction simulation. On-chain agent registry with PDA-derived identity.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-3">
+          <div class="feature-icon">🔌</div>
+          <h3>MCP Protocol</h3>
+          <p>Connect to any Model Context Protocol server. Discover and invoke external tools without writing code.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-1">
+          <div class="feature-icon">📊</div>
+          <h3>DAG Workflows</h3>
+          <p>Visual workflow engine. Triggers, conditions, parallel branches, error handling. No external orchestrator needed.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-2">
+          <div class="feature-icon">🔐</div>
+          <h3>Key Management</h3>
+          <p>AES-256-GCM encryption at rest. Ed25519 signing. Keys zeroed after use. Never logged, never leaked.</p>
+        </div>
+
+        <div class="feature-card reveal reveal-delay-3">
+          <div class="feature-icon">🔄</div>
+          <h3>Self-Healing</h3>
+          <p>Intelligent failure recovery. Diagnose root cause, apply fix strategy, retry intelligently, escalate only when needed.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ CHANNELS ═══════════ -->
+  <section id="channels">
+    <div class="container">
+      <div class="section-header-center reveal">
+        <div class="section-label">Connectivity</div>
+        <h2 class="section-title">Works Everywhere You Do</h2>
+        <p class="section-desc">
+          Eleven channels. One brain. All sharing the same tools, memory, and safety pipeline.
+          Install only what you need.
+        </p>
+      </div>
+
+      <div class="channels-row reveal">
+        <a href="https://core.telegram.org/bots/api" target="_blank" rel="noopener" class="channel-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" fill="#26A5E4"/></svg>
+          Telegram
+        </a>
+        <a href="https://discord.com/developers/applications" target="_blank" rel="noopener" class="channel-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z" fill="#5865F2"/></svg>
+          Discord
+        </a>
+        <a href="https://api.slack.com/apps" target="_blank" rel="noopener" class="channel-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zm1.271 0a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313z" fill="#E01E5A"/><path d="M8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zm0 1.271a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312z" fill="#36C5F0"/><path d="M18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zm-1.27 0a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.163 0a2.528 2.528 0 0 1 2.523 2.522v6.312z" fill="#2EB67D"/><path d="M15.163 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.163 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zm0-1.27a2.527 2.527 0 0 1-2.52-2.523 2.527 2.527 0 0 1 2.52-2.52h6.315A2.528 2.528 0 0 1 24 15.163a2.528 2.528 0 0 1-2.522 2.523h-6.315z" fill="#ECB22E"/></svg>
+          Slack
+        </a>
+        <a href="https://developers.facebook.com/docs/whatsapp/cloud-api" target="_blank" rel="noopener" class="channel-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z" fill="#25D366"/></svg>
+          WhatsApp
+        </a>
+        <a href="https://nodemailer.com/about/" target="_blank" rel="noopener" class="channel-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" fill="#EA4335"/></svg>
+          Email
+        </a>
+        <a href="https://www.twilio.com/docs/sms" target="_blank" rel="noopener" class="channel-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 0C5.383 0 0 5.383 0 12s5.383 12 12 12 12-5.383 12-12S18.617 0 12 0zm0 20.4c-4.635 0-8.4-3.765-8.4-8.4 0-4.635 3.765-8.4 8.4-8.4 4.635 0 8.4 3.765 8.4 8.4 0 4.635-3.765 8.4-8.4 8.4z" fill="#F22F46"/><circle cx="9.6" cy="9.6" r="1.8" fill="#F22F46"/><circle cx="14.4" cy="9.6" r="1.8" fill="#F22F46"/><circle cx="9.6" cy="14.4" r="1.8" fill="#F22F46"/><circle cx="14.4" cy="14.4" r="1.8" fill="#F22F46"/></svg>
+          SMS
+        </a>
+        <a class="channel-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" fill="#7c3aed"/><path d="M7 9h10M7 12h6" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+          WebChat
+        </a>
+        <a class="channel-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" fill="none" stroke="#FF4088" stroke-width="1.5"/><path d="M15 14l3 3m-1-3l3 3" stroke="#FF4088" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Webhooks
+        </a>
+        <a href="https://developers.line.biz/en/services/messaging-api/" target="_blank" rel="noopener" class="channel-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596a.625.625 0 0 1-.707-.227l-2.43-3.326v2.958a.63.63 0 0 1-1.26 0V8.108a.627.627 0 0 1 .432-.6.628.628 0 0 1 .71.228l2.427 3.322V8.108a.632.632 0 0 1 1.26 0v4.771zm-5.741 0a.63.63 0 0 1-1.26 0V8.108a.63.63 0 0 1 1.26 0v4.771zm-2.466.629H4.917a.63.63 0 0 1-.63-.629V8.108a.63.63 0 0 1 1.261 0v4.141h1.756a.63.63 0 0 1 0 1.259zM24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.084.923.258 1.058.593.121.303.079.778.039 1.085l-.171 1.027c-.053.303-.242 1.186 1.039.647 1.281-.54 6.911-4.069 9.428-6.967C23.266 14.215 24 12.381 24 10.314" fill="#00C300"/></svg>
+          LINE
+        </a>
+        <a href="https://www.reddit.com/dev/api/" target="_blank" rel="noopener" class="channel-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.744zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.249-.561 1.249-1.249 0-.688-.562-1.249-1.25-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 0-.463.327.327 0 0 0-.462 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.205-.094z" fill="#FF4500"/></svg>
+          Reddit
+        </a>
+        <a href="https://matrix.org" target="_blank" rel="noopener" class="channel-badge">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M.632.55v22.9H2.28V24H0V0h2.28v.55zm7.043 7.26v1.157h.033c.309-.443.683-.784 1.117-1.024.433-.245.936-.365 1.513-.365.54 0 1.04.104 1.49.313.45.209.773.553.96 1.032.287-.394.675-.734 1.166-1.024.487-.285 1.007-.43 1.562-.43.42 0 .81.065 1.17.196.36.13.67.328.926.59.26.265.46.6.604 1.003.14.406.21.891.21 1.46v5.632h-1.685v-4.876c0-.34-.012-.654-.04-.94a1.94 1.94 0 0 0-.194-.706 1.097 1.097 0 0 0-.46-.456c-.2-.107-.467-.16-.804-.16-.336 0-.612.066-.83.196a1.479 1.479 0 0 0-.522.503 2.16 2.16 0 0 0-.275.7 4.224 4.224 0 0 0-.08.82v4.92h-1.685v-4.963c0-.267-.008-.536-.033-.803a2.3 2.3 0 0 0-.16-.72 1.15 1.15 0 0 0-.422-.52c-.184-.14-.456-.21-.81-.21-.112 0-.263.03-.456.092a1.58 1.58 0 0 0-.537.312 1.88 1.88 0 0 0-.43.57c-.12.235-.18.546-.18.937v5.3H5.46V7.81h2.215zm13.042 15.64V.55H22.36V0H24v24h-2.28v-.55h1.643z" fill="#0DBD8B"/></svg>
+          Matrix
+        </a>
+      </div>
+
+      <div style="text-align:center; margin-top:32px" class="reveal">
+        <p style="font-size:0.88rem; color:var(--text-tertiary)">
+          Telegram via Telegraf · Discord via discord.js · Slack via Bolt · WhatsApp via Baileys · Email via nodemailer + IMAP · SMS via Twilio · WebChat via WebSocket · Webhooks via HTTP · LINE via Messaging API · Reddit via OAuth2 · Matrix via Client-Server API
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ OLLAMA — FREE AI ═══════════ -->
+  <section id="ollama" class="section-dark">
+    <div class="container">
+      <div class="section-header-center reveal">
+        <div class="section-label">Game Changer</div>
+        <h2 class="section-title">100% Free AI with Ollama</h2>
+        <p class="section-desc">
+          Run <strong style="color:var(--text-primary)">Gemma 4</strong> locally via Ollama — zero API keys, zero cost, unlimited usage.
+          PAW auto-detects Ollama at startup and routes through the same safety pipeline as every other provider.
+        </p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:48px; align-items:center;" class="reveal">
+        <div>
+          <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:24px; margin-bottom:24px;">
+            <div class="terminal-dots" style="margin-bottom:16px"><span></span><span></span><span></span></div>
+            <pre style="margin:0; font-size:0.82rem;"><span class="comment"># Install Ollama (one command)</span>
+<span class="prompt">$</span> <span class="cmd">curl -fsSL https://ollama.com/install.sh | sh</span>
+
+<span class="comment"># Pull Gemma 4 — Google's latest open model</span>
+<span class="prompt">$</span> <span class="cmd">ollama pull gemma4</span>
+
+<span class="comment"># That's it. PAW auto-connects on startup.</span>
+<span class="prompt">$</span> <span class="cmd">npm start</span>
+<span style="color:var(--brand-light)">🐾 Ollama detected · gemma4 ready · $0.00/request</span></pre>
+          </div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <span style="background:rgba(34,211,238,0.1); color:var(--accent); padding:6px 14px; border-radius:20px; font-size:0.8rem; font-family:var(--font-mono);">$0.00 per request</span>
+            <span style="background:rgba(124,58,237,0.1); color:var(--brand-light); padding:6px 14px; border-radius:20px; font-size:0.8rem; font-family:var(--font-mono);">No API key needed</span>
+            <span style="background:rgba(16,185,129,0.1); color:#10b981; padding:6px 14px; border-radius:20px; font-size:0.8rem; font-family:var(--font-mono);">Runs 100% locally</span>
+            <span style="background:rgba(245,158,11,0.1); color:#f59e0b; padding:6px 14px; border-radius:20px; font-size:0.8rem; font-family:var(--font-mono);">Same safety pipeline</span>
+          </div>
+        </div>
+
+        <div>
+          <div style="display:grid; gap:16px;">
+            <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:20px;">
+              <div style="font-size:1.8rem; margin-bottom:8px;">🆓</div>
+              <h4 style="font-family:var(--font-serif); margin-bottom:6px;">Zero Cost</h4>
+              <p style="font-size:0.85rem; color:var(--text-secondary);">No API keys, no billing, no rate limits. Run as many requests as your hardware allows.</p>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:20px;">
+              <div style="font-size:1.8rem; margin-bottom:8px;">🔒</div>
+              <h4 style="font-family:var(--font-serif); margin-bottom:6px;">Complete Privacy</h4>
+              <p style="font-size:0.85rem; color:var(--text-secondary);">Every prompt and response stays on your machine. Nothing leaves your network.</p>
+            </div>
+            <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:20px;">
+              <div style="font-size:1.8rem; margin-bottom:8px;">⚡</div>
+              <h4 style="font-family:var(--font-serif); margin-bottom:6px;">Auto-Detection</h4>
+              <p style="font-size:0.85rem; color:var(--text-secondary);">PAW pings localhost:11434 on startup. If Ollama is running, it's available instantly.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:40px;" class="reveal">
+        <p style="font-size:0.88rem; color:var(--text-tertiary); max-width:560px; margin:0 auto;">
+          Works with any Ollama model: Gemma 4, Llama 3, Mistral, Phi-3, CodeGemma, and more.
+          Switch between local and cloud providers on the fly with automatic failover.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ PAW HUB ═══════════ -->
+  <section id="hub">
+    <div class="container">
+      <div class="section-header-center reveal">
+        <div class="section-label">Desktop Experience</div>
+        <h2 class="section-title">PAW Hub</h2>
+        <p class="section-desc">
+          A desktop operating system for your AI agents. Mission Control, plugins, workflows, and cross-app sync — all in one Electron-powered interface.
+        </p>
+      </div>
+
+      <!-- Hub Visualizer -->
+      <div class="reveal" style="margin-top:48px;">
+        <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-lg); overflow:hidden; box-shadow:0 24px 80px rgba(0,0,0,0.4);">
+          <!-- Hub Title Bar -->
+          <div style="background:var(--bg-base); padding:12px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border-subtle);">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div class="terminal-dots"><span></span><span></span><span></span></div>
+              <span style="font-family:var(--font-mono); font-size:0.8rem; color:var(--text-tertiary);">🐾 PAW Hub v3.4</span>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <span style="font-size:0.7rem; padding:3px 10px; background:rgba(16,185,129,0.15); color:#10b981; border-radius:10px; font-family:var(--font-mono);">● Connected</span>
+            </div>
+          </div>
+          <!-- Hub Body -->
+          <div style="display:grid; grid-template-columns:200px 1fr; min-height:360px;">
+            <!-- Sidebar -->
+            <div style="background:rgba(8,8,13,0.6); border-right:1px solid var(--border-subtle); padding:16px 0;">
+              <div style="padding:12px 20px; font-size:0.7rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-tertiary);">Navigation</div>
+              <div style="padding:10px 20px; background:rgba(124,58,237,0.15); border-left:3px solid var(--brand); font-size:0.85rem; color:var(--brand-light); cursor:pointer;">📊 Dashboard</div>
+              <div style="padding:10px 20px; font-size:0.85rem; color:var(--text-secondary); cursor:pointer;">🎯 Mission Control</div>
+              <div style="padding:10px 20px; font-size:0.85rem; color:var(--text-secondary); cursor:pointer;">💻 CLI</div>
+              <div style="padding:10px 20px; font-size:0.85rem; color:var(--text-secondary); cursor:pointer;">🧩 Plugins</div>
+              <div style="padding:10px 20px; font-size:0.85rem; color:var(--text-secondary); cursor:pointer;">⚡ Workflows</div>
+              <div style="padding:10px 20px; font-size:0.85rem; color:var(--text-secondary); cursor:pointer;">⚙️ Settings</div>
+              <div style="margin-top:auto; padding:20px; border-top:1px solid var(--border-subtle); margin-top:20px;">
+                <div style="font-size:0.7rem; color:var(--text-tertiary); font-family:var(--font-mono);">AGENT</div>
+                <div style="font-size:0.85rem; color:var(--text-primary); margin-top:4px;">PAW Agent</div>
+                <div style="font-size:0.72rem; color:#10b981; margin-top:2px;">● Online · Autonomous</div>
+              </div>
+            </div>
+            <!-- Main Content -->
+            <div style="padding:24px;">
+              <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:24px;">
+                <div style="background:var(--bg-base); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:16px; text-align:center;">
+                  <div style="font-size:1.6rem; font-weight:700; color:var(--brand-light);">247</div>
+                  <div style="font-size:0.72rem; color:var(--text-tertiary); margin-top:4px;">Actions</div>
+                </div>
+                <div style="background:var(--bg-base); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:16px; text-align:center;">
+                  <div style="font-size:1.6rem; font-weight:700; color:#10b981;">99.8%</div>
+                  <div style="font-size:0.72rem; color:var(--text-tertiary); margin-top:4px;">Uptime</div>
+                </div>
+                <div style="background:var(--bg-base); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:16px; text-align:center;">
+                  <div style="font-size:1.6rem; font-weight:700; color:var(--accent);">4</div>
+                  <div style="font-size:0.72rem; color:var(--text-tertiary); margin-top:4px;">Plugins</div>
+                </div>
+                <div style="background:var(--bg-base); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:16px; text-align:center;">
+                  <div style="font-size:1.6rem; font-weight:700; color:#f59e0b;">7</div>
+                  <div style="font-size:0.72rem; color:var(--text-tertiary); margin-top:4px;">Channels</div>
+                </div>
+              </div>
+              <!-- Chat Preview -->
+              <div style="background:var(--bg-base); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); padding:16px;">
+                <div style="font-size:0.75rem; color:var(--text-tertiary); margin-bottom:12px; font-family:var(--font-mono);">AGENT CHAT</div>
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                  <div style="display:flex; gap:8px; align-items:flex-start;">
+                    <span style="font-size:0.7rem; color:var(--accent); font-family:var(--font-mono); min-width:28px;">you</span>
+                    <span style="font-size:0.82rem; color:var(--text-primary);">Check my Solana wallet balance</span>
+                  </div>
+                  <div style="display:flex; gap:8px; align-items:flex-start;">
+                    <span style="font-size:0.7rem; color:var(--brand-light); font-family:var(--font-mono); min-width:28px;">paw</span>
+                    <span style="font-size:0.82rem; color:var(--text-secondary);">Balance: 42.5 SOL ($6,375.00) · via Ollama/Gemma4 · 280ms</span>
+                  </div>
+                  <div style="display:flex; gap:8px; align-items:flex-start;">
+                    <span style="font-size:0.7rem; color:#10b981; font-family:var(--font-mono); min-width:28px;">sys</span>
+                    <span style="font-size:0.82rem; color:var(--text-tertiary);">✓ validated · risk:low · source:hub · synced to 3 channels</span>
+                  </div>
+                </div>
+                <div style="margin-top:12px; padding:8px 12px; background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-sm); font-size:0.8rem; color:var(--text-tertiary);">
+                  Type a message… <span style="float:right; color:var(--brand-light);">Send</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hub Features Grid -->
+      <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:24px; margin-top:48px;" class="reveal">
+        <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:24px;">
+          <div style="font-size:1.5rem; margin-bottom:12px;">🎯</div>
+          <h4 style="font-family:var(--font-serif); margin-bottom:8px;">Mission Control</h4>
+          <p style="font-size:0.85rem; color:var(--text-secondary);">Real-time agent monitoring. Track tasks, metrics, alerts, and logs across all your agents in one view.</p>
+        </div>
+        <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:24px;">
+          <div style="font-size:1.5rem; margin-bottom:12px;">🧩</div>
+          <h4 style="font-family:var(--font-serif); margin-bottom:8px;">Plugin Marketplace</h4>
+          <p style="font-size:0.85rem; color:var(--text-secondary);">Install and manage plugins with hooks into the agent pipeline. DeFi alerts, analytics, GitHub, and custom plugins.</p>
+        </div>
+        <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:24px;">
+          <div style="font-size:1.5rem; margin-bottom:12px;">⚡</div>
+          <h4 style="font-family:var(--font-serif); margin-bottom:8px;">Workflow Engine</h4>
+          <p style="font-size:0.85rem; color:var(--text-secondary);">Build and run multi-step workflows from templates. Daily portfolio checks, onboarding flows, price alerts.</p>
+        </div>
+        <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:24px;">
+          <div style="font-size:1.5rem; margin-bottom:12px;">🔄</div>
+          <h4 style="font-family:var(--font-serif); margin-bottom:8px;">Cross-App Sync</h4>
+          <p style="font-size:0.85rem; color:var(--text-secondary);">Shared memory across all channels. Actions on Telegram sync to Discord, Hub, and everywhere else in real-time.</p>
+        </div>
+        <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:24px;">
+          <div style="font-size:1.5rem; margin-bottom:12px;">💻</div>
+          <h4 style="font-family:var(--font-serif); margin-bottom:8px;">Built-in CLI</h4>
+          <p style="font-size:0.85rem; color:var(--text-secondary);">Full terminal interface inside Hub. Run agent commands, check status, manage plugins — without leaving the app.</p>
+        </div>
+        <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:24px;">
+          <div style="font-size:1.5rem; margin-bottom:12px;">🔐</div>
+          <h4 style="font-family:var(--font-serif); margin-bottom:8px;">OAuth2 &amp; Multi-Tenant</h4>
+          <p style="font-size:0.85rem; color:var(--text-secondary);">Enterprise SSO, tenant isolation, plan-based limits, and role-based access. Built for teams and organizations.</p>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:40px;" class="reveal">
+        <a href="hub.html" class="btn btn-primary">Explore PAW Hub →</a>
+        <a href="https://github.com/DosukaSOL/paw-agents/tree/main/desktop" class="btn btn-secondary" target="_blank" rel="noopener" style="margin-left:12px;">
+          View Source ↗
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ PURP SCL ═══════════ -->
+  <section id="purp" class="section-dark">
+    <div class="container">
+      <div class="section-header reveal">
+        <div class="section-label">Smart Contracts &amp; Multi-Language</div>
+        <h2 class="section-title">Any Language. Plus Purp SCL.</h2>
+        <p class="section-desc">
+          PAW agents execute JavaScript, TypeScript, Python, Rust, and any language you throw at them via the <code style="font-family:var(--font-mono); font-size:0.9em; color:var(--brand-light);">api</code>, <code style="font-family:var(--font-mono); font-size:0.9em; color:var(--brand-light);">js</code>, and <code style="font-family:var(--font-mono); font-size:0.9em; color:var(--brand-light);">system</code> execution modes.
+          But PAW is the <strong style="color:var(--text-primary)">only agent framework</strong> that also ships with a Solana-native smart contract language built in — <a href="https://github.com/DosukaSOL/purp-scl" target="_blank" rel="noopener" style="color:var(--brand-light)">Purp SCL v1.1</a>.
+          Write, compile, and deploy Solana programs without leaving the chat.
+        </p>
+      </div>
+
+      <div class="purp-split">
+        <div class="purp-code reveal">
+          <div class="terminal-dots" style="margin-bottom:16px">
+            <span></span><span></span><span></span>
+          </div>
+          <pre><span class="keyword">program</span> TokenVault {
+}
+
+<span class="keyword">account</span> VaultState {
+  owner: <span class="type">pubkey</span>
+  balance: <span class="type">u64</span>
+  is_locked: <span class="type">bool</span>
+}
+
+<span class="keyword">instruction</span> Deposit {
+  accounts:
+    <span class="attr">#[mut]</span> vault_state
+    <span class="attr">#[signer]</span> depositor
+  args:
+    amount: <span class="type">u64</span>
+  body:
+    <span class="fn">require</span>(amount > 0, InsufficientFunds)
+    vault_state.balance += amount
+    <span class="fn">emit</span>(DepositMade, {
+      depositor: depositor.key,
+      amount: amount
+    })
+}
+
+<span class="keyword">event</span> DepositMade {
+  depositor: <span class="type">pubkey</span>
+  amount: <span class="type">u64</span>
+}
+
+<span class="keyword">error</span> VaultErrors {
+  InsufficientFunds = <span class="string">"Not enough funds"</span>
+  Unauthorized = <span class="string">"Only the owner"</span>
+}</pre>
+        </div>
+
+        <div class="reveal reveal-delay-2">
+          <h3 style="font-family:var(--font-serif); font-size:1.25rem; font-weight:600; margin-bottom:24px;">
+            Compiler Pipeline
+          </h3>
+          <div style="font-family:var(--font-mono); font-size:0.82rem; color:var(--brand-light); margin-bottom:24px; padding:12px 16px; background:var(--bg-card); border-radius:var(--radius-sm); border:1px solid var(--border-subtle);">
+            .purp → Parse → Validate → Anchor Rust + TypeScript SDK + IDL
+          </div>
+          <ul class="purp-features">
+            <li><span class="purp-check">✓</span> Full type system: u8–u128, i8–i128, f32, f64, bool, string, pubkey, bytes</li>
+            <li><span class="purp-check">✓</span> v1.1 operators: ** exponentiation, ?? nullish coalescing, ... spread</li>
+            <li><span class="purp-check">✓</span> Account attributes: #[mut], #[signer], #[init] with auto-generated context structs</li>
+            <li><span class="purp-check">✓</span> SPL token operations: transfer, mint_to, burn, approve, revoke</li>
+            <li><span class="purp-check">✓</span> Anchor-compatible Rust output with proper CPI patterns</li>
+            <li><span class="purp-check">✓</span> TypeScript SDK with typed methods per instruction</li>
+            <li><span class="purp-check">✓</span> Anchor-compatible IDL JSON generation</li>
+            <li><span class="purp-check">✓</span> Purp.toml project config with dependency management</li>
+            <li><span class="purp-check">✓</span> Backward compatible with legacy JSON format and v0.3 syntax</li>
+          </ul>
+          <div style="margin-top:24px">
+            <a href="https://github.com/DosukaSOL/purp-scl" target="_blank" rel="noopener" class="btn btn-secondary" style="font-size:0.88rem;">
+              View Purp SCL ↗
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ WHY PAW ═══════════ -->
+  <section id="why">
+    <div class="container">
+      <div class="section-header-center reveal">
+        <div class="section-label">Differentiators</div>
+        <h2 class="section-title">Why PAW?</h2>
+        <p class="section-desc">
+          Safety-first architecture where the LLM plans and the system executes.
+          <br />No exceptions, no shortcuts, every action traceable.
+        </p>
+      </div>
+
+      <div class="comparison-grid">
+        <div class="comparison-card reveal reveal-delay-1">
+          <h3>🛡️ Safety is Non-Negotiable</h3>
+          <p>The validation pipeline runs on every action, in every mode — even Free mode. You can remove confirmation gates, but validation, simulation, and logging never stop.</p>
+        </div>
+        <div class="comparison-card reveal reveal-delay-2">
+          <h3>🧱 Strict LLM/Execution Split</h3>
+          <p>The LLM produces a JSON plan. The system validates it, then executes. The LLM never touches tools directly — eliminating an entire class of prompt injection attacks.</p>
+        </div>
+        <div class="comparison-card reveal reveal-delay-3">
+          <h3>🤖 Three Modes of Autonomy</h3>
+          <p>Supervised confirms everything. Autonomous auto-executes low/medium risk. Free removes all gates — but requires passing two safety warning layers to activate. Your choice, your control.</p>
+        </div>
+        <div class="comparison-card reveal reveal-delay-4">
+          <h3>📝 Full Audit Trail</h3>
+          <p>Clawtrace logs every phase of every action with automatic secret redaction. Reconstruct exactly what happened, what the LLM reasoned, and why.</p>
+        </div>
+        <div class="comparison-card reveal reveal-delay-1">
+          <h3>🔧 Intelligent Self-Healing</h3>
+          <p>When an action fails, PAW diagnoses the failure type, determines if it's recoverable, applies a fix strategy, and only escalates when it genuinely can't recover.</p>
+        </div>
+        <div class="comparison-card reveal reveal-delay-2">
+          <h3>⛓️ Purp SCL First-Class</h3>
+          <p>Parse .purp files, validate, compile to Anchor Rust, generate TypeScript SDKs and IDL — all within the agent pipeline. No SCL integration like it.</p>
+        </div>
+        <div class="comparison-card reveal reveal-delay-3">
+          <h3>🧠 Semantic Memory</h3>
+          <p>Vector memory with TF-IDF scoring, scoped by session, user, or global, persisted to disk. Agents remember what matters across conversations.</p>
+        </div>
+        <div class="comparison-card reveal reveal-delay-4">
+          <h3>🔌 Extensible by Design</h3>
+          <p>Skill files, MCP protocol, custom tools, DAG workflows, multi-agent orchestration. PAW grows with your needs without code changes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ DASHBOARD ═══════════ -->
+  <section id="dashboard" class="section-dark">
+    <div class="container">
+      <div class="section-header-center reveal">
+        <div class="section-label">Native Dashboard</div>
+        <h2 class="section-title">Real-Time Agent Control</h2>
+        <p class="section-desc">
+          A built-in web dashboard served by the Gateway — monitor agents, chat in real-time, switch modes, and inspect every action as it happens.
+        </p>
+      </div>
+
+      <!-- CSS-rendered dashboard mockup -->
+      <div class="dashboard-showcase reveal">
+        <div class="dashboard-topbar">
+          <div class="dashboard-topbar-left">
+            <span class="dashboard-topbar-title">🐾 PAW Dashboard</span>
+            <span class="dashboard-topbar-badge">v3.4</span>
+          </div>
+          <div class="dashboard-topbar-right">
+            <span class="dash-status-dot"></span>
+            <span class="dash-status-text">Connected</span>
+            <span class="dash-theme-btn">🌙</span>
+          </div>
+        </div>
+
+        <div class="dashboard-body">
+          <!-- Sidebar -->
+          <div class="dash-sidebar">
+            <div class="dash-sidebar-label">Stats</div>
+            <div class="dash-stat">
+              <div class="dash-stat-label">Actions</div>
+              <div class="dash-stat-value brand">247</div>
+            </div>
+            <div class="dash-stat">
+              <div class="dash-stat-label">Uptime</div>
+              <div class="dash-stat-value success">99.8%</div>
+            </div>
+            <div class="dash-sidebar-label" style="margin-top:12px">Mode</div>
+            <div class="dash-mode-option">
+              <span class="dash-mode-icon">01</span> Supervised
+            </div>
+            <div class="dash-mode-option active">
+              <span class="dash-mode-icon">02</span> Autonomous
+            </div>
+            <div class="dash-mode-option">
+              <span class="dash-mode-icon">03</span> Free
+            </div>
+            <div class="dash-sidebar-label" style="margin-top:12px">Pipeline</div>
+            <div style="font-size:0.58rem;font-family:var(--font-mono);color:var(--text-tertiary);padding:2px 0">① Parse → ② Risk → ③ Validate</div>
+            <div style="font-size:0.58rem;font-family:var(--font-mono);color:var(--text-tertiary);padding:2px 0">④ Approve → ⑤ Execute → ⑥ Audit</div>
+          </div>
+
+          <!-- Chat Panel -->
+          <div class="dash-chat">
+            <div class="dash-chat-header">
+              <span class="dash-chat-title">Agent Chat</span>
+              <span class="dash-chat-meta">autonomous</span>
+            </div>
+            <div class="dash-messages">
+              <div class="dash-msg user">
+                <span class="dash-msg-sender">You</span>
+                <div class="dash-msg-bubble">Scrape the latest Solana TVL from DefiLlama</div>
+              </div>
+              <div class="dash-msg agent">
+                <span class="dash-msg-sender">Agent</span>
+                <div class="dash-msg-bubble">Fetching DefiLlama API for Solana chain TVL data…</div>
+              </div>
+              <div class="dash-msg system">
+                <div class="dash-msg-bubble">✓ Action validated · risk: low · auto-approved</div>
+              </div>
+              <div class="dash-msg agent">
+                <span class="dash-msg-sender">Agent</span>
+                <div class="dash-msg-bubble">Solana TVL: $8.42B — up 3.7% in the last 24h. Data saved to memory.</div>
+              </div>
+              <div class="dash-msg user">
+                <span class="dash-msg-sender">You</span>
+                <div class="dash-msg-bubble">Post that to Discord</div>
+              </div>
+              <div class="dash-msg agent">
+                <span class="dash-msg-sender">Agent</span>
+                <div class="dash-msg-bubble">Message sent to #sol-updates. Awaiting delivery confirmation.</div>
+              </div>
+            </div>
+            <div class="dash-input-bar">
+              <div class="dash-input-field">Type a message…</div>
+              <div class="dash-send-btn">Send</div>
+            </div>
+          </div>
+
+          <!-- Log Panel -->
+          <div class="dash-log">
+            <div class="dash-log-header">
+              <span class="dash-log-title">Activity Log</span>
+              <span class="dash-log-clear">Clear</span>
+            </div>
+            <div class="dash-log-entries">
+              <div class="dash-log-entry success">
+                <span class="dash-log-time">14:32</span>
+                <span class="dash-log-text">✓ discord.send completed</span>
+              </div>
+              <div class="dash-log-entry info">
+                <span class="dash-log-time">14:32</span>
+                <span class="dash-log-text">→ risk:low auto-approved</span>
+              </div>
+              <div class="dash-log-entry">
+                <span class="dash-log-time">14:31</span>
+                <span class="dash-log-text">⚙ web.scrape DefiLlama…</span>
+              </div>
+              <div class="dash-log-entry success">
+                <span class="dash-log-time">14:31</span>
+                <span class="dash-log-text">✓ web.scrape completed</span>
+              </div>
+              <div class="dash-log-entry info">
+                <span class="dash-log-time">14:30</span>
+                <span class="dash-log-text">→ pipeline: 6/6 passed</span>
+              </div>
+              <div class="dash-log-entry warn">
+                <span class="dash-log-time">14:28</span>
+                <span class="dash-log-text">⚠ rate-limit approaching</span>
+              </div>
+              <div class="dash-log-entry">
+                <span class="dash-log-time">14:27</span>
+                <span class="dash-log-text">⚙ memory.store saving…</span>
+              </div>
+              <div class="dash-log-entry success">
+                <span class="dash-log-time">14:27</span>
+                <span class="dash-log-text">✓ memory.store completed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Features -->
+      <div class="dashboard-features reveal">
+        <div class="dashboard-feature">
+          <div class="dashboard-feature-icon">💬</div>
+          <div>
+            <h4>Live Chat Interface</h4>
+            <p>Talk to your agents over WebSocket. Messages appear instantly with user/agent/system bubbles.</p>
+          </div>
+        </div>
+        <div class="dashboard-feature">
+          <div class="dashboard-feature-icon">🔀</div>
+          <div>
+            <h4>Mode Switching</h4>
+            <p>Toggle between supervised, autonomous, and locked modes on the fly — no restart needed.</p>
+          </div>
+        </div>
+        <div class="dashboard-feature">
+          <div class="dashboard-feature-icon">📊</div>
+          <div>
+            <h4>Real-Time Stats</h4>
+            <p>Action count, uptime percentage, and pipeline status update live via WebSocket push.</p>
+          </div>
+        </div>
+        <div class="dashboard-feature">
+          <div class="dashboard-feature-icon">📜</div>
+          <div>
+            <h4>Activity Log</h4>
+            <p>Every action logged with timestamps and color-coded severity — info, success, warning, error.</p>
+          </div>
+        </div>
+        <div class="dashboard-feature">
+          <div class="dashboard-feature-icon">🎨</div>
+          <div>
+            <h4>Dark &amp; Light Themes</h4>
+            <p>Full theme toggle with persistent preference. Purple brand palette across both modes.</p>
+          </div>
+        </div>
+        <div class="dashboard-feature">
+          <div class="dashboard-feature-icon">🔌</div>
+          <div>
+            <h4>Zero Config</h4>
+            <p>Served automatically by the PAW Gateway. Open your browser and the dashboard is ready.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ QUICKSTART ═══════════ -->
+  <section id="quickstart" class="section-dark">
+    <div class="container">
+      <div class="section-header-center reveal">
+        <div class="section-label">Get Started</div>
+        <h2 class="section-title">Up and Running in Minutes</h2>
+        <p class="section-desc">
+          Clone, configure, run. With Ollama, you don't even need an API key — just install and go.
+        </p>
+      </div>
+
+      <div class="quickstart-box reveal">
+        <button class="copy-btn" onclick="copyInstall()">Copy</button>
+        <div class="terminal-dots">
+          <span></span><span></span><span></span>
+        </div>
+        <pre><span class="comment"># Clone the repository</span>
+<span class="prompt">$</span> <span class="cmd">git clone https://github.com/DosukaSOL/paw-agents.git</span>
+<span class="prompt">$</span> <span class="cmd">cd paw-agents</span>
+
+<span class="comment"># Install dependencies</span>
+<span class="prompt">$</span> <span class="cmd">npm install</span>
+
+<span class="comment"># Configure your API keys and channel tokens</span>
+<span class="prompt">$</span> <span class="cmd">cp .env.example .env</span>
+
+<span class="comment"># Build and start</span>
+<span class="prompt">$</span> <span class="cmd">npm run build</span>
+<span class="prompt">$</span> <span class="cmd">npm start</span></pre>
+      </div>
+
+      <div style="text-align:center; margin-top:32px" class="reveal">
+        <p style="font-size:0.88rem; color:var(--text-tertiary); max-width:560px; margin:0 auto;">
+          Requires Node.js 20+. With Ollama installed, no API key is needed — PAW auto-detects local models.
+          Alternatively, use any cloud provider (OpenAI, Anthropic, Google, Mistral, DeepSeek, Groq).
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ MODELS ═══════════ -->
+  <section>
+    <div class="container">
+      <div class="section-header-center reveal">
+        <div class="section-label">AI Providers</div>
+        <h2 class="section-title">Bring Your Own Model</h2>
+        <p class="section-desc">
+          Seven providers with automatic failover — including Ollama for free local AI. Configure your preferred model or use them all.
+        </p>
+      </div>
+
+      <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap" class="reveal">
+        <!-- OpenAI -->
+        <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:32px 40px; text-align:center; min-width:160px;">
+          <div style="margin-bottom:12px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z" fill="currentColor"/></svg></div>
+          <div style="font-family:var(--font-serif); font-size:1.1rem; font-weight:600; margin-bottom:4px;">OpenAI</div>
+          <div style="font-size:0.85rem; color:var(--text-tertiary);">GPT-4o · GPT-4 Turbo</div>
+        </div>
+        <!-- Anthropic -->
+        <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:32px 40px; text-align:center; min-width:160px;">
+          <div style="margin-bottom:12px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M13.827 3.52h3.603L24 20.48h-3.603l-6.57-16.96zm-7.258 0h3.767L16.906 20.48h-3.674l-1.471-3.952H5.654l-1.478 3.952H.602L6.57 3.52zm2.327 4.58L6.2 14.468h5.393L8.896 8.1z" fill="currentColor"/></svg></div>
+          <div style="font-family:var(--font-serif); font-size:1.1rem; font-weight:600; margin-bottom:4px;">Anthropic</div>
+          <div style="font-size:0.85rem; color:var(--text-tertiary);">Claude Sonnet 4</div>
+        </div>
+        <!-- Google AI -->
+        <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:32px 40px; text-align:center; min-width:160px;">
+          <div style="margin-bottom:12px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></div>
+          <div style="font-family:var(--font-serif); font-size:1.1rem; font-weight:600; margin-bottom:4px;">Google AI</div>
+          <div style="font-size:0.85rem; color:var(--text-tertiary);">Gemma 3 27B</div>
+        </div>
+        <!-- Mistral -->
+        <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:32px 40px; text-align:center; min-width:160px;">
+          <div style="margin-bottom:12px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="4.5" height="4.5" fill="#F7D046"/><rect x="9.75" y="2" width="4.5" height="4.5" fill="#F7D046"/><rect x="17.5" y="2" width="4.5" height="4.5" fill="#F7D046"/><rect x="2" y="9.75" width="4.5" height="4.5" fill="#F2A73B"/><rect x="9.75" y="9.75" width="4.5" height="4.5" fill="#F2A73B"/><rect x="17.5" y="9.75" width="4.5" height="4.5" fill="#F2A73B"/><rect x="2" y="17.5" width="4.5" height="4.5" fill="#EE792F"/><rect x="9.75" y="17.5" width="4.5" height="4.5" fill="#EE792F"/><rect x="17.5" y="17.5" width="4.5" height="4.5" fill="#EE792F"/></svg></div>
+          <div style="font-family:var(--font-serif); font-size:1.1rem; font-weight:600; margin-bottom:4px;">Mistral</div>
+          <div style="font-size:0.85rem; color:var(--text-tertiary);">Mistral Large</div>
+        </div>
+        <!-- DeepSeek -->
+        <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:32px 40px; text-align:center; min-width:160px;">
+          <div style="margin-bottom:12px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#4D6BFE" stroke-width="1.5" fill="none"/><path d="M8 12.5c0-2.5 1.5-4.5 4-4.5s4 2 4 4.5c0 1.5-.8 3-2.5 3.5" stroke="#4D6BFE" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="11" r="1.2" fill="#4D6BFE"/><circle cx="14" cy="11" r="1.2" fill="#4D6BFE"/></svg></div>
+          <div style="font-family:var(--font-serif); font-size:1.1rem; font-weight:600; margin-bottom:4px;">DeepSeek</div>
+          <div style="font-size:0.85rem; color:var(--text-tertiary);">DeepSeek Chat · R1</div>
+        </div>
+        <!-- Groq -->
+        <div style="background:var(--bg-card); border:1px solid var(--border-subtle); border-radius:var(--radius-md); padding:32px 40px; text-align:center; min-width:160px;">
+          <div style="margin-bottom:12px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#F55036" stroke-width="1.5" fill="none"/><circle cx="12" cy="12" r="5" stroke="#F55036" stroke-width="1.5" fill="none"/><circle cx="12" cy="12" r="1.5" fill="#F55036"/><line x1="12" y1="2" x2="12" y2="7" stroke="#F55036" stroke-width="1.5"/><line x1="12" y1="17" x2="12" y2="22" stroke="#F55036" stroke-width="1.5"/><line x1="2" y1="12" x2="7" y2="12" stroke="#F55036" stroke-width="1.5"/><line x1="17" y1="12" x2="22" y2="12" stroke="#F55036" stroke-width="1.5"/></svg></div>
+          <div style="font-family:var(--font-serif); font-size:1.1rem; font-weight:600; margin-bottom:4px;">Groq</div>
+          <div style="font-size:0.85rem; color:var(--text-tertiary);">Llama 3.3 70B</div>
+        </div>
+        <!-- Ollama -->
+        <div style="background:var(--bg-card); border:2px solid var(--accent); border-radius:var(--radius-md); padding:32px 40px; text-align:center; min-width:160px; position:relative;">
+          <div style="position:absolute; top:-10px; right:-10px; background:var(--accent); color:var(--bg-base); font-size:0.65rem; font-weight:700; padding:3px 10px; border-radius:10px; font-family:var(--font-mono);">FREE</div>
+          <div style="margin-bottom:12px;"><svg width="40" height="40" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#22d3ee" stroke-width="1.5" fill="none"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold" fill="#22d3ee">O</text></svg></div>
+          <div style="font-family:var(--font-serif); font-size:1.1rem; font-weight:600; margin-bottom:4px;">Ollama</div>
+          <div style="font-size:0.85rem; color:var(--accent);">Gemma 4 · Local · $0</div>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:24px" class="reveal">
+        <p style="font-size:0.85rem; color:var(--text-tertiary);">
+          Automatic failover between all 7 providers · Ollama runs 100% free locally · ModelProvider interface for extensibility
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <img src="../assets/logo-transparent.png" alt="PAW" />
+          <p>Programmable Autonomous Workers. The operating system for autonomous AI agents.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="#pipeline">Pipeline</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#channels">Channels</a></li>
+            <li><a href="#ollama">Ollama</a></li>
+            <li><a href="hub.html">PAW Hub</a></li>
+            <li><a href="#quickstart">Quick Start</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="https://github.com/DosukaSOL/paw-agents" target="_blank" rel="noopener">GitHub</a></li>
+            <li><a href="https://github.com/DosukaSOL/paw-agents/blob/main/docs/ARCHITECTURE.md" target="_blank" rel="noopener">Architecture</a></li>
+            <li><a href="https://github.com/DosukaSOL/paw-agents/blob/main/docs/SECURITY.md" target="_blank" rel="noopener">Security</a></li>
+            <li><a href="https://github.com/DosukaSOL/purp-scl" target="_blank" rel="noopener">Purp SCL</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <ul>
+            <li><a href="https://github.com/DosukaSOL/paw-agents/issues" target="_blank" rel="noopener">Issues</a></li>
+            <li><a href="https://github.com/DosukaSOL/paw-agents/pulls" target="_blank" rel="noopener">Pull Requests</a></li>
+            <li><a href="https://github.com/DosukaSOL/paw-agents/releases" target="_blank" rel="noopener">Releases</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <span>© 2026 PAW Agents · MIT License · Built with PAW</span>
+        <div class="footer-social">
+          <a href="https://github.com/DosukaSOL/paw-agents" target="_blank" rel="noopener" aria-label="GitHub">⟁</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ═══════════ SCRIPTS ═══════════ -->
+  <script>
+    // ─── Theme Toggle ───
+    const html = document.documentElement;
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+
+    function setTheme(theme) {
+      html.setAttribute('data-theme', theme);
+      themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+      localStorage.setItem('paw-theme', theme);
+    }
+
+    themeToggle.addEventListener('click', () => {
+      const current = html.getAttribute('data-theme');
+      setTheme(current === 'dark' ? 'light' : 'dark');
+    });
+
+    // Load saved theme (default dark)
+    const saved = localStorage.getItem('paw-theme');
+    if (saved) setTheme(saved);
+
+    // ─── Mobile Nav ───
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
+
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+    });
+
+    // Close mobile nav on link click
+    navLinks.querySelectorAll('a').forEach(link => {
+      link.addEventListener('click', () => navLinks.classList.remove('active'));
+    });
+
+    // ─── Scroll Reveal ───
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    reveals.forEach(el => observer.observe(el));
+
+    // ─── Copy Install ───
+    function copyInstall() {
+      const text = `git clone https://github.com/DosukaSOL/paw-agents.git
+cd paw-agents
+npm install
+cp .env.example .env
+npm run build
+npm start`;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy', 2000);
+      });
+    }
+
+    // ─── Smooth nav background on scroll ───
+    const nav = document.querySelector('nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 20) {
+        nav.style.borderBottomColor = 'var(--border-standard)';
+      } else {
+        nav.style.borderBottomColor = 'var(--border-subtle)';
+      }
+    });
+  </script>
+</body>
+</html>
