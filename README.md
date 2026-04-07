@@ -383,7 +383,10 @@ User profiling · RAG · Smart model routing · Fast path · Conversation branch
 ### ✅ v3.4 — Platform & Scale
 Ollama/Gemma 4 (FREE AI) · PAW Hub desktop OS · Mission Control · Multi-tenant · Plugin marketplace · Workflow templates · OAuth2/SSO · Cross-app sync · Action source tracking · Horizontal scaling types
 
-### 🔜 v3.5 — Ecosystem
+### ✅ v3.5 — Observability & Hub
+Trace Explorer · TraceLogger rewrite · PAW Hub desktop handoff · General-purpose repositioning
+
+### 🔜 v3.6 — Ecosystem
 Ethereum/Base/Sui · Purp SCL v2 · Agent marketplace · Analytics dashboard · Public agent directory
 
 ---
@@ -404,6 +407,6 @@ MIT
 ---
 
 <p align="center">
-  <strong>PAW Agents v3.4 — Platform & Scale</strong><br>
+  <strong>PAW Agents v3.5 — Observability & Hub</strong><br>
   <em>The operating system for autonomous AI agents.</em>
 </p>
