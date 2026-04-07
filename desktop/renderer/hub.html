@@ -320,6 +320,37 @@
     ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.2); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.4); }
 
+    /* ─── Provider Config ─── */
+    .provider-config { display: none; }
+    .provider-config.active { display: block; }
+    .settings-input {
+      background: var(--bg-primary); border: 1px solid var(--border-standard);
+      border-radius: 8px; padding: 8px 12px; color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace; font-size: 12px; outline: none;
+      width: 260px;
+    }
+    .settings-input:focus { border-color: var(--brand); }
+    .key-input-wrap { display: flex; align-items: center; gap: 6px; }
+    .key-toggle {
+      background: transparent; border: 1px solid var(--border-subtle);
+      border-radius: 6px; padding: 6px 8px; cursor: pointer;
+      color: var(--text-tertiary); font-size: 14px; transition: all 0.2s;
+    }
+    .key-toggle:hover { color: var(--text-secondary); border-color: var(--border-standard); }
+    .cfg-status {
+      margin-top: 8px; font-size: 11px; padding: 6px 10px;
+      border-radius: 6px; display: inline-block;
+    }
+    .cfg-status.set { background: rgba(52,211,153,0.1); color: var(--success); }
+    .cfg-status.missing { background: rgba(248,113,113,0.1); color: var(--error); }
+    .cfg-save-btn {
+      background: var(--brand); border: none; border-radius: 8px;
+      padding: 10px 24px; color: #fff; font-weight: 600; font-size: 13px;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .cfg-save-btn:hover { background: var(--brand-dark); }
+    .cfg-save-msg { font-size: 12px; color: var(--success); transition: opacity 0.3s; }
+
     /* ─── Free Mode Warning Modals ─── */
     .fm-overlay {
       position: fixed; inset: 0; z-index: 10000;
@@ -506,18 +537,106 @@
             <select class="settings-select" id="setting-provider"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="google">Google</option><option value="groq">Groq</option><option value="mistral">Mistral</option><option value="deepseek">DeepSeek</option><option value="ollama">Ollama (Local)</option></select>
           </div>
         </div>
-        <div class="settings-section">
+
+        <!-- ─── Provider Configuration Panels ─── -->
+        <div class="settings-section provider-config" id="cfg-openai">
+          <div class="settings-title">OpenAI Configuration</div>
+          <div class="settings-row">
+            <div><div class="settings-label">API Key</div><div class="settings-desc">Your OpenAI API key from platform.openai.com</div></div>
+            <div class="key-input-wrap"><input type="password" class="settings-input" id="cfg-openai-key" placeholder="sk-..." autocomplete="off"><button class="key-toggle" data-target="cfg-openai-key" title="Show/hide">&#128065;</button></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Model</div><div class="settings-desc">OpenAI model to use</div></div>
+            <select class="settings-select" id="cfg-openai-model"><option value="gpt-4o">gpt-4o</option><option value="gpt-4o-mini">gpt-4o-mini</option><option value="gpt-4-turbo">gpt-4-turbo</option><option value="o1">o1</option><option value="o1-mini">o1-mini</option></select>
+          </div>
+          <div class="cfg-status" id="cfg-openai-status"></div>
+        </div>
+
+        <div class="settings-section provider-config" id="cfg-anthropic">
+          <div class="settings-title">Anthropic Configuration</div>
+          <div class="settings-row">
+            <div><div class="settings-label">API Key</div><div class="settings-desc">Your Anthropic API key from console.anthropic.com</div></div>
+            <div class="key-input-wrap"><input type="password" class="settings-input" id="cfg-anthropic-key" placeholder="sk-ant-..." autocomplete="off"><button class="key-toggle" data-target="cfg-anthropic-key" title="Show/hide">&#128065;</button></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Model</div><div class="settings-desc">Anthropic model to use</div></div>
+            <select class="settings-select" id="cfg-anthropic-model"><option value="claude-sonnet-4-20250514">claude-sonnet-4-20250514</option><option value="claude-opus-4-20250514">claude-opus-4-20250514</option><option value="claude-3-haiku-20240307">claude-3-haiku</option></select>
+          </div>
+          <div class="cfg-status" id="cfg-anthropic-status"></div>
+        </div>
+
+        <div class="settings-section provider-config" id="cfg-google">
+          <div class="settings-title">Google AI Configuration</div>
+          <div class="settings-row">
+            <div><div class="settings-label">API Key</div><div class="settings-desc">Your Google AI API key from aistudio.google.com</div></div>
+            <div class="key-input-wrap"><input type="password" class="settings-input" id="cfg-google-key" placeholder="AI..." autocomplete="off"><button class="key-toggle" data-target="cfg-google-key" title="Show/hide">&#128065;</button></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Model</div><div class="settings-desc">Google AI model to use</div></div>
+            <select class="settings-select" id="cfg-google-model"><option value="gemma-3-27b-it">gemma-3-27b-it</option><option value="gemini-2.0-flash">gemini-2.0-flash</option><option value="gemini-1.5-pro">gemini-1.5-pro</option></select>
+          </div>
+          <div class="cfg-status" id="cfg-google-status"></div>
+        </div>
+
+        <div class="settings-section provider-config" id="cfg-groq">
+          <div class="settings-title">Groq Configuration</div>
+          <div class="settings-row">
+            <div><div class="settings-label">API Key</div><div class="settings-desc">Your Groq API key from console.groq.com</div></div>
+            <div class="key-input-wrap"><input type="password" class="settings-input" id="cfg-groq-key" placeholder="gsk_..." autocomplete="off"><button class="key-toggle" data-target="cfg-groq-key" title="Show/hide">&#128065;</button></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Model</div><div class="settings-desc">Groq model to use</div></div>
+            <select class="settings-select" id="cfg-groq-model"><option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile</option><option value="mixtral-8x7b-32768">mixtral-8x7b</option><option value="gemma2-9b-it">gemma2-9b-it</option></select>
+          </div>
+          <div class="cfg-status" id="cfg-groq-status"></div>
+        </div>
+
+        <div class="settings-section provider-config" id="cfg-mistral">
+          <div class="settings-title">Mistral Configuration</div>
+          <div class="settings-row">
+            <div><div class="settings-label">API Key</div><div class="settings-desc">Your Mistral API key from console.mistral.ai</div></div>
+            <div class="key-input-wrap"><input type="password" class="settings-input" id="cfg-mistral-key" placeholder="..." autocomplete="off"><button class="key-toggle" data-target="cfg-mistral-key" title="Show/hide">&#128065;</button></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Model</div><div class="settings-desc">Mistral model to use</div></div>
+            <select class="settings-select" id="cfg-mistral-model"><option value="mistral-large-latest">mistral-large-latest</option><option value="mistral-medium-latest">mistral-medium-latest</option><option value="open-mistral-nemo">open-mistral-nemo</option></select>
+          </div>
+          <div class="cfg-status" id="cfg-mistral-status"></div>
+        </div>
+
+        <div class="settings-section provider-config" id="cfg-deepseek">
+          <div class="settings-title">DeepSeek Configuration</div>
+          <div class="settings-row">
+            <div><div class="settings-label">API Key</div><div class="settings-desc">Your DeepSeek API key from platform.deepseek.com</div></div>
+            <div class="key-input-wrap"><input type="password" class="settings-input" id="cfg-deepseek-key" placeholder="sk-..." autocomplete="off"><button class="key-toggle" data-target="cfg-deepseek-key" title="Show/hide">&#128065;</button></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Model</div><div class="settings-desc">DeepSeek model to use</div></div>
+            <select class="settings-select" id="cfg-deepseek-model"><option value="deepseek-chat">deepseek-chat</option><option value="deepseek-coder">deepseek-coder</option></select>
+          </div>
+          <div class="cfg-status" id="cfg-deepseek-status"></div>
+        </div>
+
+        <div class="settings-section provider-config" id="cfg-ollama">
           <div class="settings-title">Ollama (Local AI)</div>
           <div class="settings-row">
             <div><div class="settings-label">Ollama URL</div><div class="settings-desc">Local Ollama server address</div></div>
-            <input class="settings-select" id="setting-ollama-url" value="http://127.0.0.1:11434" style="width:220px">
+            <input class="settings-input" id="cfg-ollama-url" value="http://127.0.0.1:11434" style="width:220px">
           </div>
           <div class="settings-row">
             <div><div class="settings-label">Ollama Model</div><div class="settings-desc">Model to use (gemma4, llama3, etc.)</div></div>
-            <input class="settings-select" id="setting-ollama-model" value="gemma4" style="width:160px">
+            <input class="settings-input" id="cfg-ollama-model" value="gemma4" style="width:160px">
           </div>
+          <div class="cfg-status" id="cfg-ollama-status"></div>
         </div>
-        <div class="settings-section">
+
+        <!-- Save Button -->
+        <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
+          <button class="cfg-save-btn" id="cfg-save">Save & Apply</button>
+          <span class="cfg-save-msg" id="cfg-save-msg"></span>
+        </div>
+
+        <div class="settings-section" style="margin-top:24px">
           <div class="settings-title">Action History — Source Tracking</div>
           <table class="action-table">
             <thead><tr><th>Time</th><th>Action</th><th>Source</th><th>Status</th><th>Duration</th></tr></thead>
@@ -797,6 +916,161 @@
       logsEl.scrollTop = logsEl.scrollHeight;
       if (logsEl.children.length > 200) logsEl.removeChild(logsEl.firstChild);
     }
+
+    // ─── Provider Configuration ───
+    const providerMap = {
+      openai:    { keyField: 'cfg-openai-key',    modelField: 'cfg-openai-model',    envKey: 'OPENAI_API_KEY',    envModel: 'DEFAULT_MODEL_NAME' },
+      anthropic: { keyField: 'cfg-anthropic-key',  modelField: 'cfg-anthropic-model',  envKey: 'ANTHROPIC_API_KEY',  envModel: null },
+      google:    { keyField: 'cfg-google-key',     modelField: 'cfg-google-model',     envKey: 'GOOGLE_AI_API_KEY',  envModel: 'GOOGLE_AI_MODEL' },
+      groq:      { keyField: 'cfg-groq-key',       modelField: 'cfg-groq-model',       envKey: 'GROQ_API_KEY',       envModel: 'GROQ_MODEL' },
+      mistral:   { keyField: 'cfg-mistral-key',    modelField: 'cfg-mistral-model',    envKey: 'MISTRAL_API_KEY',    envModel: 'MISTRAL_MODEL' },
+      deepseek:  { keyField: 'cfg-deepseek-key',   modelField: 'cfg-deepseek-model',   envKey: 'DEEPSEEK_API_KEY',   envModel: 'DEEPSEEK_MODEL' },
+      ollama:    { keyField: null,                  modelField: 'cfg-ollama-model',     envKey: null,                 envModel: 'OLLAMA_MODEL' },
+    };
+
+    // Show/hide provider config panels based on selection
+    function showProviderConfig(provider) {
+      document.querySelectorAll('.provider-config').forEach(el => el.classList.remove('active'));
+      const panel = document.getElementById('cfg-' + provider);
+      if (panel) panel.classList.add('active');
+    }
+
+    document.getElementById('setting-provider').addEventListener('change', (e) => {
+      showProviderConfig(e.target.value);
+    });
+
+    // Load config from .env on startup
+    async function loadConfig() {
+      if (typeof window.paw === 'undefined' || !window.paw.getConfig) return;
+      try {
+        const cfg = await window.paw.getConfig();
+        if (!cfg || cfg.error) return;
+
+        // Set provider dropdown
+        if (cfg.DEFAULT_MODEL_PROVIDER) {
+          document.getElementById('setting-provider').value = cfg.DEFAULT_MODEL_PROVIDER;
+          const names = { openai:'OpenAI', anthropic:'Anthropic', google:'Google', groq:'Groq', mistral:'Mistral', deepseek:'DeepSeek', ollama:'Ollama' };
+          document.getElementById('provider-badge').textContent = names[cfg.DEFAULT_MODEL_PROVIDER] || cfg.DEFAULT_MODEL_PROVIDER;
+        }
+
+        // Fill in keys and models
+        if (cfg.OPENAI_API_KEY)    document.getElementById('cfg-openai-key').value = cfg.OPENAI_API_KEY;
+        if (cfg.ANTHROPIC_API_KEY) document.getElementById('cfg-anthropic-key').value = cfg.ANTHROPIC_API_KEY;
+        if (cfg.GOOGLE_AI_API_KEY) document.getElementById('cfg-google-key').value = cfg.GOOGLE_AI_API_KEY;
+        if (cfg.GROQ_API_KEY)      document.getElementById('cfg-groq-key').value = cfg.GROQ_API_KEY;
+        if (cfg.MISTRAL_API_KEY)   document.getElementById('cfg-mistral-key').value = cfg.MISTRAL_API_KEY;
+        if (cfg.DEEPSEEK_API_KEY)  document.getElementById('cfg-deepseek-key').value = cfg.DEEPSEEK_API_KEY;
+
+        if (cfg.DEFAULT_MODEL_NAME) setSelectOrCustom('cfg-openai-model', cfg.DEFAULT_MODEL_NAME);
+        if (cfg.GOOGLE_AI_MODEL)    setSelectOrCustom('cfg-google-model', cfg.GOOGLE_AI_MODEL);
+        if (cfg.GROQ_MODEL)         setSelectOrCustom('cfg-groq-model', cfg.GROQ_MODEL);
+        if (cfg.MISTRAL_MODEL)      setSelectOrCustom('cfg-mistral-model', cfg.MISTRAL_MODEL);
+        if (cfg.DEEPSEEK_MODEL)     setSelectOrCustom('cfg-deepseek-model', cfg.DEEPSEEK_MODEL);
+        if (cfg.OLLAMA_BASE_URL)    document.getElementById('cfg-ollama-url').value = cfg.OLLAMA_BASE_URL;
+        if (cfg.OLLAMA_MODEL)       document.getElementById('cfg-ollama-model').value = cfg.OLLAMA_MODEL;
+
+        // Update status indicators
+        updateProviderStatuses(cfg);
+
+        // Show selected provider panel
+        showProviderConfig(document.getElementById('setting-provider').value);
+      } catch(e) { console.error('loadConfig:', e); }
+    }
+
+    function setSelectOrCustom(selectId, val) {
+      const sel = document.getElementById(selectId);
+      if (!sel) return;
+      const opt = Array.from(sel.options).find(o => o.value === val);
+      if (opt) { sel.value = val; }
+      else {
+        const newOpt = document.createElement('option');
+        newOpt.value = val; newOpt.textContent = val;
+        sel.appendChild(newOpt); sel.value = val;
+      }
+    }
+
+    function updateProviderStatuses(cfg) {
+      const checks = [
+        { id: 'cfg-openai-status', hasKey: !!(cfg.OPENAI_API_KEY && cfg.OPENAI_API_KEY !== 'your_openai_api_key_here') },
+        { id: 'cfg-anthropic-status', hasKey: !!(cfg.ANTHROPIC_API_KEY && cfg.ANTHROPIC_API_KEY !== 'your_anthropic_api_key_here') },
+        { id: 'cfg-google-status', hasKey: !!cfg.GOOGLE_AI_API_KEY },
+        { id: 'cfg-groq-status', hasKey: !!cfg.GROQ_API_KEY },
+        { id: 'cfg-mistral-status', hasKey: !!cfg.MISTRAL_API_KEY },
+        { id: 'cfg-deepseek-status', hasKey: !!cfg.DEEPSEEK_API_KEY },
+        { id: 'cfg-ollama-status', hasKey: true }, // Ollama is local, no key needed
+      ];
+      checks.forEach(({ id, hasKey }) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.className = 'cfg-status ' + (hasKey ? 'set' : 'missing');
+        el.textContent = hasKey ? 'Configured' : 'API key not set';
+      });
+    }
+
+    // Save config
+    document.getElementById('cfg-save').addEventListener('click', async () => {
+      if (typeof window.paw === 'undefined' || !window.paw.saveConfig) return;
+      const provider = document.getElementById('setting-provider').value;
+      const updates = { DEFAULT_MODEL_PROVIDER: provider };
+
+      // Gather all provider fields
+      const openaiKey = document.getElementById('cfg-openai-key').value.trim();
+      if (openaiKey) updates.OPENAI_API_KEY = openaiKey;
+      updates.DEFAULT_MODEL_NAME = document.getElementById('cfg-openai-model').value;
+
+      const anthropicKey = document.getElementById('cfg-anthropic-key').value.trim();
+      if (anthropicKey) updates.ANTHROPIC_API_KEY = anthropicKey;
+
+      const googleKey = document.getElementById('cfg-google-key').value.trim();
+      if (googleKey) updates.GOOGLE_AI_API_KEY = googleKey;
+      updates.GOOGLE_AI_MODEL = document.getElementById('cfg-google-model').value;
+
+      const groqKey = document.getElementById('cfg-groq-key').value.trim();
+      if (groqKey) updates.GROQ_API_KEY = groqKey;
+      updates.GROQ_MODEL = document.getElementById('cfg-groq-model').value;
+
+      const mistralKey = document.getElementById('cfg-mistral-key').value.trim();
+      if (mistralKey) updates.MISTRAL_API_KEY = mistralKey;
+      updates.MISTRAL_MODEL = document.getElementById('cfg-mistral-model').value;
+
+      const deepseekKey = document.getElementById('cfg-deepseek-key').value.trim();
+      if (deepseekKey) updates.DEEPSEEK_API_KEY = deepseekKey;
+      updates.DEEPSEEK_MODEL = document.getElementById('cfg-deepseek-model').value;
+
+      updates.OLLAMA_BASE_URL = document.getElementById('cfg-ollama-url').value.trim();
+      updates.OLLAMA_MODEL = document.getElementById('cfg-ollama-model').value.trim();
+      updates.OLLAMA_ENABLED = provider === 'ollama' ? 'true' : 'false';
+
+      try {
+        const result = await window.paw.saveConfig(updates);
+        const msg = document.getElementById('cfg-save-msg');
+        if (result.saved) {
+          msg.textContent = 'Saved! Restart PAW gateway to apply.';
+          msg.style.color = 'var(--success)';
+          addLog('info', 'settings', 'Provider config saved to .env');
+          recordAction('config_save', 'Saved provider: ' + provider, 'hub');
+          // Reload statuses
+          const cfg = await window.paw.getConfig();
+          updateProviderStatuses(cfg);
+        } else {
+          msg.textContent = 'Error: ' + (result.error || 'Unknown');
+          msg.style.color = 'var(--error)';
+        }
+        setTimeout(() => { msg.textContent = ''; }, 5000);
+      } catch(e) { console.error('saveConfig:', e); }
+    });
+
+    // Key visibility toggles
+    document.querySelectorAll('.key-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const input = document.getElementById(btn.dataset.target);
+        if (!input) return;
+        input.type = input.type === 'password' ? 'text' : 'password';
+      });
+    });
+
+    // Initialize provider panel on load
+    setTimeout(loadConfig, 100);
 
     // ─── Free Mode Warning System ───
     (function() {

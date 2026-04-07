@@ -4,6 +4,7 @@
 
 import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron';
 import * as path from 'path';
+import * as fs from 'fs';
 import WebSocket from 'ws';
 import { PawlCompanion } from './companion';
 
@@ -153,6 +154,81 @@ function setupIPC(): void {
   ipcMain.handle('paw:reconnect', () => {
     connectGateway();
     return { reconnecting: true };
+  });
+
+  // ─── Config: read/write PAW .env file ───
+  const envPath = path.join(__dirname, '..', '..', '.env');
+
+  ipcMain.handle('paw:getConfig', () => {
+    try {
+      if (!fs.existsSync(envPath)) return {};
+      const content = fs.readFileSync(envPath, 'utf-8');
+      const config: Record<string, string> = {};
+      for (const line of content.split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const eqIdx = trimmed.indexOf('=');
+        if (eqIdx === -1) continue;
+        const key = trimmed.slice(0, eqIdx).trim();
+        const val = trimmed.slice(eqIdx + 1).trim();
+        config[key] = val;
+      }
+      return config;
+    } catch {
+      return {};
+    }
+  });
+
+  ipcMain.handle('paw:saveConfig', async (_event, updates: Record<string, string>) => {
+    try {
+      // Validate: only allow known PAW config keys
+      const allowedKeys = new Set([
+        'DEFAULT_MODEL_PROVIDER', 'DEFAULT_MODEL_NAME',
+        'OPENAI_API_KEY', 'ANTHROPIC_API_KEY',
+        'GOOGLE_AI_API_KEY', 'GOOGLE_AI_MODEL',
+        'GROQ_API_KEY', 'GROQ_MODEL',
+        'MISTRAL_API_KEY', 'MISTRAL_MODEL',
+        'DEEPSEEK_API_KEY', 'DEEPSEEK_MODEL',
+        'OLLAMA_ENABLED', 'OLLAMA_BASE_URL', 'OLLAMA_MODEL',
+      ]);
+      for (const key of Object.keys(updates)) {
+        if (!allowedKeys.has(key)) {
+          return { error: `Unknown config key: ${key}` };
+        }
+      }
+
+      let content = '';
+      if (fs.existsSync(envPath)) {
+        content = fs.readFileSync(envPath, 'utf-8');
+      }
+
+      // Update existing keys or append new ones
+      const updatedKeys = new Set<string>();
+      const lines = content.split('\n');
+      for (let i = 0; i < lines.length; i++) {
+        const trimmed = lines[i].trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const eqIdx = trimmed.indexOf('=');
+        if (eqIdx === -1) continue;
+        const key = trimmed.slice(0, eqIdx).trim();
+        if (key in updates) {
+          lines[i] = `${key}=${updates[key]}`;
+          updatedKeys.add(key);
+        }
+      }
+
+      // Append keys that didn't exist yet
+      for (const [key, val] of Object.entries(updates)) {
+        if (!updatedKeys.has(key)) {
+          lines.push(`${key}=${val}`);
+        }
+      }
+
+      fs.writeFileSync(envPath, lines.join('\n'), 'utf-8');
+      return { saved: true };
+    } catch (err: unknown) {
+      return { error: String(err) };
+    }
   });
 }
 
