@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/DosukaSOL/paw-agents/releases"><img src="https://img.shields.io/badge/version-3.4.0-blue?style=flat-square" alt="Version" /></a>
+  <a href="https://github.com/DosukaSOL/paw-agents/releases"><img src="https://img.shields.io/badge/version-3.6.0-blue?style=flat-square" alt="Version" /></a>
   <a href="https://github.com/DosukaSOL/paw-agents/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" /></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square" alt="Node" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.6-blue?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
@@ -80,11 +80,15 @@ npm start
 | Category | Capabilities |
 |----------|-------------|
 | **Agent Modes** | Supervised / Autonomous / Free — per-user with 2-layer safety gate for Free |
-| **Channels** | Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat, Webhooks, LINE, Reddit, Matrix |
+| **Channels** | 20+ channels: Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat, LINE, Reddit, Matrix, Twitter/X, GitHub, Notion, Calendar, REST API, MQTT, RSS, Voice, Desktop |
 | **Models** | OpenAI, Anthropic, Google AI, Mistral, DeepSeek, Groq, **Ollama (FREE)** — automatic failover |
+| **Streaming** | Token-by-token streaming from all 7+ providers over WebSocket with sentence buffering for TTS |
+| **Voice** | Full voice control: 5 STT + 5 TTS providers, wake words, continuous listening, free local mode (Whisper + Piper) |
+| **Daemon** | Always-on 24/7 background service: scheduler, file watchers, clipboard monitor, system tray, notifications |
+| **Screen Context** | Active window detection, browser URL capture, activity classification (coding/browsing/writing/etc.) |
+| **Live Browser** | Playwright headed browser: click-to-edit overlay, AI-guided automation, persistent sessions, multi-tab |
 | **Integrations** | Solana blockchain, APIs, browser automation, file systems, webhooks, MCP tools |
 | **Purp SCL** | Optional: v1.1 parser → Anchor Rust codegen → TypeScript SDK + IDL |
-| **Browser** | Puppeteer: navigate, click, type, extract, screenshot |
 | **Multi-Agent** | Registry, capability routing, task delegation |
 | **Intelligence** | User profiling, RAG, smart model routing, fast path, conversation branching |
 | **Memory** | Persistent vector memory with cosine similarity search |
@@ -122,6 +126,15 @@ npm start
 | **LINE** | `LINE_CHANNEL_ACCESS_TOKEN` | LINE Messaging API |
 | **Reddit** | `REDDIT_CLIENT_ID` + credentials | Reddit API (OAuth2) |
 | **Matrix** | `MATRIX_HOMESERVER_URL` + token | Matrix Client-Server API |
+| **Twitter/X** | `TWITTER_BEARER_TOKEN` | Twitter API v2 |
+| **GitHub** | `GITHUB_TOKEN` + repo | GitHub REST API (polling) |
+| **Notion** | `NOTION_TOKEN` + database | Notion API |
+| **Calendar** | `GOOGLE_CALENDAR_CREDENTIALS` | Google Calendar API |
+| **Desktop** | Built-in | Native OS notifications |
+| **REST API** | Built-in on configurable port | HTTP POST endpoint |
+| **MQTT** | `MQTT_BROKER_URL` | MQTT protocol (IoT) |
+| **RSS** | Feed URLs in config | RSS/Atom polling |
+| **Voice** | Microphone + optional API keys | STT → Agent → TTS pipeline |
 
 All channels share the same agent brain, tools, and safety pipeline.
 
@@ -334,10 +347,12 @@ paw-agents/
 │   ├── index.ts                    # Entry point
 │   ├── agent/                      # Brain (LLM planning) + Loop (orchestrator)
 │   ├── core/                       # Types + config
-│   ├── models/                     # Multi-model router with failover
-│   ├── gateway/                    # WebSocket gateway + dashboard server
+│   ├── models/                     # Multi-model router with failover + streaming
+│   ├── gateway/                    # WebSocket gateway + streaming + dashboard server
 │   ├── dashboard/                  # Web dashboard SPA
-│   ├── browser/                    # Puppeteer automation
+│   ├── browser/                    # Live browser (Playwright) + Click-to-Edit + AI agent
+│   ├── voice/                      # STT + TTS + voice agent pipeline
+│   ├── daemon/                     # Always-on daemon: scheduler, watchers, notifications, screen context, tray
 │   ├── orchestrator/               # Multi-agent coordination
 │   ├── vector-memory/              # Persistent vector memory
 │   ├── mcp/                        # MCP tool protocol client
@@ -347,7 +362,7 @@ paw-agents/
 │   ├── simulation/                 # Transaction simulation sandbox
 │   ├── defi/                       # Composable DeFi execution
 │   ├── intelligence/               # Profiler, RAG, fast path, branching
-│   ├── integrations/               # 11 channel adapters + Solana + Purp
+│   ├── integrations/               # 20+ channel adapters + Solana + Purp
 │   ├── security/                   # Sanitizer, keystore, rate limiter
 │   ├── trace/                      # JSONL audit logger
 │   ├── mission-control/            # Real-time monitoring & management
@@ -362,7 +377,7 @@ paw-agents/
 ├── vscode-extension/               # VS Code extension
 ├── browser-extension/              # Chrome/Firefox extension
 ├── skills/examples/                # Skill definitions
-├── tests/                          # 79 tests across 18 suites
+├── tests/                          # 102 tests across 20+ suites
 └── docs/                           # Architecture, security, spec
 ```
 
@@ -386,7 +401,10 @@ Ollama/Gemma 4 (FREE AI) · PAW Hub desktop OS · Mission Control · Multi-tenan
 ### ✅ v3.5 — Observability & Hub
 Trace Explorer · TraceLogger rewrite · PAW Hub desktop handoff · General-purpose repositioning
 
-### 🔜 v3.6 — Ecosystem
+### ✅ v3.6 — The OpenClaw Killer
+Voice control (5 STT + 5 TTS providers, free local mode) · Always-on daemon (scheduler, watchers, clipboard, tray, notifications) · Live browser with Playwright + click-to-edit overlay + AI-guided automation · Screen & app context awareness · Token-by-token streaming from all providers · 9 new channels (Twitter/X, GitHub, Notion, Calendar, Desktop, REST API, MQTT, RSS, Voice) — **20+ total** · Sentence buffering for voice TTS
+
+### 🔜 v4.0 — Ecosystem
 Ethereum/Base/Sui · Purp SCL v2 · Agent marketplace · Analytics dashboard · Public agent directory
 
 ---
@@ -407,6 +425,6 @@ MIT
 ---
 
 <p align="center">
-  <strong>PAW Agents v3.5 — Observability & Hub</strong><br>
+  <strong>PAW Agents v3.6 — The OpenClaw Killer</strong><br>
   <em>The operating system for autonomous AI agents.</em>
 </p>

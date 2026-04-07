@@ -5,7 +5,7 @@ export type ExecutionMode = 'purp' | 'js' | 'api' | 'system';
 export type RiskLevel = 'low' | 'medium' | 'high' | 'critical';
 export type PlanStatus = 'pending' | 'validated' | 'rejected' | 'executing' | 'completed' | 'failed' | 'rolled_back';
 export type AgentPhase = 'intake' | 'planning' | 'validation' | 'confirmation' | 'execution' | 'verification' | 'logging' | 'response';
-export type ChannelType = 'telegram' | 'discord' | 'slack' | 'whatsapp' | 'webchat' | 'api' | 'email' | 'sms' | 'line' | 'reddit' | 'matrix' | 'desktop' | 'hub' | 'mission-control';
+export type ChannelType = 'telegram' | 'discord' | 'slack' | 'whatsapp' | 'webchat' | 'api' | 'email' | 'sms' | 'line' | 'reddit' | 'matrix' | 'desktop' | 'hub' | 'mission-control' | 'voice' | 'twitter' | 'github' | 'notion' | 'calendar' | 'rest' | 'mqtt' | 'rss';
 export type AgentMode = 'autonomous' | 'supervised' | 'free';
 export type MemoryScope = 'session' | 'user' | 'global';
 
@@ -299,7 +299,7 @@ export interface GatewayClient {
 }
 
 export interface GatewayMessage {
-  type: 'message' | 'command' | 'event' | 'response';
+  type: 'message' | 'command' | 'event' | 'response' | 'stream';
   channel: ChannelType;
   from: string;
   payload: unknown;

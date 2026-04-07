@@ -1,0 +1,109 @@
+// ─── PAW Daemon: Native OS Notifications ───
+// Cross-platform notifications for agent activity, task completions, alerts.
+
+import { execSync, spawn } from 'child_process';
+import { EventEmitter } from 'events';
+
+export interface Notification {
+  id: string;
+  title: string;
+  body: string;
+  timestamp: string;
+  read: boolean;
+  priority: 'low' | 'normal' | 'high';
+  source: string;
+}
+
+export class NotificationManager extends EventEmitter {
+  private history: Notification[] = [];
+  private maxHistory = 500;
+  private enabled = true;
+  private counter = 0;
+
+  // ─── Send a notification ───
+  send(title: string, body: string, priority: 'low' | 'normal' | 'high' = 'normal', source: string = 'daemon'): void {
+    const notification: Notification = {
+      id: `notif-${++this.counter}`,
+      title,
+      body,
+      timestamp: new Date().toISOString(),
+      read: false,
+      priority,
+      source,
+    };
+
+    this.history.push(notification);
+    if (this.history.length > this.maxHistory) {
+      this.history = this.history.slice(-this.maxHistory);
+    }
+
+    this.emit('notification', notification);
+
+    if (!this.enabled) return;
+
+    try {
+      this.sendNative(title, body);
+    } catch (err) {
+      console.warn('[Notifications] Native send failed:', (err as Error).message);
+    }
+  }
+
+  // ─── Send native OS notification ───
+  private sendNative(title: string, body: string): void {
+    const safeTitle = title.replace(/"/g, '\\"');
+    const safeBody = body.replace(/"/g, '\\"');
+    // For shell single-quoted strings, escape ' as '"'"'
+    const shellTitle = safeTitle.replace(/'/g, "'\"'\"'");
+    const shellBody = safeBody.replace(/'/g, "'\"'\"'");
+
+    if (process.platform === 'darwin') {
+      // macOS: use osascript
+      execSync(
+        `osascript -e 'display notification "${shellBody}" with title "🐾 PAW" subtitle "${shellTitle}"'`,
+        { timeout: 5000 }
+      );
+    } else if (process.platform === 'linux') {
+      // Linux: use notify-send
+      spawn('notify-send', ['🐾 PAW — ' + title, body], { detached: true, stdio: 'ignore' }).unref();
+    } else if (process.platform === 'win32') {
+      // Windows: use PowerShell toast
+      const ps = `
+        [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+        $template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
+        $textNodes = $template.GetElementsByTagName("text")
+        $textNodes.Item(0).AppendChild($template.CreateTextNode("PAW: ${safeTitle}")) | Out-Null
+        $textNodes.Item(1).AppendChild($template.CreateTextNode("${safeBody}")) | Out-Null
+        $toast = [Windows.UI.Notifications.ToastNotification]::new($template)
+        [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("PAW").Show($toast)
+      `;
+      spawn('powershell', ['-Command', ps], { detached: true, stdio: 'ignore' }).unref();
+    }
+  }
+
+  // ─── Get notification history ───
+  getHistory(limit: number = 50): Notification[] {
+    return this.history.slice(-limit);
+  }
+
+  // ─── Mark notification as read ───
+  markRead(id: string): void {
+    const notif = this.history.find(n => n.id === id);
+    if (notif) notif.read = true;
+  }
+
+  // ─── Get unread count ───
+  getUnreadCount(): number {
+    return this.history.filter(n => !n.read).length;
+  }
+
+  // ─── Enable/disable notifications ───
+  setEnabled(enabled: boolean): void {
+    this.enabled = enabled;
+  }
+
+  // ─── Clear all notifications ───
+  clear(): void {
+    this.history = [];
+    this.counter = 0;
+  }
+}

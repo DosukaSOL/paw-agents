@@ -14,6 +14,7 @@ import { PawAgent } from '../agent/loop';
 import { getDashboardHTML } from '../dashboard/index';
 import { missionControl } from '../mission-control/index';
 import { crossAppSync } from '../sync/cross-app';
+import { StreamingEngine, StreamChunk } from '../models/streaming';
 
 interface ConnectedClient {
   ws: WebSocket;
@@ -26,9 +27,11 @@ export class PawGateway {
   private httpServer: ReturnType<typeof createServer> | null = null;
   private clients = new Map<string, ConnectedClient>();
   private agent: PawAgent;
+  private streaming: StreamingEngine;
 
   constructor(agent: PawAgent) {
     this.agent = agent;
+    this.streaming = new StreamingEngine();
   }
 
   async start(): Promise<void> {
@@ -57,7 +60,7 @@ export class PawGateway {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           status: 'ok',
-          version: '3.4.0',
+          version: '3.6.0',
           clients: this.clients.size,
           uptime: process.uptime(),
         }));
@@ -228,6 +231,53 @@ export class PawGateway {
           if (msg.type === 'command') {
             await this.handleCommand(clientId, msg);
           }
+
+          // Handle streaming requests — token-by-token via WebSocket
+          if (msg.type === 'stream' || ((msg as any).stream === true && msg.type === 'message')) {
+            const userId = client.info.user_id ?? `webchat:${clientId}`;
+            const channel = client.info.channel;
+            const startTime = Date.now();
+            const systemPrompt = 'You are PAW, an autonomous AI agent. Be helpful, concise, and accurate.';
+
+            crossAppSync.addChannelToSession(userId, channel);
+            crossAppSync.addMessage(userId, String(msg.payload), 'user', channel);
+            missionControl.recordMessage();
+
+            try {
+              const fullResponse = await this.streaming.stream(
+                systemPrompt,
+                String(msg.payload),
+                (chunk: StreamChunk) => {
+                  this.sendToClient(clientId, {
+                    type: 'stream' as any,
+                    channel: 'webchat',
+                    from: 'agent',
+                    payload: {
+                      text: chunk.text,
+                      done: chunk.done,
+                      provider: chunk.provider,
+                      model: chunk.model,
+                      token_count: chunk.token_count,
+                    },
+                    timestamp: new Date().toISOString(),
+                  });
+                }
+              );
+
+              const durationMs = Date.now() - startTime;
+              crossAppSync.addMessage(userId, fullResponse, 'agent', channel);
+              crossAppSync.recordAction('agent_stream_response', String(msg.payload).substring(0, 100), channel, userId, durationMs, true);
+              missionControl.recordResponseTime(durationMs);
+            } catch (err) {
+              this.sendToClient(clientId, {
+                type: 'event',
+                channel: 'webchat',
+                from: 'system',
+                payload: { event: 'error', message: 'Streaming failed' },
+                timestamp: new Date().toISOString(),
+              });
+            }
+          }
         } catch (err) {
           this.sendToClient(clientId, {
             type: 'event',
@@ -352,15 +402,13 @@ export class PawGateway {
       body += chunk.toString();
       if (body.length > MAX_BODY_SIZE) {
         exceeded = true;
+        res.writeHead(413, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Request body too large' }));
         req.destroy();
       }
     });
     req.on('end', async () => {
-      if (exceeded) {
-        res.writeHead(413, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'Request body too large' }));
-        return;
-      }
+      if (exceeded) return;
       try {
         const data = JSON.parse(body);
         const webhookId = req.url?.split('/webhook/')[1]?.split('?')[0] ?? '';
