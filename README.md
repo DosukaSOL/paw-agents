@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/DosukaSOL/paw-agents/releases"><img src="https://img.shields.io/badge/version-3.6.0-blue?style=flat-square" alt="Version" /></a>
+  <a href="https://github.com/DosukaSOL/paw-agents/releases"><img src="https://img.shields.io/badge/version-4.0.0-blue?style=flat-square" alt="Version" /></a>
   <a href="https://github.com/DosukaSOL/paw-agents/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" /></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square" alt="Node" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.6-blue?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
@@ -92,8 +92,13 @@ npm start
 | **Multi-Agent** | Registry, capability routing, task delegation |
 | **Intelligence** | User profiling, RAG, smart model routing, fast path, conversation branching |
 | **Memory** | Persistent vector memory with cosine similarity search |
-| **MCP** | Model Context Protocol client for external tool servers |
-| **Workflows** | DAG engine: triggers → conditions → actions + reusable templates |
+| **MCP** | Full MCP Server (expose PAW to Claude/ChatGPT) + Client (connect external tools) — JSON-RPC 2.0 |
+| **Crews** | Multi-agent crews: sequential, parallel (topological), hierarchical with delegation |
+| **Deep Research** | Multi-step web research engine with citations, synthesis, and confidence scoring |
+| **Extended Thinking** | Claude extended thinking + OpenAI reasoning + chain-of-thought for any model |
+| **Code Sandbox** | Safe JavaScript/TypeScript execution with vm isolation, resource limits, and output capture |
+| **Workflows** | Workflow Graph Engine: DAG execution, conditional routing, retries, event-driven |
+| **Plugins** | Dynamic plugin system: discovery, loading, lifecycle, tools/channels/providers/middleware |
 | **Apps** | PAW Hub (Desktop OS), CLI, Electron, React Native mobile, VS Code, browser extension |
 | **Tools** | 45+ built-in tools across 13 categories |
 | **Safety** | Prompt injection defense, rate limiting, risk scoring, URL sandboxing, tx simulation |
@@ -355,8 +360,13 @@ paw-agents/
 │   ├── daemon/                     # Always-on daemon: scheduler, watchers, notifications, screen context, tray
 │   ├── orchestrator/               # Multi-agent coordination
 │   ├── vector-memory/              # Persistent vector memory
-│   ├── mcp/                        # MCP tool protocol client
-│   ├── workflow/                   # DAG workflow engine
+│   ├── mcp/                        # MCP server + client (JSON-RPC 2.0)
+│   ├── crews/                      # Multi-agent crew orchestration
+│   ├── research/                   # Deep research engine with citations
+│   ├── thinking/                   # Extended thinking / reasoning
+│   ├── sandbox/                    # Code execution sandbox
+│   ├── workflows/                  # Workflow graph engine (DAG)
+│   ├── workflow/                   # Legacy DAG workflow engine
 │   ├── registry/                   # On-chain agent registry
 │   ├── token-gate/                 # SPL token-gated access
 │   ├── simulation/                 # Transaction simulation sandbox
@@ -404,7 +414,10 @@ Trace Explorer · TraceLogger rewrite · PAW Hub desktop handoff · General-purp
 ### ✅ v3.6 — The OpenClaw Killer
 Voice control (5 STT + 5 TTS providers, free local mode) · Always-on daemon (scheduler, watchers, clipboard, tray, notifications) · Live browser with Playwright + click-to-edit overlay + AI-guided automation · Screen & app context awareness · Token-by-token streaming from all providers · 9 new channels (Twitter/X, GitHub, Notion, Calendar, Desktop, REST API, MQTT, RSS, Voice) — **20+ total** · Sentence buffering for voice TTS
 
-### 🔜 v4.0 — Ecosystem
+### ✅ v4.0 — The Undisputed #1
+MCP Server + Client (JSON-RPC 2.0) · Multi-Agent Crews (sequential/parallel/hierarchical) · Deep Research Engine (citations + synthesis) · Extended Thinking (Claude/OpenAI/generic CoT) · Code Execution Sandbox (vm isolation) · Workflow Graph Engine (DAG + events) · Plugin System (discovery/loading/lifecycle) · 7 new core modules
+
+### 🔜 v5.0 — Ecosystem
 Ethereum/Base/Sui · Purp SCL v2 · Agent marketplace · Analytics dashboard · Public agent directory
 
 ---
@@ -425,6 +438,6 @@ MIT
 ---
 
 <p align="center">
-  <strong>PAW Agents v3.6 — The OpenClaw Killer</strong><br>
+  <strong>PAW Agents v4.0 — The Undisputed #1 AI Agent Framework</strong><br>
   <em>The operating system for autonomous AI agents.</em>
 </p>

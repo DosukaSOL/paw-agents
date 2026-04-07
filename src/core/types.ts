@@ -881,3 +881,97 @@ export interface CrossAppMessage {
   action_type?: string;
   metadata?: Record<string, unknown>;
 }
+
+// ─── v4.0 — MCP, Crews, Research, Thinking, Sandbox, Workflows, Plugins ───
+
+// MCP (Model Context Protocol)
+export interface MCPServerConfig {
+  port: number;
+  host: string;
+  tools: MCPToolDefinition[];
+}
+
+export interface MCPToolDefinition {
+  name: string;
+  description: string;
+  inputSchema: Record<string, unknown>;
+}
+
+export interface MCPClientConfig {
+  serverUrl: string;
+  name: string;
+  timeout?: number;
+}
+
+// Crews
+export interface CrewConfig {
+  id: string;
+  name: string;
+  agents: CrewAgentDef[];
+  tasks: CrewTaskDef[];
+  execution: 'sequential' | 'parallel' | 'hierarchical';
+}
+
+export interface CrewAgentDef {
+  role: string;
+  goal: string;
+  backstory: string;
+  tools: string[];
+  model?: string;
+  maxIterations?: number;
+}
+
+export interface CrewTaskDef {
+  description: string;
+  expectedOutput: string;
+  agent: string;
+  context?: string[];
+}
+
+// Research
+export type ResearchDepth = 'quick' | 'standard' | 'deep' | 'exhaustive';
+
+export interface ResearchConfig {
+  depth: ResearchDepth;
+  maxSources: number;
+  verbose: boolean;
+}
+
+// Thinking
+export type ThinkingProvider = 'claude' | 'openai' | 'generic';
+
+export interface ThinkingConfig {
+  enabled: boolean;
+  provider: ThinkingProvider;
+  budgetTokens: number;
+  adaptive: boolean;
+  showThinking: boolean;
+  streamThinking: boolean;
+  chainOfThought: boolean;
+}
+
+// Sandbox
+export interface SandboxConfig {
+  timeout: number;
+  memoryLimit: number;
+  maxOutputSize: number;
+  allowNetwork: boolean;
+  allowFileSystem: boolean;
+}
+
+// Workflow Graph
+export interface WorkflowGraphConfig {
+  id: string;
+  name: string;
+  description?: string;
+  maxSteps: number;
+  nodeTimeout: number;
+}
+
+// Plugin System (v4.0 enhanced)
+export type PluginCapability = 'tools' | 'channels' | 'providers' | 'middleware' | 'skills' | 'workflows' | 'themes';
+
+export interface PluginManagerConfig {
+  dirs: string[];
+  autoLoad: boolean;
+}

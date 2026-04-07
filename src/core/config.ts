@@ -281,6 +281,59 @@ export const config = {
     syncBroadcast: optionalBool('HUB_SYNC_BROADCAST', true),
     maxRecentActions: safeParseInt('HUB_MAX_RECENT_ACTIONS', 500, 10),
   },
+  // ─── MCP (v4.0) ───
+  mcp: {
+    serverEnabled: optionalBool('MCP_SERVER_ENABLED', true),
+    serverPort: safeParseInt('MCP_SERVER_PORT', 18790, 1, 65535),
+    serverHost: optionalEnv('MCP_SERVER_HOST', '127.0.0.1'),
+    clientEnabled: optionalBool('MCP_CLIENT_ENABLED', false),
+    externalServers: optionalEnv('MCP_EXTERNAL_SERVERS', '').split(',').filter(Boolean),
+  },
+  // ─── Crews (v4.0) ───
+  crews: {
+    enabled: optionalBool('CREWS_ENABLED', true),
+    maxAgentsPerCrew: safeParseInt('CREWS_MAX_AGENTS', 10, 1, 50),
+    defaultExecution: optionalEnv('CREWS_DEFAULT_EXECUTION', 'sequential') as 'sequential' | 'parallel' | 'hierarchical',
+    taskTimeout: safeParseInt('CREWS_TASK_TIMEOUT', 60000, 5000, 600000),
+  },
+  // ─── Deep Research (v4.0) ───
+  research: {
+    enabled: optionalBool('RESEARCH_ENABLED', true),
+    defaultDepth: optionalEnv('RESEARCH_DEFAULT_DEPTH', 'standard') as 'quick' | 'standard' | 'deep' | 'exhaustive',
+    maxSources: safeParseInt('RESEARCH_MAX_SOURCES', 30, 1, 100),
+    verbose: optionalBool('RESEARCH_VERBOSE', false),
+  },
+  // ─── Extended Thinking (v4.0) ───
+  thinking: {
+    enabled: optionalBool('THINKING_ENABLED', true),
+    provider: optionalEnv('THINKING_PROVIDER', 'claude') as 'claude' | 'openai' | 'generic',
+    budgetTokens: safeParseInt('THINKING_BUDGET_TOKENS', 10000, 1000, 100000),
+    adaptive: optionalBool('THINKING_ADAPTIVE', true),
+    showThinking: optionalBool('THINKING_SHOW', false),
+    streamThinking: optionalBool('THINKING_STREAM', false),
+    chainOfThought: optionalBool('THINKING_COT', true),
+  },
+  // ─── Code Sandbox (v4.0) ───
+  sandbox: {
+    enabled: optionalBool('SANDBOX_ENABLED', true),
+    timeout: safeParseInt('SANDBOX_TIMEOUT', 10000, 1000, 60000),
+    memoryLimit: safeParseInt('SANDBOX_MEMORY_LIMIT', 128, 16, 1024),
+    maxOutputSize: safeParseInt('SANDBOX_MAX_OUTPUT', 65536, 1024, 1048576),
+    allowNetwork: optionalBool('SANDBOX_ALLOW_NETWORK', false),
+    allowFileSystem: optionalBool('SANDBOX_ALLOW_FS', false),
+  },
+  // ─── Workflows (v4.0) ───
+  workflows: {
+    enabled: optionalBool('WORKFLOWS_ENABLED', true),
+    maxSteps: safeParseInt('WORKFLOW_MAX_STEPS', 100, 1, 1000),
+    nodeTimeout: safeParseInt('WORKFLOW_NODE_TIMEOUT', 30000, 5000, 300000),
+  },
+  // ─── Plugins (v4.0) ───
+  plugins: {
+    enabled: optionalBool('PLUGINS_ENABLED', true),
+    dirs: optionalEnv('PLUGIN_DIRS', './plugins').split(',').filter(Boolean),
+    autoLoad: optionalBool('PLUGINS_AUTO_LOAD', true),
+  },
 } as const;
 
 export function getSecurityPolicy(): SecurityPolicy {

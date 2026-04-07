@@ -1,7 +1,8 @@
-// ─── PAW Agents v3.6 — Entry Point ───
+// ─── PAW Agents v4.0 — Entry Point ───
 // The operating system for autonomous AI workers.
 // Multi-channel, multi-agent, with WebSocket gateway, dashboard, Hub, Mission Control,
-// voice, daemon, live browser, streaming, and 20+ channels.
+// voice, daemon, live browser, streaming, MCP, crews, research, thinking, sandbox,
+// workflows, plugins, and 20+ channels.
 
 import { PawAgent } from './agent/loop';
 import { TelegramBot } from './integrations/telegram/bot';
@@ -27,19 +28,24 @@ import { pawDaemon } from './daemon/index';
 import { config } from './core/config';
 import { missionControl } from './mission-control/index';
 import { crossAppSync } from './sync/cross-app';
+// v4.0 imports
+import { PawMCPServer } from './mcp/server';
+import { CrewEngine } from './crews/engine';
+import { WorkflowGraphEngine } from './workflows/graph';
+import { PluginManager } from './plugins/manager';
 
 async function main(): Promise<void> {
   console.log(`
   ╔═══════════════════════════════════════════════════╗
   ║                                                   ║
-  ║   🐾  PAW AGENTS v3.6                             ║
-  ║   The OpenClaw Killer                             ║
+  ║   🐾  PAW AGENTS v4.0                             ║
+  ║   The Undisputed #1 AI Agent Framework            ║
   ║                                                   ║
   ║   The operating system for autonomous AI agents.  ║
   ║                                                   ║
   ║   Mode: ${config.agent.mode.padEnd(35)}    ║
   ║   Gateway: ws://${config.gateway.host}:${String(config.gateway.port).padEnd(22)}  ║
-  ║   Dashboard: http://${config.gateway.host}:${String(config.gateway.port).padEnd(19)}  ║
+  ║   MCP: http://${config.mcp.serverHost}:${String(config.mcp.serverPort).padEnd(24)}  ║
   ║   Network: ${config.solana.network.padEnd(33)}  ║
   ║   Ollama: ${(config.models.ollama.enabled ? config.models.ollama.model : 'disabled').padEnd(33)}  ║
   ║                                                   ║
@@ -51,7 +57,7 @@ async function main(): Promise<void> {
 
   // Register agent in Mission Control
   missionControl.registerAgent('paw-main', 'PAW Main Agent', config.models.defaultProvider);
-  missionControl.log('info', 'system', 'PAW Agents v3.6 starting...');
+  missionControl.log('info', 'system', 'PAW Agents v4.0 starting...');
 
   // Start WebSocket Gateway
   const gateway = new PawGateway(agent);
@@ -301,8 +307,59 @@ async function main(): Promise<void> {
     }
   }
 
+  // ─── v4.0 — MCP Server ───
+  if (config.mcp.serverEnabled) {
+    try {
+      const mcpServer = new PawMCPServer(config.mcp.serverPort, config.mcp.serverHost);
+      await mcpServer.start();
+      console.log(`[PAW] MCP Server listening on http://${config.mcp.serverHost}:${config.mcp.serverPort}`);
+    } catch (err) {
+      console.warn('[PAW] MCP Server failed to start:', (err as Error).message);
+    }
+  }
+
+  // ─── v4.0 — Crew Engine ───
+  if (config.crews.enabled) {
+    try {
+      const crewEngine = new CrewEngine(async (crewAgent, task, context) => {
+        const prompt = `You are ${crewAgent.role}. ${crewAgent.backstory}\nGoal: ${crewAgent.goal}\n\nTask: ${task.description}\n${context ? `Context: ${context}` : ''}`;
+        return agent.process('crew-system', prompt).then(r => r.message);
+      });
+      void crewEngine;
+      console.log('[PAW] Crew Engine initialized');
+    } catch (err) {
+      console.warn('[PAW] Crew Engine failed:', (err as Error).message);
+    }
+  }
+
+  // ─── v4.0 — Workflow Graph Engine ───
+  if (config.workflows.enabled) {
+    try {
+      const workflowEngine = new WorkflowGraphEngine();
+      void workflowEngine;
+      console.log('[PAW] Workflow Graph Engine initialized');
+    } catch (err) {
+      console.warn('[PAW] Workflow Engine failed:', (err as Error).message);
+    }
+  }
+
+  // ─── v4.0 — Plugin Manager ───
+  if (config.plugins.enabled) {
+    try {
+      const pluginManager = new PluginManager(config.plugins.dirs as unknown as string[], '4.0.0');
+      if (config.plugins.autoLoad) {
+        const loaded = await pluginManager.loadAll();
+        console.log(`[PAW] Plugin Manager loaded ${loaded} plugins`);
+      } else {
+        console.log('[PAW] Plugin Manager initialized (auto-load disabled)');
+      }
+    } catch (err) {
+      console.warn('[PAW] Plugin Manager failed:', (err as Error).message);
+    }
+  }
+
   console.log('[PAW] 🐾 All systems online.');
-  missionControl.log('info', 'system', 'All systems online — PAW v3.6 ready');
+  missionControl.log('info', 'system', 'All systems online — PAW v4.0 ready');
   missionControl.updateAgentStatus('paw-main', 'active');
 }
 
