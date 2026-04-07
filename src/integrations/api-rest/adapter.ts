@@ -20,7 +20,7 @@ export class RestApiAdapter implements ChannelAdapter {
   private pendingResponses = new Map<string, PendingResponse>();
 
   constructor() {
-    this.port = parseInt(process.env.REST_API_PORT ?? '18790', 10);
+    this.port = parseInt(process.env.REST_API_PORT ?? '18791', 10);
   }
 
   async start(): Promise<void> {
