@@ -745,7 +745,19 @@
 
     function handleGatewayMessage(msg) {
       if (msg.type === 'response') {
-        const text = typeof msg.payload === 'string' ? msg.payload : (msg.payload?.text || msg.payload?.response || JSON.stringify(msg.payload));
+        const raw = msg.payload;
+        let text;
+        if (typeof raw === 'string') {
+          // Try parsing stringified JSON
+          try {
+            const parsed = JSON.parse(raw);
+            text = parsed.message || parsed.text || parsed.response || raw;
+          } catch { text = raw; }
+        } else if (raw && typeof raw === 'object') {
+          text = raw.message || raw.text || raw.response || JSON.stringify(raw);
+        } else {
+          text = String(raw);
+        }
         addChatMessage('agent', text);
         addLog('info', 'agent', 'Response received');
       }
