@@ -228,12 +228,12 @@ export class ValidationEngine {
       return false;
     }
 
-    // Supervised mode: original behavior — confirm for anything above low risk
-    if (plan.requires_confirmation) return true;
-    if (risk_score >= 30) return true;
+    // Supervised mode: confirm for medium risk and above, not trivial/low-risk actions
+    if (risk_score >= 15) return true;
     if (plan.risks?.some(r => r.level === 'high' || r.level === 'critical')) return true;
     if (plan.execution_mode === 'purp') return true; // All on-chain actions require confirmation
     if (plan.tools.some(t => t === 'defi_swap')) return true; // All DeFi swaps require confirmation
+    // Low-risk conversational / informational actions: no confirmation needed
     return false;
   }
 

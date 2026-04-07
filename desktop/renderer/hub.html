@@ -98,8 +98,22 @@
     }
     .sidebar-btn svg { width: 20px; height: 20px; }
     .sidebar-spacer { flex: 1; }
-    .sidebar-status { width: 8px; height: 8px; border-radius: 50%; margin-bottom: 12px; background: var(--error); transition: background 0.3s; }
-    .sidebar-status.connected { background: var(--success); }
+    .sidebar-status {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      margin-bottom: 12px; -webkit-app-region: no-drag;
+    }
+    .status-row { display: flex; align-items: center; gap: 5px; }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; transition: background 0.3s; flex-shrink: 0; }
+    .status-dot.gw { background: var(--error); }
+    .status-dot.gw.connected { background: var(--success); }
+    .status-dot.agent { background: var(--text-tertiary); }
+    .status-dot.agent.active { background: var(--accent); animation: agentPulse 2s ease-in-out infinite; }
+    .status-label { font-size: 8px; color: var(--text-tertiary); white-space: nowrap; }
+    @keyframes agentPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    /* PAWL Toggle */
+    #pawl-toggle.pawl-on { background: rgba(34,211,238,0.15); color: var(--accent); }
+    #pawl-toggle.pawl-on::after { content: ''; position: absolute; bottom: 4px; right: 4px; width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
 
     /* Main Area */
     .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -386,6 +400,41 @@
     .fm-btn-confirm { background: var(--error); color: #fff; }
     .fm-btn-confirm:hover { opacity: 0.9; }
     .fm-btn-confirm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ─── Voice Button ─── */
+    .voice-btn {
+      width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+      border: 1px solid var(--border-standard); background: var(--bg-primary);
+      color: var(--text-tertiary); cursor: pointer; display: flex;
+      align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .voice-btn:hover { color: var(--text-secondary); border-color: var(--brand); }
+    .voice-btn svg { width: 18px; height: 18px; }
+    .voice-btn.listening {
+      background: rgba(248,113,113,0.15); border-color: var(--error);
+      color: var(--error); animation: voicePulse 1.2s ease-in-out infinite;
+    }
+    @keyframes voicePulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(248,113,113,0.3); } 50% { box-shadow: 0 0 0 8px rgba(248,113,113,0); } }
+
+    /* ─── Trace View ─── */
+    .trace-refresh-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      border: 1px solid var(--border-standard); background: var(--bg-card);
+      color: var(--text-tertiary); cursor: pointer; display: flex;
+      align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .trace-refresh-btn:hover { color: var(--text-secondary); border-color: var(--brand); }
+    .trace-panel {
+      background: var(--bg-card); border: 1px solid var(--border-subtle);
+      border-radius: 12px; padding: 16px; min-height: 300px;
+      font-family: 'JetBrains Mono', monospace; font-size: 11px;
+      max-height: calc(100vh - 200px); overflow-y: auto;
+    }
+    .trace-entry { padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03); display: flex; gap: 10px; align-items: flex-start; }
+    .trace-time { color: var(--text-tertiary); min-width: 70px; flex-shrink: 0; }
+    .trace-type { min-width: 60px; font-weight: 700; font-size: 10px; flex-shrink: 0; }
+    .trace-msg { color: var(--text-secondary); word-break: break-word; line-height: 1.5; }
+    .trace-empty, .trace-loading { color: var(--text-tertiary); padding: 40px; text-align: center; font-family: 'Inter', sans-serif; font-size: 13px; }
   </style>
 </head>
 <body>
@@ -417,11 +466,20 @@
       <button class="sidebar-btn" data-view="workflows" title="Workflows">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       </button>
+      <button class="sidebar-btn" data-view="traces" title="Thought Trace">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </button>
       <div class="sidebar-spacer"></div>
+      <button class="sidebar-btn" id="pawl-toggle" title="Toggle PAWL Companion">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 5.172C10 3.782 8.423 2.679 6.5 3c-2.823.47-4.113 6.006-4 7 .08.703 1.725 1.722 3.656 1 1.261-.472 1.96-1.45 2.344-2.5M14 5.172C14 3.782 15.577 2.679 17.5 3c2.823.47 4.113 6.006 4 7-.08.703-1.725 1.722-3.656 1-1.261-.472-1.96-1.45-2.344-2.5"/><path d="M8 14v.5M16 14v.5M11.25 16.25h1.5L12 17l-.75-.75z"/><circle cx="12" cy="12" r="9"/></svg>
+      </button>
       <button class="sidebar-btn" data-view="settings" title="Settings">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.32 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       </button>
-      <div class="sidebar-status" id="sidebar-status"></div>
+      <div class="sidebar-status" id="sidebar-status">
+        <div class="status-row"><div class="status-dot gw" id="status-gw"></div><span class="status-label" id="status-gw-label">Gateway</span></div>
+        <div class="status-row"><div class="status-dot agent" id="status-agent"></div><span class="status-label" id="status-agent-label">Agent</span></div>
+      </div>
     </nav>
 
     <!-- Main Area -->
@@ -453,6 +511,9 @@
             </div>
           </div>
           <div class="chat-input-area">
+            <button class="voice-btn" id="voice-btn" title="Voice Mode">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
             <input class="chat-input" id="chat-input" placeholder="Message PAW..." autocomplete="off">
             <button class="chat-send" id="chat-send">Send</button>
           </div>
@@ -522,6 +583,22 @@
         <h3 style="font-size:16px;margin-bottom:4px">Workflow Templates</h3>
         <p style="font-size:12px;color:var(--text-tertiary);margin-bottom:20px">Automate multi-step tasks with reusable workflows</p>
         <div id="workflow-list"></div>
+      </div>
+
+      <!-- Traces / Thought Replay View -->
+      <div class="view-panel" id="view-traces">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div>
+            <h3 style="font-size:16px;margin-bottom:4px">Thought Trace</h3>
+            <p style="font-size:12px;color:var(--text-tertiary)">Replay how your agent thinks — see every reasoning step, tool call, and decision</p>
+          </div>
+          <button class="trace-refresh-btn" id="trace-refresh" title="Refresh">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          </button>
+        </div>
+        <div class="trace-panel" id="trace-content">
+          <div class="trace-empty">Send a message to the agent to see its thinking process here.</div>
+        </div>
       </div>
 
       <!-- Settings View -->
@@ -688,7 +765,7 @@
     }, 2600);
 
     // ─── Navigation ───
-    const viewNames = { dashboard: 'Dashboard', 'mission-control': 'Mission Control', cli: 'CLI Companion', plugins: 'Plugins', workflows: 'Workflows', settings: 'Settings' };
+    const viewNames = { dashboard: 'Dashboard', 'mission-control': 'Mission Control', cli: 'CLI Companion', plugins: 'Plugins', workflows: 'Workflows', traces: 'Thought Trace', settings: 'Settings' };
     document.querySelectorAll('.sidebar-btn[data-view]').forEach(btn => {
       btn.addEventListener('click', () => {
         const view = btn.dataset.view;
@@ -714,7 +791,10 @@
           state.connected = true;
           reconnectDelay = 3000;
           reconnectAttempts = 0;
-          document.getElementById('sidebar-status').classList.add('connected');
+          document.getElementById('status-gw').classList.add('connected');
+          document.getElementById('status-gw-label').textContent = 'Connected';
+          document.getElementById('status-agent').classList.add('active');
+          document.getElementById('status-agent-label').textContent = 'Agent Ready';
           addLog('info', 'gateway', 'Connected to PAW Gateway');
           state.ws.send(JSON.stringify({ type: 'register', channel: 'hub', client_id: 'hub_' + Date.now() }));
         };
@@ -726,7 +806,10 @@
         };
         state.ws.onclose = () => {
           state.connected = false;
-          document.getElementById('sidebar-status').classList.remove('connected');
+          document.getElementById('status-gw').classList.remove('connected');
+          document.getElementById('status-gw-label').textContent = 'Disconnected';
+          document.getElementById('status-agent').classList.remove('active');
+          document.getElementById('status-agent-label').textContent = 'Agent';
           reconnectAttempts++;
           if (reconnectAttempts <= 3) {
             addLog('warn', 'gateway', 'Disconnected — reconnecting in ' + (reconnectDelay/1000) + 's');
@@ -759,11 +842,21 @@
           text = String(raw);
         }
         addChatMessage('agent', text);
-        addLog('info', 'agent', 'Response received');
+        // Also show response inline in CLI terminal
+        addCliLine(text, 'cli-success');
+        addLog('info', 'agent', 'Response: ' + text.substring(0, 120));
       }
       if (msg.type === 'event') {
-        if (msg.payload?.event === 'connected') addLog('info', 'gateway', 'Authenticated with gateway');
-        if (msg.payload?.event === 'sync') updateMissionControl(msg.payload);
+        const evt = msg.payload?.event;
+        if (evt === 'connected') addLog('info', 'gateway', 'Authenticated with gateway');
+        if (evt === 'sync') updateMissionControl(msg.payload);
+        if (evt === 'processing') addLog('debug', 'agent', 'Processing message...');
+        if (evt === 'plan_generated') addLog('info', 'agent', 'Plan: ' + (msg.payload?.intent || 'generated'));
+        if (evt === 'tool_call') addLog('info', 'agent', 'Tool: ' + (msg.payload?.tool || 'unknown'));
+        if (evt === 'error') addLog('error', 'agent', msg.payload?.message || 'Unknown error');
+      }
+      if (msg.type === 'error') {
+        addLog('error', 'gateway', msg.payload?.message || msg.payload || 'Gateway error');
       }
     }
 
@@ -896,6 +989,21 @@
         document.getElementById('stat-tasks').textContent = data.metrics.total_tasks_today;
         document.getElementById('stat-response').textContent = data.metrics.avg_response_time_ms + 'ms';
         document.getElementById('stat-memory').textContent = data.metrics.memory_usage_mb + ' MB';
+      }
+      // Provider & model info from gateway sync
+      if (data.provider || data.model) {
+        const providerNames = { openai:'OpenAI', anthropic:'Anthropic', google:'Google', groq:'Groq', mistral:'Mistral', deepseek:'DeepSeek', ollama:'Ollama' };
+        const providerLabel = providerNames[data.provider] || data.provider || '—';
+        const modelLabel = data.model || '';
+        document.getElementById('stat-provider').textContent = modelLabel ? providerLabel + ' · ' + modelLabel : providerLabel;
+        document.getElementById('provider-badge').textContent = providerLabel;
+      }
+      // Connected agents & channels from gateway sync
+      if (data.connectedAgents !== undefined) {
+        document.getElementById('stat-agents').textContent = data.connectedAgents;
+      }
+      if (data.connectedChannels !== undefined) {
+        document.getElementById('stat-channels').textContent = data.connectedChannels;
       }
     }
     function formatUptime(s) {
@@ -1188,6 +1296,122 @@
       const names = { openai:'OpenAI', anthropic:'Anthropic', google:'Google', groq:'Groq', mistral:'Mistral', deepseek:'DeepSeek', ollama:'Ollama' };
       document.getElementById('provider-badge').textContent = names[e.target.value] || e.target.value;
     });
+
+    // ─── PAWL Companion Toggle ───
+    (function() {
+      const pawlBtn = document.getElementById('pawl-toggle');
+      let pawlEnabled = false;
+      let pawlWindow = null;
+
+      pawlBtn.addEventListener('click', () => {
+        pawlEnabled = !pawlEnabled;
+        pawlBtn.classList.toggle('pawl-on', pawlEnabled);
+        pawlBtn.title = pawlEnabled ? 'PAWL ON — Click to disable' : 'Toggle PAWL Companion';
+        if (pawlEnabled) {
+          addLog('info', 'pawl', 'PAWL companion enabled');
+          // If running in Electron, toggle Pawl via IPC
+          if (typeof window.paw !== 'undefined' && window.paw.send) {
+            window.paw.send('pawl:toggle', true);
+          }
+        } else {
+          addLog('info', 'pawl', 'PAWL companion disabled');
+          if (typeof window.paw !== 'undefined' && window.paw.send) {
+            window.paw.send('pawl:toggle', false);
+          }
+        }
+      });
+    })();
+
+    // ─── Voice Mode ───
+    (function() {
+      const voiceBtn = document.getElementById('voice-btn');
+      let isListening = false;
+      let recognition = null;
+
+      voiceBtn.addEventListener('click', () => {
+        if (isListening) {
+          stopListening();
+          return;
+        }
+        startListening();
+      });
+
+      function startListening() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          addLog('warn', 'voice', 'Speech recognition not supported in this browser');
+          return;
+        }
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => {
+          isListening = true;
+          voiceBtn.classList.add('listening');
+          voiceBtn.title = 'Listening... Click to stop';
+          addLog('info', 'voice', 'Listening for voice input...');
+        };
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          if (transcript.trim()) {
+            document.getElementById('chat-input').value = transcript;
+            sendMessage(transcript.trim());
+            document.getElementById('chat-input').value = '';
+          }
+        };
+        recognition.onerror = (event) => {
+          addLog('warn', 'voice', 'Voice error: ' + event.error);
+          stopListening();
+        };
+        recognition.onend = () => { stopListening(); };
+
+        try { recognition.start(); } catch(e) { addLog('warn', 'voice', 'Could not start voice input'); }
+      }
+
+      function stopListening() {
+        isListening = false;
+        voiceBtn.classList.remove('listening');
+        voiceBtn.title = 'Voice Mode';
+        if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
+      }
+    })();
+
+    // ─── Trace / Thought Replay ───
+    (function() {
+      const traceContent = document.getElementById('trace-content');
+      const traceRefresh = document.getElementById('trace-refresh');
+
+      async function loadTraces() {
+        traceContent.innerHTML = '<div class="trace-loading">Loading traces...</div>';
+        try {
+          const resp = await fetch('http://127.0.0.1:18791/api/traces');
+          if (!resp.ok) throw new Error('API error');
+          const data = await resp.json();
+          if (!data.traces || data.traces.length === 0) {
+            traceContent.innerHTML = '<div class="trace-empty">No traces recorded yet. Send a message to the agent to see its thinking process here.</div>';
+            return;
+          }
+          traceContent.innerHTML = data.traces.slice(-30).reverse().map(t => {
+            const time = new Date(t.timestamp).toLocaleTimeString();
+            const typeColor = t.type === 'thought' ? 'brand-light' : t.type === 'action' ? 'accent' : t.type === 'error' ? 'error' : 'text-secondary';
+            return '<div class="trace-entry"><span class="trace-time">' + time + '</span><span class="trace-type" style="color:var(--' + typeColor + ')">' + (t.type || 'log').toUpperCase() + '</span><span class="trace-msg">' + escapeHtml(t.message || t.content || JSON.stringify(t)) + '</span></div>';
+          }).join('');
+        } catch(e) {
+          // Fallback: show local log entries as trace
+          traceContent.innerHTML = '<div class="trace-empty">Trace API not available. Traces will appear here when the gateway REST API is running on port 18791.</div>';
+        }
+      }
+
+      traceRefresh.addEventListener('click', loadTraces);
+
+      // Auto-load when trace view becomes visible
+      const observer = new MutationObserver(() => {
+        if (document.getElementById('view-traces').classList.contains('active')) loadTraces();
+      });
+      observer.observe(document.getElementById('view-traces'), { attributes: true, attributeFilter: ['class'] });
+    })();
 
     // ─── Util ───
     function escapeHtml(str) {

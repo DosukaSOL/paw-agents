@@ -34,6 +34,20 @@ export class PawGateway {
     this.streaming = new StreamingEngine();
   }
 
+  private getDefaultModel(): string {
+    const p = config.models.defaultProvider;
+    const providerModels: Record<string, string | undefined> = {
+      openai: config.models.openai.model,
+      anthropic: 'claude-sonnet-4-20250514',
+      google: config.models.google.model,
+      groq: config.models.groq.model,
+      mistral: config.models.mistral.model,
+      deepseek: config.models.deepseek.model,
+      ollama: config.models.ollama.model,
+    };
+    return providerModels[p] ?? 'unknown';
+  }
+
   async start(): Promise<void> {
     const { port, host, corsOrigins } = config.gateway;
 
@@ -167,6 +181,28 @@ export class PawGateway {
         timestamp: new Date().toISOString(),
       });
 
+      // Send initial sync with metrics so the Hub has data immediately
+      if (client.authenticated) {
+        this.sendToClient(clientId, {
+          type: 'event',
+          channel: 'webchat',
+          from: 'system',
+          payload: {
+            event: 'sync',
+            metrics: missionControl.getCurrentMetrics(),
+            provider: config.models.defaultProvider,
+            model: this.getDefaultModel(),
+            connectedAgents: this.clients.size,
+            connectedChannels: this.getActiveChannels().length,
+            syncStats: {
+              sessions: crossAppSync.getStats().sessions,
+              actions: crossAppSync.getStats().actions,
+            },
+          },
+          timestamp: new Date().toISOString(),
+        });
+      }
+
       ws.on('message', async (data: Buffer) => {
         try {
           const msg = JSON.parse(data.toString()) as GatewayMessage & { auth_token?: string };
@@ -223,8 +259,8 @@ export class PawGateway {
               timestamp: new Date().toISOString(),
             });
 
-            // Broadcast sync event to all other clients
-            this.broadcastSync(clientId, channel);
+            // Send sync to ALL clients including the sender
+            this.broadcastSyncToAll(channel);
           }
 
           // Handle commands
@@ -456,6 +492,10 @@ export class PawGateway {
       payload: {
         event: 'sync',
         metrics: missionControl.getCurrentMetrics(),
+        provider: config.models.defaultProvider,
+        model: this.getDefaultModel(),
+        connectedAgents: this.clients.size,
+        connectedChannels: this.getActiveChannels().length,
         syncStats: {
           sessions: crossAppSync.getStats().sessions,
           actions: crossAppSync.getStats().actions,
@@ -466,6 +506,34 @@ export class PawGateway {
 
     for (const [id, client] of this.clients) {
       if (id !== excludeClientId && client.authenticated && client.ws.readyState === WebSocket.OPEN) {
+        client.ws.send(JSON.stringify(syncPayload));
+      }
+    }
+  }
+
+  // ─── Broadcast sync to ALL clients including sender ───
+  private broadcastSyncToAll(sourceChannel: ChannelType): void {
+    const syncPayload: GatewayMessage = {
+      type: 'event',
+      channel: sourceChannel,
+      from: 'system',
+      payload: {
+        event: 'sync',
+        metrics: missionControl.getCurrentMetrics(),
+        provider: config.models.defaultProvider,
+        model: this.getDefaultModel(),
+        connectedAgents: this.clients.size,
+        connectedChannels: this.getActiveChannels().length,
+        syncStats: {
+          sessions: crossAppSync.getStats().sessions,
+          actions: crossAppSync.getStats().actions,
+        },
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    for (const [, client] of this.clients) {
+      if (client.authenticated && client.ws.readyState === WebSocket.OPEN) {
         client.ws.send(JSON.stringify(syncPayload));
       }
     }

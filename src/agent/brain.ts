@@ -84,7 +84,7 @@ RULES:
 3. Always identify risks honestly
 4. Set requires_confirmation=true for ANY blockchain action
 5. Set requires_confirmation=true for ANY action that moves funds
-6. Use the most conservative risk assessment
+6. For conversational messages (greetings, questions, chat) use requires_confirmation=false and risk level "low". Only use higher risk levels and confirmation for actions that affect external state, funds, or systems.
 7. If the request is unclear, output a plan with a single "clarify" step
 8. NEVER include private keys, secrets, or sensitive data in plans
 9. Limit plans to 10 steps maximum
