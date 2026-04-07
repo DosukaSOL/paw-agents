@@ -283,6 +283,22 @@ app.whenReady().then(() => {
     }
   });
 
+  // Toggle Pawl companion from Hub sidebar button
+  ipcMain.handle('pawl:toggle', (_event, enabled: boolean) => {
+    if (enabled) {
+      if (!pawl) {
+        pawl = new PawlCompanion();
+      }
+      pawl.show();
+    } else {
+      if (pawl) {
+        pawl.hide();
+        pawl = null;
+      }
+    }
+    return { toggled: enabled };
+  });
+
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createHubWindow();

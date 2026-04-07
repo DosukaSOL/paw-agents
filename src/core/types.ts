@@ -14,6 +14,7 @@ export type MemoryScope = 'session' | 'user' | 'global';
 export interface AgentPlan {
   id: string;
   intent: string;
+  response?: string;
   plan: PlanStep[];
   tools: string[];
   risks: RiskAssessment[];

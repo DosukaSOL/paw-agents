@@ -132,7 +132,8 @@
 
     /* View Panels */
     .view-panel { flex: 1; overflow-y: auto; padding: 24px; display: none; }
-    .view-panel.active { display: block; }
+    .view-panel.active { display: flex; flex-direction: column; }
+    .view-panel#view-cli.active { padding: 0; }
 
     /* Dashboard View */
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
@@ -147,9 +148,9 @@
     .stat-value.success { color: var(--success); }
     .stat-value.warning { color: var(--warning); }
 
-    /* Chat Area */
-    .chat-section { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; overflow: hidden; height: calc(100vh - 340px); display: flex; flex-direction: column; }
-    .chat-messages { flex: 1; overflow-y: auto; padding: 16px; }
+    /* Chat Area (used in CLI chat view) */
+    .chat-section { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; overflow: hidden; flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    .chat-messages { flex: 1; overflow-y: auto; padding: 16px; min-height: 0; }
     .chat-msg { margin-bottom: 12px; max-width: 85%; }
     .chat-msg.user { margin-left: auto; }
     .chat-msg-bubble {
@@ -192,7 +193,7 @@
     /* Log Stream */
     .log-stream {
       background: var(--bg-primary); border: 1px solid var(--border-subtle);
-      border-radius: 8px; padding: 12px; max-height: 300px; overflow-y: auto;
+      border-radius: 8px; padding: 12px; flex: 1; min-height: 120px; overflow-y: auto;
       font-family: 'JetBrains Mono', monospace; font-size: 11px;
     }
     .log-entry { padding: 2px 0; display: flex; gap: 8px; }
@@ -224,10 +225,10 @@
     .alert-chip.error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--error); }
     .alert-chip.info { background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.3); color: var(--accent); }
 
-    /* CLI View */
+    /* CLI Chat View */
     .cli-terminal {
       background: var(--bg-primary); border: 1px solid var(--border-subtle);
-      border-radius: 12px; height: calc(100vh - 120px); display: flex; flex-direction: column;
+      border-radius: 12px; flex: 1; display: flex; flex-direction: column; min-height: 0;
     }
     .cli-header { padding: 10px 16px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; gap: 8px; }
     .cli-dot { width: 10px; height: 10px; border-radius: 50%; }
@@ -235,7 +236,8 @@
     .cli-dot:nth-child(2) { background: var(--warning); }
     .cli-dot:nth-child(3) { background: var(--success); }
     .cli-header-title { margin-left: 8px; font-size: 12px; color: var(--text-tertiary); font-family: 'JetBrains Mono', monospace; }
-    .cli-output { flex: 1; overflow-y: auto; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; }
+    .cli-chat-area { flex: 1; overflow-y: auto; padding: 16px; min-height: 0; }
+    .cli-output { flex: 1; overflow-y: auto; padding: 16px; font-family: 'JetBrains Mono', monospace; font-size: 12px; line-height: 1.6; display: none; }
     .cli-line { margin-bottom: 2px; }
     .cli-prompt { color: var(--brand-light); }
     .cli-response { color: var(--text-secondary); }
@@ -451,13 +453,13 @@
     <!-- Sidebar -->
     <nav class="sidebar">
       <img class="sidebar-logo" src="../icon.png" alt="P">
-      <button class="sidebar-btn active" data-view="dashboard" title="Dashboard">
+      <button class="sidebar-btn active" data-view="dashboard" title="PawTrace">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       </button>
       <button class="sidebar-btn" data-view="mission-control" title="Mission Control">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
       </button>
-      <button class="sidebar-btn" data-view="cli" title="CLI Companion">
+      <button class="sidebar-btn" data-view="cli" title="Chat">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
       </button>
       <button class="sidebar-btn" data-view="plugins" title="Plugins">
@@ -492,7 +494,7 @@
         </div>
       </div>
 
-      <!-- Dashboard View -->
+      <!-- PawTrace View (Logging + Metrics) -->
       <div class="view-panel active" id="view-dashboard">
         <div class="stats-grid">
           <div class="stat-card"><div class="stat-label">Active Agents</div><div class="stat-value brand" id="stat-agents">1</div></div>
@@ -502,21 +504,19 @@
           <div class="stat-card"><div class="stat-label">Model Provider</div><div class="stat-value" id="stat-provider" style="font-size:16px">—</div></div>
           <div class="stat-card"><div class="stat-label">Memory Usage</div><div class="stat-value" id="stat-memory" style="font-size:16px">—</div></div>
         </div>
-        <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:12px">Chat</h3>
-        <div class="chat-section">
-          <div class="chat-messages" id="chat-messages">
-            <div class="chat-msg agent">
-              <div class="chat-msg-bubble">Welcome to PAW Hub! I'm your AI agent. How can I help?</div>
-              <div class="chat-msg-meta">PAW Agent · Hub</div>
-            </div>
-          </div>
-          <div class="chat-input-area">
-            <button class="voice-btn" id="voice-btn" title="Voice Mode">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+
+        <!-- ClawTrace: Live Agent Log Stream -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <h3 style="font-size:14px;color:var(--text-secondary)">ClawTrace — Live Agent Log</h3>
+          <div style="display:flex;gap:6px;align-items:center">
+            <span style="font-size:10px;color:var(--text-tertiary)" id="trace-token-count">Tokens: —</span>
+            <button class="trace-refresh-btn" id="pawtrace-clear" title="Clear Logs" style="width:28px;height:28px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
             </button>
-            <input class="chat-input" id="chat-input" placeholder="Message PAW..." autocomplete="off">
-            <button class="chat-send" id="chat-send">Send</button>
           </div>
+        </div>
+        <div class="log-stream" id="pawtrace-log" style="flex:1;min-height:200px">
+          <div class="log-entry"><span class="log-time">--:--:--</span><span class="log-level info">INFO</span><span class="log-msg">[system] PawTrace initialized — waiting for agent activity</span></div>
         </div>
       </div>
 
@@ -552,21 +552,37 @@
         </div>
       </div>
 
-      <!-- CLI View -->
-      <div class="view-panel" id="view-cli" style="padding:0">
+      <!-- Chat View (Primary Interaction) -->
+      <div class="view-panel" id="view-cli">
         <div class="cli-terminal">
           <div class="cli-header">
             <div class="cli-dot"></div><div class="cli-dot"></div><div class="cli-dot"></div>
-            <span class="cli-header-title">paw-cli — v4.0.1</span>
+            <span class="cli-header-title">paw-chat — v4.0.1</span>
+            <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+              <button class="trace-refresh-btn" id="cli-mode-toggle" title="Switch to Terminal Mode" style="width:28px;height:28px;font-size:10px">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>
+              </button>
+            </div>
           </div>
+          <!-- Chat messages area -->
+          <div class="cli-chat-area" id="chat-messages">
+            <div class="chat-msg agent">
+              <div class="chat-msg-bubble">Welcome to PAW! I'm your AI agent. How can I help?</div>
+              <div class="chat-msg-meta">PAW Agent · just now</div>
+            </div>
+          </div>
+          <!-- Terminal output (hidden by default, toggle with mode button) -->
           <div class="cli-output" id="cli-output">
             <div class="cli-line"><span class="cli-success">PAW CLI v4.0.1</span></div>
             <div class="cli-line"><span class="cli-response">Type 'help' for available commands, or talk to your agent naturally.</span></div>
             <div class="cli-line">&nbsp;</div>
           </div>
-          <div class="cli-input-row">
-            <span class="cli-prefix">paw &gt;</span>
-            <input class="cli-input" id="cli-input" placeholder="Enter command..." autocomplete="off">
+          <div class="chat-input-area" style="border-top: 1px solid var(--border-subtle);">
+            <button class="voice-btn" id="voice-btn" title="Voice Mode">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+            <input class="chat-input" id="chat-input" placeholder="Message PAW..." autocomplete="off">
+            <button class="chat-send" id="chat-send">Send</button>
           </div>
         </div>
       </div>
@@ -765,7 +781,7 @@
     }, 2600);
 
     // ─── Navigation ───
-    const viewNames = { dashboard: 'Dashboard', 'mission-control': 'Mission Control', cli: 'CLI Companion', plugins: 'Plugins', workflows: 'Workflows', traces: 'Thought Trace', settings: 'Settings' };
+    const viewNames = { dashboard: 'PawTrace', 'mission-control': 'Mission Control', cli: 'Chat', plugins: 'Plugins', workflows: 'Workflows', traces: 'Thought Trace', settings: 'Settings' };
     document.querySelectorAll('.sidebar-btn[data-view]').forEach(btn => {
       btn.addEventListener('click', () => {
         const view = btn.dataset.view;
@@ -793,9 +809,10 @@
           reconnectAttempts = 0;
           document.getElementById('status-gw').classList.add('connected');
           document.getElementById('status-gw-label').textContent = 'Connected';
-          document.getElementById('status-agent').classList.add('active');
-          document.getElementById('status-agent-label').textContent = 'Agent Ready';
+          // Agent status stays inactive until we confirm provider is configured
+          document.getElementById('status-agent-label').textContent = 'Checking...';
           addLog('info', 'gateway', 'Connected to PAW Gateway');
+          addPawTraceLog('info', 'gateway', 'Connected to PAW Gateway');
           state.ws.send(JSON.stringify({ type: 'register', channel: 'hub', client_id: 'hub_' + Date.now() }));
         };
         state.ws.onmessage = (e) => {
@@ -842,21 +859,49 @@
           text = String(raw);
         }
         addChatMessage('agent', text);
-        // Also show response inline in CLI terminal
-        addCliLine(text, 'cli-success');
+        addPawTraceLog('info', 'agent', 'Response: ' + text.substring(0, 200));
         addLog('info', 'agent', 'Response: ' + text.substring(0, 120));
+        // Mark agent as ready on first successful response
+        if (!document.getElementById('status-agent').classList.contains('active')) {
+          document.getElementById('status-agent').classList.add('active');
+          document.getElementById('status-agent-label').textContent = 'Agent Ready';
+        }
       }
       if (msg.type === 'event') {
         const evt = msg.payload?.event;
-        if (evt === 'connected') addLog('info', 'gateway', 'Authenticated with gateway');
-        if (evt === 'sync') updateMissionControl(msg.payload);
-        if (evt === 'processing') addLog('debug', 'agent', 'Processing message...');
-        if (evt === 'plan_generated') addLog('info', 'agent', 'Plan: ' + (msg.payload?.intent || 'generated'));
-        if (evt === 'tool_call') addLog('info', 'agent', 'Tool: ' + (msg.payload?.tool || 'unknown'));
-        if (evt === 'error') addLog('error', 'agent', msg.payload?.message || 'Unknown error');
+        if (evt === 'connected') {
+          addLog('info', 'gateway', 'Authenticated with gateway');
+          addPawTraceLog('info', 'gateway', 'Authenticated');
+        }
+        if (evt === 'sync') {
+          updateMissionControl(msg.payload);
+          // Mark agent ready when sync confirms provider
+          if (msg.payload?.provider) {
+            document.getElementById('status-agent').classList.add('active');
+            document.getElementById('status-agent-label').textContent = 'Agent Ready';
+            addPawTraceLog('info', 'system', 'Provider: ' + msg.payload.provider + (msg.payload.model ? ' · ' + msg.payload.model : ''));
+          }
+        }
+        if (evt === 'processing') {
+          addLog('debug', 'agent', 'Processing message...');
+          addPawTraceLog('debug', 'agent', 'Processing message...');
+        }
+        if (evt === 'plan_generated') {
+          addLog('info', 'agent', 'Plan: ' + (msg.payload?.intent || 'generated'));
+          addPawTraceLog('info', 'brain', 'Plan: ' + (msg.payload?.intent || 'generated'));
+        }
+        if (evt === 'tool_call') {
+          addLog('info', 'agent', 'Tool: ' + (msg.payload?.tool || 'unknown'));
+          addPawTraceLog('info', 'tool', 'Executing: ' + (msg.payload?.tool || 'unknown'));
+        }
+        if (evt === 'error') {
+          addLog('error', 'agent', msg.payload?.message || 'Unknown error');
+          addPawTraceLog('error', 'agent', msg.payload?.message || 'Unknown error');
+        }
       }
       if (msg.type === 'error') {
         addLog('error', 'gateway', msg.payload?.message || msg.payload || 'Gateway error');
+        addPawTraceLog('error', 'gateway', msg.payload?.message || msg.payload || 'Gateway error');
       }
     }
 
@@ -874,32 +919,65 @@
     function addChatMessage(role, text) {
       const container = document.getElementById('chat-messages');
       const time = new Date().toLocaleTimeString();
+      // Smart scroll: only auto-scroll if user is near the bottom
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
       const div = document.createElement('div');
       div.className = 'chat-msg ' + role;
       div.innerHTML = '<div class="chat-msg-bubble">' + escapeHtml(text) + '</div><div class="chat-msg-meta">' + (role === 'user' ? 'You' : 'PAW Agent') + ' · ' + time + '</div>';
       container.appendChild(div);
-      container.scrollTop = container.scrollHeight;
+      if (isNearBottom) container.scrollTop = container.scrollHeight;
     }
 
     document.getElementById('chat-send').addEventListener('click', () => {
       const input = document.getElementById('chat-input');
-      if (input.value.trim()) { sendMessage(input.value.trim()); input.value = ''; }
+      const val = input.value.trim();
+      if (!val) return;
+      // Check for CLI commands (prefix with /)
+      if (val.startsWith('/')) {
+        const parts = val.slice(1).split(' ');
+        const handler = cliCommands[parts[0]];
+        if (handler) {
+          const result = handler(parts.slice(1));
+          if (result) addChatMessage('agent', result);
+        } else {
+          addChatMessage('agent', 'Unknown command: /' + parts[0] + '. Type /help for available commands.');
+        }
+      } else {
+        sendMessage(val);
+      }
+      input.value = '';
     });
     document.getElementById('chat-input').addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('chat-send').click(); }
     });
 
-    // ─── CLI ───
+    // ─── CLI Commands (accessible via /command in chat) ───
     const cliCommands = {
-      help: () => 'Available commands:\\n  status  — Show agent status\\n  mode <supervised|autonomous|free> — Set agent mode\\n  providers — List AI providers\\n  plugins — List installed plugins\\n  workflows — List workflow templates\\n  history — Show action history\\n  clear — Clear terminal\\n  health — Check gateway health',
-      status: () => 'Gateway: ' + (state.connected ? 'Connected ✓' : 'Disconnected ✗') + '\\nView: ' + state.view + '\\nActions: ' + state.actions.length,
-      providers: () => 'AI Providers:\\n  ● Ollama (gemma4) — FREE, local\\n  ● OpenAI (gpt-4o)\\n  ● Anthropic (claude-sonnet-4-20250514)\\n  ● Google (gemma-3-27b-it)\\n  ● Groq (llama-3.3-70b)\\n  ● Mistral (mistral-large)\\n  ● DeepSeek (deepseek-chat)',
-      plugins: () => 'Installed Plugins: 4\\n  DeFi Price Alerts — active\\n  Usage Analytics — active\\n  GitHub Integration — loaded\\n  Advanced Scheduler — loaded',
-      workflows: () => 'Workflow Templates: 4\\n  Daily Portfolio Check\\n  New User Onboarding\\n  Price Alert & Auto-Action\\n  Multi-Channel Broadcast',
-      clear: () => { document.getElementById('cli-output').innerHTML = ''; return ''; },
-      history: () => state.actions.length === 0 ? 'No actions recorded yet.' : state.actions.slice(-10).map(a => a.time + ' [' + a.source + '] ' + a.action).join('\\n'),
-      health: () => { fetch('http://127.0.0.1:18789/health').then(r=>r.json()).then(d=>addCliLine(JSON.stringify(d,null,2),'cli-response')).catch(()=>addCliLine('Gateway unreachable','cli-error')); return 'Checking...'; },
+      help: () => 'Available commands:\n  /status — Show agent status\n  /mode <supervised|autonomous|free> — Set agent mode\n  /providers — List AI providers\n  /plugins — List installed plugins\n  /workflows — List workflow templates\n  /history — Show action history\n  /clear — Clear chat\n  /health — Check gateway health',
+      status: () => 'Gateway: ' + (state.connected ? 'Connected ✓' : 'Disconnected ✗') + '\nView: ' + state.view + '\nActions: ' + state.actions.length,
+      providers: () => 'AI Providers:\n  ● Ollama (gemma4) — FREE, local\n  ● OpenAI (gpt-4o)\n  ● Anthropic (claude-sonnet-4-20250514)\n  ● Google (gemma-3-27b-it)\n  ● Groq (llama-3.3-70b)\n  ● Mistral (mistral-large)\n  ● DeepSeek (deepseek-chat)',
+      plugins: () => 'Installed Plugins: 4\n  DeFi Price Alerts — active\n  Usage Analytics — active\n  GitHub Integration — loaded\n  Advanced Scheduler — loaded',
+      workflows: () => 'Workflow Templates: 4\n  Daily Portfolio Check\n  New User Onboarding\n  Price Alert & Auto-Action\n  Multi-Channel Broadcast',
+      clear: () => { document.getElementById('chat-messages').innerHTML = ''; return ''; },
+      history: () => state.actions.length === 0 ? 'No actions recorded yet.' : state.actions.slice(-10).map(a => a.time + ' [' + a.source + '] ' + a.action).join('\n'),
+      health: () => { fetch('http://127.0.0.1:18791/health').then(r=>r.json()).then(d=>addChatMessage('agent', JSON.stringify(d,null,2))).catch(()=>addChatMessage('agent','Gateway unreachable')); return 'Checking...'; },
     };
+
+    // ─── Terminal mode toggle (in Chat view) ───
+    (function() {
+      const toggleBtn = document.getElementById('cli-mode-toggle');
+      const chatArea = document.getElementById('chat-messages');
+      const cliOutput = document.getElementById('cli-output');
+      let terminalMode = false;
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+          terminalMode = !terminalMode;
+          chatArea.style.display = terminalMode ? 'none' : 'block';
+          cliOutput.style.display = terminalMode ? 'block' : 'none';
+          toggleBtn.title = terminalMode ? 'Switch to Chat Mode' : 'Switch to Terminal Mode';
+        });
+      }
+    })();
 
     function addCliLine(text, cls) {
       const output = document.getElementById('cli-output');
@@ -910,37 +988,37 @@
       output.scrollTop = output.scrollHeight;
     }
 
-    document.getElementById('cli-input').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        const input = e.target;
-        const cmd = input.value.trim();
-        if (!cmd) return;
-        addCliLine('paw > ' + cmd, 'cli-prompt');
-        state.cliHistory.push(cmd);
-        state.cliIndex = state.cliHistory.length;
-        input.value = '';
-
-        const parts = cmd.split(' ');
-        const handler = cliCommands[parts[0]];
-        if (handler) {
-          const result = handler(parts.slice(1));
-          if (result) addCliLine(result, 'cli-response');
-        } else {
-          // Send as agent message
-          sendMessage(cmd);
-          addCliLine('Sent to agent...', 'cli-response');
-        }
-        recordAction('cli_command', cmd, 'hub');
+    // ─── PawTrace Log (ClawTrace) ───
+    let traceTokenTotal = 0;
+    function addPawTraceLog(level, source, message) {
+      const logsEl = document.getElementById('pawtrace-log');
+      if (!logsEl) return;
+      const time = new Date().toLocaleTimeString();
+      const isNearBottom = logsEl.scrollHeight - logsEl.scrollTop - logsEl.clientHeight < 40;
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      div.innerHTML = '<span class="log-time">' + time + '</span><span class="log-level ' + level + '">' + level.toUpperCase() + '</span><span class="log-msg">[' + source + '] ' + escapeHtml(message) + '</span>';
+      logsEl.appendChild(div);
+      if (isNearBottom) logsEl.scrollTop = logsEl.scrollHeight;
+      if (logsEl.children.length > 500) logsEl.removeChild(logsEl.firstChild);
+      // Estimate tokens (rough: 1 token ≈ 4 chars)
+      traceTokenTotal += Math.ceil(message.length / 4);
+      const tokenEl = document.getElementById('trace-token-count');
+      if (tokenEl) tokenEl.textContent = 'Tokens: ~' + traceTokenTotal.toLocaleString();
+    }
+    // Clear PawTrace logs
+    (function() {
+      const clearBtn = document.getElementById('pawtrace-clear');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          const logsEl = document.getElementById('pawtrace-log');
+          if (logsEl) logsEl.innerHTML = '';
+          traceTokenTotal = 0;
+          const tokenEl = document.getElementById('trace-token-count');
+          if (tokenEl) tokenEl.textContent = 'Tokens: —';
+        });
       }
-      if (e.key === 'ArrowUp' && state.cliHistory.length > 0) {
-        state.cliIndex = Math.max(0, state.cliIndex - 1);
-        e.target.value = state.cliHistory[state.cliIndex] || '';
-      }
-      if (e.key === 'ArrowDown') {
-        state.cliIndex = Math.min(state.cliHistory.length, state.cliIndex + 1);
-        e.target.value = state.cliHistory[state.cliIndex] || '';
-      }
-    });
+    })();
 
     // ─── Plugins ───
     const builtinPlugins = [
@@ -1029,12 +1107,13 @@
     function addLog(level, source, message) {
       const logsEl = document.getElementById('mc-logs');
       const time = new Date().toLocaleTimeString();
+      const isNearBottom = logsEl.scrollHeight - logsEl.scrollTop - logsEl.clientHeight < 40;
       const div = document.createElement('div');
       div.className = 'log-entry';
       div.innerHTML = '<span class="log-time">' + time + '</span><span class="log-level ' + level + '">' + level.toUpperCase() + '</span><span class="log-msg">[' + source + '] ' + escapeHtml(message) + '</span>';
       logsEl.appendChild(div);
-      logsEl.scrollTop = logsEl.scrollHeight;
-      if (logsEl.children.length > 200) logsEl.removeChild(logsEl.firstChild);
+      if (isNearBottom) logsEl.scrollTop = logsEl.scrollHeight;
+      if (logsEl.children.length > 500) logsEl.removeChild(logsEl.firstChild);
     }
 
     // ─── Provider Configuration ───
@@ -1300,24 +1379,20 @@
     // ─── PAWL Companion Toggle ───
     (function() {
       const pawlBtn = document.getElementById('pawl-toggle');
-      let pawlEnabled = false;
-      let pawlWindow = null;
+      let pawlEnabled = true; // PAWL starts enabled by default
+
+      // Set initial state
+      pawlBtn.classList.add('pawl-on');
+      pawlBtn.title = 'PAWL ON — Click to disable';
 
       pawlBtn.addEventListener('click', () => {
         pawlEnabled = !pawlEnabled;
         pawlBtn.classList.toggle('pawl-on', pawlEnabled);
         pawlBtn.title = pawlEnabled ? 'PAWL ON — Click to disable' : 'Toggle PAWL Companion';
-        if (pawlEnabled) {
-          addLog('info', 'pawl', 'PAWL companion enabled');
-          // If running in Electron, toggle Pawl via IPC
-          if (typeof window.paw !== 'undefined' && window.paw.send) {
-            window.paw.send('pawl:toggle', true);
-          }
-        } else {
-          addLog('info', 'pawl', 'PAWL companion disabled');
-          if (typeof window.paw !== 'undefined' && window.paw.send) {
-            window.paw.send('pawl:toggle', false);
-          }
+        addPawTraceLog('info', 'pawl', pawlEnabled ? 'PAWL companion enabled' : 'PAWL companion disabled');
+        // Use dedicated IPC method for toggling
+        if (typeof window.paw !== 'undefined' && window.paw.togglePawl) {
+          window.paw.togglePawl(pawlEnabled);
         }
       });
     })();
@@ -1359,6 +1434,7 @@
             document.getElementById('chat-input').value = transcript;
             sendMessage(transcript.trim());
             document.getElementById('chat-input').value = '';
+            addPawTraceLog('info', 'voice', 'Transcribed: ' + transcript.trim().substring(0, 80));
           }
         };
         recognition.onerror = (event) => {

@@ -13,6 +13,7 @@ Your ONLY job is to convert a user's natural language intent into a STRICT JSON 
 You MUST output ONLY valid JSON matching this exact schema:
 {
   "intent": "clear one-line description of what the user wants",
+  "response": "A natural, friendly reply to show the user. For conversational messages, this is the actual response. For action plans, this is a brief summary of what was done.",
   "plan": [
     {
       "step": 1,
@@ -169,6 +170,7 @@ Generate the execution plan as strict JSON. Nothing else.`;
 
     return {
       intent: String(parsed.intent),
+      response: parsed.response ? String(parsed.response) : undefined,
       plan: (parsed.plan as Array<Record<string, unknown>>).map((step, i) => ({
         step: (step.step as number) ?? i + 1,
         action: String(step.action ?? 'unknown'),

@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('paw', {
   reconnect: () => ipcRenderer.invoke('paw:reconnect'),
   getConfig: () => ipcRenderer.invoke('paw:getConfig'),
   saveConfig: (updates: Record<string, string>) => ipcRenderer.invoke('paw:saveConfig', updates),
+  togglePawl: (enabled: boolean) => ipcRenderer.invoke('pawl:toggle', enabled),
   onMessage: (callback: (msg: unknown) => void) => {
     ipcRenderer.on('gateway:message', (_event, msg) => callback(msg));
   },

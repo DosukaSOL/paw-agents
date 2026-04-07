@@ -458,6 +458,11 @@ export class PawAgent {
 
   // ─── Format result for user ───
   private formatResult(plan: AgentPlan, result: ExecutionResult): string {
+    // If the LLM provided a natural language response, use it
+    if (plan.response) {
+      return plan.response;
+    }
+
     const lines = [`✅ Done: ${plan.intent}`];
 
     for (const step of result.steps_completed) {
