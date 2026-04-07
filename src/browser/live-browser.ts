@@ -167,6 +167,12 @@ export class LiveBrowser extends EventEmitter {
     const page = this.getPage(tabId);
     const startTime = Date.now();
 
+    // Security: block dangerous patterns in evaluate scripts
+    const blocked = /fetch|XMLHttpRequest|require|import\s*\(|eval\s*\(|Function\s*\(|globalThis|window\.\s*open|document\.cookie|navigator\.sendBeacon|WebSocket|Worker|SharedWorker|ServiceWorker|postMessage|localStorage|sessionStorage|indexedDB/i;
+    if (blocked.test(script)) {
+      throw new Error('Script contains blocked patterns');
+    }
+
     const result = await page.evaluate(script);
     this.logAction({ type: 'evaluate', script: script.substring(0, 100) }, result, startTime);
 

@@ -395,21 +395,25 @@ export class PawGateway {
       }
     }
 
-    let body = '';
+    const chunks: Buffer[] = [];
+    let bodySize = 0;
     const MAX_BODY_SIZE = 1_048_576; // 1MB
     let exceeded = false;
     req.on('data', (chunk: Buffer) => {
-      body += chunk.toString();
-      if (body.length > MAX_BODY_SIZE) {
+      bodySize += chunk.length;
+      if (bodySize > MAX_BODY_SIZE) {
         exceeded = true;
         res.writeHead(413, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Request body too large' }));
         req.destroy();
+        return;
       }
+      chunks.push(chunk);
     });
     req.on('end', async () => {
       if (exceeded) return;
       try {
+        const body = Buffer.concat(chunks).toString('utf-8');
         const data = JSON.parse(body);
         const webhookId = req.url?.split('/webhook/')[1]?.split('?')[0] ?? '';
 
@@ -472,13 +476,12 @@ export class PawGateway {
     if (!a || !b) return false;
     const bufA = Buffer.from(a);
     const bufB = Buffer.from(b);
-    if (bufA.length !== bufB.length) {
-      // Pad shorter buffer to match length for constant-time comparison
-      const padded = Buffer.alloc(bufA.length, 0);
-      bufB.copy(padded, 0, 0, Math.min(bufB.length, bufA.length));
-      timingSafeEqual(bufA, padded);
-      return false;
-    }
-    return timingSafeEqual(bufA, bufB);
+    const maxLen = Math.max(bufA.length, bufB.length);
+    const paddedA = Buffer.alloc(maxLen, 0);
+    const paddedB = Buffer.alloc(maxLen, 0);
+    bufA.copy(paddedA, 0, 0, bufA.length);
+    bufB.copy(paddedB, 0, 0, bufB.length);
+    const equal = timingSafeEqual(paddedA, paddedB);
+    return equal && bufA.length === bufB.length;
   }
 }

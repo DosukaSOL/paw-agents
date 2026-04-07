@@ -155,8 +155,9 @@ export class BrowserEngine {
 
         case 'evaluate': {
           if (!action.script) throw new Error('evaluate requires a script');
-          // Security: blocked patterns in evaluate
-          if (/fetch|XMLHttpRequest|require|import|eval|Function|globalThis|window\.|document\.cookie/i.test(action.script)) {
+          // Security: block dangerous patterns in evaluate scripts
+          const blocked = /fetch|XMLHttpRequest|require|import\s*\(|eval\s*\(|Function\s*\(|globalThis|window\.\s*open|document\.cookie|navigator\.sendBeacon|WebSocket|Worker|SharedWorker|ServiceWorker|postMessage|localStorage|sessionStorage|indexedDB/i;
+          if (blocked.test(action.script)) {
             throw new Error('Script contains blocked patterns');
           }
           const result = await page.evaluate(action.script);

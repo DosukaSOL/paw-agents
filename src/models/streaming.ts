@@ -37,6 +37,8 @@ class OpenAIStream implements StreamProvider {
   available(): boolean { return this.apiKey.length > 0; }
 
   async stream(system: string, prompt: string, onChunk: StreamCallback): Promise<string> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -53,7 +55,9 @@ class OpenAIStream implements StreamProvider {
         max_tokens: 4096,
         stream: true,
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     return this.processSSE(response, 'openai', this.model, onChunk);
   }
@@ -114,6 +118,8 @@ class AnthropicStream implements StreamProvider {
   available(): boolean { return this.apiKey.length > 0; }
 
   async stream(system: string, prompt: string, onChunk: StreamCallback): Promise<string> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -128,7 +134,9 @@ class AnthropicStream implements StreamProvider {
         messages: [{ role: 'user', content: prompt }],
         stream: true,
       }),
+      signal: controller.signal,
     });
+    clearTimeout(timeout);
 
     if (!response.ok) throw new Error(`Anthropic stream error: ${response.status}`);
     if (!response.body) throw new Error('Anthropic stream: no body');
@@ -184,6 +192,8 @@ class GoogleStream implements StreamProvider {
   available(): boolean { return this.apiKey.length > 0; }
 
   async stream(system: string, prompt: string, onChunk: StreamCallback): Promise<string> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:streamGenerateContent?key=${encodeURIComponent(this.apiKey)}&alt=sse`,
       {
@@ -194,8 +204,10 @@ class GoogleStream implements StreamProvider {
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
           generationConfig: { temperature: 0.1, maxOutputTokens: 4096 },
         }),
+        signal: controller.signal,
       }
     );
+    clearTimeout(timeout);
 
     if (!response.ok) throw new Error(`Google stream error: ${response.status}`);
     if (!response.body) throw new Error('Google stream: no body');

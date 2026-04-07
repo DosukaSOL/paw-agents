@@ -60,7 +60,18 @@ export class PawMCPClient {
     // List tools
     const toolsResponse = await this.rpc(url, 'tools/list', {});
     const toolsArray = (Array.isArray(toolsResponse?.tools) ? toolsResponse.tools : []) as Array<{ name: string; description: string; inputSchema: Record<string, unknown> }>;
-    const remoteTools: MCPRemoteTool[] = toolsArray.map(
+
+    // Validate and sanitize tool definitions from remote server
+    const MAX_TOOLS = 200;
+    const TOOL_NAME_RE = /^[a-zA-Z_][a-zA-Z0-9_\-]{0,127}$/;
+    const validatedTools = toolsArray.slice(0, MAX_TOOLS).filter(t => {
+      if (!t.name || typeof t.name !== 'string' || !TOOL_NAME_RE.test(t.name)) return false;
+      if (typeof t.description !== 'string') return false;
+      if (t.inputSchema && typeof t.inputSchema !== 'object') return false;
+      return true;
+    });
+
+    const remoteTools: MCPRemoteTool[] = validatedTools.map(
       (t) => ({
         name: t.name,
         description: t.description,
