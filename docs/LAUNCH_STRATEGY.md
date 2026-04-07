@@ -4,8 +4,8 @@
 
 ### Repo Setup
 - **Name**: `paw-agents`
-- **Description**: "The operating system for autonomous AI workers. Safe, extensible, traceable AI execution for Solana and beyond."
-- **Topics/Tags**: `ai-agents`, `autonomous-agents`, `solana`, `blockchain`, `telegram-bot`, `typescript`, `llm`, `purp`, `security`, `open-source`
+- **Description**: "The operating system for autonomous AI workers. Safe, extensible, traceable AI execution for any task."
+- **Topics/Tags**: `ai-agents`, `autonomous-agents`, `typescript`, `llm`, `multi-channel`, `safety`, `open-source`, `telegram-bot`, `solana`, `blockchain`
 - **License**: MIT
 - **Visibility**: Public
 
@@ -24,12 +24,12 @@ The operating system for autonomous AI workers.
 
 ## Highlights
 - Complete INTENT → PLAN → VALIDATE → EXECUTE → VERIFY pipeline
-- Solana blockchain integration with mandatory simulation
-- Multi-model AI support (OpenAI, Anthropic) with fallback
+- Multi-model AI support (OpenAI, Anthropic, Ollama) with automatic failover
 - Skill-based extensibility via skill.md
 - Full audit trail via trace logger
 - Self-healing failure recovery
 - Production-grade security (encrypted keys, injection defense, sandboxing)
+- Optional Solana blockchain integration with mandatory simulation
 
 ## Quick Start
 npm install → cp .env.example .env → npm run build → npm start
@@ -129,7 +129,7 @@ Star ⭐ if you believe AI agents should be safe by default.
 1. **Safety-first**: No other framework forces validation before execution
 2. **Easy to extend**: Write a YAML file (skill.md), drop it in `/skills`
 3. **Multi-model**: Not locked into one AI provider
-4. **Blockchain-ready**: Built for Solana from day one
+4. **Extensible**: Blockchain-ready plus APIs, browsers, workflows, and any tool
 5. **Auditable**: Trace explorer makes debugging trivial
 6. **TypeScript**: Clean, typed, modular codebase
 7. **Install in minutes**: Not weeks of configuration

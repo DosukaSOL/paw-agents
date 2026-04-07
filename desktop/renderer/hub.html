@@ -693,9 +693,9 @@
 
     // ─── Workflows ───
     const builtinWorkflows = [
-      { name: 'Daily Portfolio Check', desc: 'Check wallet balances, active DeFi positions, and send a summary.', steps: ['Check Balances', 'Check DeFi', 'Send Summary'], category: 'defi' },
-      { name: 'New User Onboarding', desc: 'Guide new users through PAW setup: wallet, preferences, and first task.', steps: ['Welcome', 'Setup Wallet', 'Set Preferences'], category: 'utility' },
-      { name: 'Price Alert & Auto-Action', desc: 'Monitor token price and execute an action when threshold is hit.', steps: ['Check Price', 'Evaluate', 'Execute Action'], category: 'defi' },
+      { name: 'Daily Report', desc: 'Gather news, summarize key updates, and send a morning briefing.', steps: ['Gather Sources', 'Summarize', 'Send Report'], category: 'utility' },
+      { name: 'New User Onboarding', desc: 'Guide new users through PAW setup: preferences, API keys, and first task.', steps: ['Welcome', 'Set Preferences', 'Run First Task'], category: 'utility' },
+      { name: 'API Monitor & Alert', desc: 'Monitor an endpoint and execute an action when a threshold is hit.', steps: ['Check Endpoint', 'Evaluate', 'Execute Action'], category: 'utility' },
       { name: 'Multi-Channel Broadcast', desc: 'Send a message to all connected channels simultaneously.', steps: ['Prepare Message', 'Send to All'], category: 'utility' },
     ];
     function renderWorkflows() {

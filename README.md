@@ -41,7 +41,7 @@
 
 ## What is PAW?
 
-**PAW Agents** is a production-grade autonomous AI agent framework that converts natural language into safe, validated, traceable actions across **APIs**, **browsers**, **files**, **workflows**, **blockchains**, and **external tools**. Native Solana support and [Purp SCL](https://github.com/DosukaSOL/purp-scl) smart contract language built in.
+**PAW Agents** is a production-grade autonomous AI agent framework that converts natural language into safe, validated, traceable actions across **APIs**, **browsers**, **files**, **workflows**, and **external tools**. Multi-channel, multi-model, extensible — with optional blockchain integrations including Solana and [Purp SCL](https://github.com/DosukaSOL/purp-scl).
 
 Every action follows a strict six-stage pipeline:
 
@@ -82,8 +82,8 @@ npm start
 | **Agent Modes** | Supervised / Autonomous / Free — per-user with 2-layer safety gate for Free |
 | **Channels** | Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat, Webhooks, LINE, Reddit, Matrix |
 | **Models** | OpenAI, Anthropic, Google AI, Mistral, DeepSeek, Groq, **Ollama (FREE)** — automatic failover |
-| **Blockchain** | Native Solana: transfers, balances, SPL tokens, tx simulation, composable DeFi |
-| **Purp SCL** | v1.1 parser → Anchor Rust codegen → TypeScript SDK + IDL |
+| **Integrations** | Solana blockchain, APIs, browser automation, file systems, webhooks, MCP tools |
+| **Purp SCL** | Optional: v1.1 parser → Anchor Rust codegen → TypeScript SDK + IDL |
 | **Browser** | Puppeteer: navigate, click, type, extract, screenshot |
 | **Multi-Agent** | Registry, capability routing, task delegation |
 | **Intelligence** | User profiling, RAG, smart model routing, fast path, conversation branching |
@@ -158,9 +158,9 @@ INTENT → PLAN → VALIDATE → EXECUTE → VERIFY → LOG
 ---
 
 <a id="purp-scl"></a>
-## Purp SCL v1.1
+## Purp SCL v1.1 (Optional)
 
-Built-in [Purp Smart Contract Language](https://github.com/DosukaSOL/purp-scl) integration — compile, validate, and deploy Solana programs from chat:
+Optional [Purp Smart Contract Language](https://github.com/DosukaSOL/purp-scl) integration for Solana developers — compile, validate, and deploy programs from chat:
 
 ```purp
 program TokenVault {
@@ -227,8 +227,7 @@ Every DeFi operation passes through the full pipeline — quote → simulate →
 | **Validation** | Schema + logic + safety policy + blockchain simulation |
 | **Keys** | AES-256-GCM encrypted at rest, zeroed after use, never logged |
 | **Execution** | Sandboxed — file sandbox, HTTPS-only APIs, blocked internal IPs |
-| **Blockchain** | Simulation before every tx, risk scoring, confirmation gate |
-| **DeFi** | Slippage caps, price impact limits, route depth limits, balance checks |
+| **Blockchain** | Simulation before every tx, risk scoring, confirmation gate (when enabled) |
 | **Logging** | All secrets auto-redacted from trace logs |
 | **Recovery** | Self-healing: diagnose → fix → retry → escalate |
 
