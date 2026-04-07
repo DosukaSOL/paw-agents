@@ -377,7 +377,7 @@ export class PawAgent {
       const healResult = await this.healer.heal(
         result.error.message,
         plan,
-        (hint) => this.brain.generatePlan(plan.intent, [], ['solana_transfer', 'solana_balance', 'api_call', 'internal_log'], hint),
+        (hint) => this.brain.generatePlan(plan.intent, [], plan.tools ?? [], hint),
         (p) => this.validator.validate(p, this.getUserMode(`webhook:${plan.id}`)),
         (p) => this.executor.execute(p),
       );
@@ -429,7 +429,7 @@ export class PawAgent {
     const durationMs = Date.now() - startTime;
 
     if (config.intelligence.profilingEnabled) {
-      this.profiler.recordInteraction('cli:default', {
+      this.profiler.recordInteraction(plan.id ?? 'cli:default', {
         intent: plan.intent,
         tools_used: plan.tools,
         risk_score: 0,

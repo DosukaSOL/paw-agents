@@ -182,6 +182,12 @@ export class PluginManager extends EventEmitter {
       const mod = require(entryPath);
       const exports: PluginExports = mod.default ?? mod;
 
+      // Validate exports have at least one expected method
+      if (!exports || (typeof exports !== 'object' && typeof exports !== 'function')) {
+        this.emit('plugin:error', { plugin: manifest.name, error: 'Invalid plugin exports: must be an object or function' });
+        return null;
+      }
+
       const instance: PluginInstance = {
         manifest,
         path: pluginPath,

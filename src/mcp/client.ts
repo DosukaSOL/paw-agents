@@ -155,13 +155,13 @@ export class PawMCPClient {
           signal: controller.signal,
         });
 
-        clearTimeout(timer);
-
         if (!response.ok) {
+          clearTimeout(timer);
           throw new Error(`MCP server returned ${response.status}: ${response.statusText}`);
         }
 
         const json = await response.json() as { result?: Record<string, unknown>; error?: { message?: unknown } };
+        clearTimeout(timer);
         if (json.error) {
           throw new Error(`MCP error: ${typeof json.error.message === 'string' ? json.error.message : JSON.stringify(json.error)}`);
         }

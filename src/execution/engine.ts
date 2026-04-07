@@ -386,18 +386,22 @@ export class ExecutionEngine {
 
     // ─── Browser automation tools ───
     this.registerTool('browser_navigate', async (params) => {
+      if (!params.url) throw new Error('browser_navigate requires url parameter');
       return this.browser.execute({ type: 'navigate', url: params.url as string });
     });
 
     this.registerTool('browser_click', async (params) => {
+      if (!params.selector) throw new Error('browser_click requires selector parameter');
       return this.browser.execute({ type: 'click', selector: params.selector as string });
     });
 
     this.registerTool('browser_type', async (params) => {
+      if (!params.selector || !params.value) throw new Error('browser_type requires selector and value parameters');
       return this.browser.execute({ type: 'type', selector: params.selector as string, text: params.value as string });
     });
 
     this.registerTool('browser_extract', async (params) => {
+      if (!params.selector) throw new Error('browser_extract requires selector parameter');
       return this.browser.execute({ type: 'extract', selector: params.selector as string });
     });
 

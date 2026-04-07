@@ -457,12 +457,18 @@ describe('Simulation: Streaming Engine', () => {
     expect(Array.isArray(providers)).toBe(true);
   });
 
-  test('stream rejects gracefully without API keys', async () => {
+  test('stream handles missing API keys gracefully', async () => {
     const engine = new StreamingEngine();
-    // Without any API keys, streaming should fail gracefully
-    await expect(engine.stream('system', 'test prompt', () => {}))
-      .rejects.toThrow();
-  });
+    // Without cloud API keys, streaming either uses local Ollama or rejects
+    try {
+      const result = await engine.stream('system', 'test prompt', () => {});
+      // If Ollama is running locally, it may succeed — that's valid
+      expect(typeof result).toBe('string');
+    } catch (err) {
+      // If no providers are available at all, should throw a clear error
+      expect((err as Error).message).toMatch(/no streaming providers|stream error|aborted/i);
+    }
+  }, 15_000);
 });
 
 // ═══════════════════════════════════════

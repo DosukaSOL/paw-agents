@@ -178,6 +178,9 @@ export class PurpEngine {
 
   // ─── Parse Purp v1.2.1 source (.purp files) ───
   parse(source: string): PurpProgram | LegacyPurpProgram {
+    if (source.length > 10_000_000) {
+      throw new Error('Purp source exceeds maximum size of 10MB');
+    }
     const trimmed = source.trim();
     if (trimmed.startsWith('{')) {
       return this.parseLegacy(source);

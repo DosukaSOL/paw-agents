@@ -260,6 +260,10 @@ class OpenAICompatibleStream implements StreamProvider {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (this.apiKey) headers['Authorization'] = `Bearer ${this.apiKey}`;
 
+    const controller = new AbortController();
+    const timeoutMs = this.name === 'ollama' ? 5_000 : 30_000;
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
     const response = await fetch(`${this.baseUrl}/chat/completions`, {
       method: 'POST',
       headers,
@@ -273,7 +277,10 @@ class OpenAICompatibleStream implements StreamProvider {
         max_tokens: 4096,
         stream: true,
       }),
+      signal: controller.signal,
     });
+
+    clearTimeout(timeout);
 
     if (!response.ok) throw new Error(`${this.name} stream error: ${response.status}`);
     if (!response.body) throw new Error(`${this.name} stream: no body`);

@@ -208,8 +208,8 @@ export class ValidationEngine {
       }
     }
 
-    // Cap risk score
-    return Math.min(100, risk_score);
+    // Clamp risk score to 0-100
+    return Math.max(0, Math.min(100, risk_score));
   }
 
   // ─── Confirmation Check ───

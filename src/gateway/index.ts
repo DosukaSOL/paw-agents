@@ -473,8 +473,10 @@ export class PawGateway {
     const bufA = Buffer.from(a);
     const bufB = Buffer.from(b);
     if (bufA.length !== bufB.length) {
-      // Compare against self to prevent timing leaks on length difference
-      timingSafeEqual(bufA, bufA);
+      // Pad shorter buffer to match length for constant-time comparison
+      const padded = Buffer.alloc(bufA.length, 0);
+      bufB.copy(padded, 0, 0, Math.min(bufB.length, bufA.length));
+      timingSafeEqual(bufA, padded);
       return false;
     }
     return timingSafeEqual(bufA, bufB);
