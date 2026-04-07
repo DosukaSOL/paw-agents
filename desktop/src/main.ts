@@ -15,6 +15,8 @@ let hubWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let ws: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+let reconnectDelay = 3000;
+const MAX_RECONNECT_DELAY = 30000;
 let pawl: PawlCompanion | null = null;
 
 // ─── Create Hub window (primary) ───
@@ -86,6 +88,7 @@ function connectGateway(): void {
   ws.on('open', () => {
     console.log('[PAW Desktop] Connected to gateway');
     mainWindow?.webContents.send('gateway:status', 'connected');
+    reconnectDelay = 3000; // Reset backoff on successful connection
 
     // Register as desktop channel
     ws?.send(JSON.stringify({
@@ -105,12 +108,13 @@ function connectGateway(): void {
   });
 
   ws.on('close', () => {
-    console.log('[PAW Desktop] Disconnected from gateway');
+    console.log(`[PAW Desktop] Disconnected from gateway — reconnecting in ${reconnectDelay / 1000}s`);
     mainWindow?.webContents.send('gateway:status', 'disconnected');
 
-    // Auto-reconnect after 3s
+    // Auto-reconnect with exponential backoff
     if (reconnectTimer) clearTimeout(reconnectTimer);
-    reconnectTimer = setTimeout(connectGateway, 3000);
+    reconnectTimer = setTimeout(connectGateway, reconnectDelay);
+    reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
   });
 
   ws.on('error', (err) => {

@@ -319,6 +319,42 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.2); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.4); }
+
+    /* ─── Free Mode Warning Modals ─── */
+    .fm-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .fm-modal {
+      background: var(--bg-card); border: 1px solid var(--border-bright);
+      border-radius: 16px; padding: 32px; max-width: 460px; width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .fm-icon { font-size: 36px; text-align: center; margin-bottom: 12px; color: var(--warning); }
+    .fm-title { font-size: 18px; font-weight: 700; text-align: center; margin-bottom: 16px; }
+    .fm-text { font-size: 13px; line-height: 1.6; color: var(--text-secondary); margin-bottom: 12px; }
+    .fm-text strong { color: var(--text-primary); }
+    .fm-list { font-size: 13px; line-height: 1.8; color: var(--text-secondary); margin: 0 0 16px 20px; }
+    .fm-checkbox-label {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 13px; color: var(--text-primary); cursor: pointer;
+      padding: 12px; border-radius: 8px; margin-bottom: 16px;
+      background: rgba(248,113,113,0.08); border: 1px solid rgba(248,113,113,0.2);
+    }
+    .fm-checkbox-label input[type="checkbox"] { margin-top: 2px; accent-color: var(--error); }
+    .fm-buttons { display: flex; gap: 10px; justify-content: flex-end; }
+    .fm-btn {
+      padding: 8px 20px; border-radius: 8px; font-size: 13px;
+      font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;
+    }
+    .fm-btn-cancel { background: var(--bg-elevated); color: var(--text-secondary); }
+    .fm-btn-cancel:hover { background: var(--bg-card-hover); }
+    .fm-btn-proceed { background: var(--warning); color: #000; }
+    .fm-btn-proceed:hover { opacity: 0.9; }
+    .fm-btn-confirm { background: var(--error); color: #fff; }
+    .fm-btn-confirm:hover { opacity: 0.9; }
+    .fm-btn-confirm:disabled { opacity: 0.4; cursor: not-allowed; }
   </style>
 </head>
 <body>
@@ -326,7 +362,7 @@
   <div id="startup-screen">
     <img id="startup-logo" src="../icon.png" alt="PAW">
     <div id="startup-text">PAW Hub</div>
-    <div id="startup-sub">v3.4 — Platform & Scale</div>
+    <div id="startup-sub">v4.0.1 — Platform & Scale</div>
     <div id="startup-bar"><div id="startup-bar-fill"></div></div>
   </div>
 
@@ -362,8 +398,8 @@
       <div class="topbar">
         <span class="topbar-title" id="topbar-title">Dashboard</span>
         <div class="topbar-right">
-          <span class="topbar-badge">v3.4</span>
-          <span class="topbar-badge" id="provider-badge">Ollama</span>
+          <span class="topbar-badge">v4.0.1</span>
+          <span class="topbar-badge" id="provider-badge">OpenAI</span>
         </div>
       </div>
 
@@ -429,10 +465,10 @@
         <div class="cli-terminal">
           <div class="cli-header">
             <div class="cli-dot"></div><div class="cli-dot"></div><div class="cli-dot"></div>
-            <span class="cli-header-title">paw-cli — v3.4.0</span>
+            <span class="cli-header-title">paw-cli — v4.0.1</span>
           </div>
           <div class="cli-output" id="cli-output">
-            <div class="cli-line"><span class="cli-success">PAW CLI v3.4.0</span></div>
+            <div class="cli-line"><span class="cli-success">PAW CLI v4.0.1</span></div>
             <div class="cli-line"><span class="cli-response">Type 'help' for available commands, or talk to your agent naturally.</span></div>
             <div class="cli-line">&nbsp;</div>
           </div>
@@ -467,7 +503,7 @@
           </div>
           <div class="settings-row">
             <div><div class="settings-label">Default Provider</div><div class="settings-desc">Primary AI model provider</div></div>
-            <select class="settings-select" id="setting-provider"><option value="ollama">Ollama (Free)</option><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="google">Google</option><option value="groq">Groq</option><option value="mistral">Mistral</option><option value="deepseek">DeepSeek</option></select>
+            <select class="settings-select" id="setting-provider"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="google">Google</option><option value="groq">Groq</option><option value="mistral">Mistral</option><option value="deepseek">DeepSeek</option><option value="ollama">Ollama (Local)</option></select>
           </div>
         </div>
         <div class="settings-section">
@@ -547,12 +583,18 @@
     });
 
     // ─── WebSocket ───
+    let reconnectDelay = 3000;
+    const MAX_RECONNECT_DELAY = 30000;
+    let reconnectAttempts = 0;
+
     function connectGateway() {
       const url = 'ws://127.0.0.1:18789';
       try {
         state.ws = new WebSocket(url);
         state.ws.onopen = () => {
           state.connected = true;
+          reconnectDelay = 3000;
+          reconnectAttempts = 0;
           document.getElementById('sidebar-status').classList.add('connected');
           addLog('info', 'gateway', 'Connected to PAW Gateway');
           state.ws.send(JSON.stringify({ type: 'register', channel: 'hub', client_id: 'hub_' + Date.now() }));
@@ -566,12 +608,19 @@
         state.ws.onclose = () => {
           state.connected = false;
           document.getElementById('sidebar-status').classList.remove('connected');
-          addLog('warn', 'gateway', 'Disconnected — reconnecting in 3s');
-          setTimeout(connectGateway, 3000);
+          reconnectAttempts++;
+          if (reconnectAttempts <= 3) {
+            addLog('warn', 'gateway', 'Disconnected — reconnecting in ' + (reconnectDelay/1000) + 's');
+          } else if (reconnectAttempts === 4) {
+            addLog('warn', 'gateway', 'Still reconnecting... (suppressing further logs)');
+          }
+          setTimeout(connectGateway, reconnectDelay);
+          reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
         };
         state.ws.onerror = () => {};
       } catch(e) {
-        setTimeout(connectGateway, 3000);
+        setTimeout(connectGateway, reconnectDelay);
+        reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
       }
     }
 
@@ -748,6 +797,111 @@
       logsEl.scrollTop = logsEl.scrollHeight;
       if (logsEl.children.length > 200) logsEl.removeChild(logsEl.firstChild);
     }
+
+    // ─── Free Mode Warning System ───
+    (function() {
+      const modeSelect = document.getElementById('setting-mode');
+      let previousMode = modeSelect.value;
+
+      modeSelect.addEventListener('change', (e) => {
+        if (e.target.value !== 'free') {
+          previousMode = e.target.value;
+          return;
+        }
+        // Revert immediately — only set to free after both warnings pass
+        e.target.value = previousMode;
+        showFreeModeWarning1();
+      });
+
+      function showFreeModeWarning1() {
+        const overlay = createOverlay();
+        const modal = document.createElement('div');
+        modal.className = 'fm-modal';
+        modal.innerHTML = `
+          <div class="fm-icon">⚠</div>
+          <h2 class="fm-title">Enable Free Mode?</h2>
+          <p class="fm-text">
+            <strong>Free Mode</strong> gives the agent <strong>full autonomy</strong>. It will execute
+            actions — including sending messages, making API calls, and running commands — 
+            <strong>without asking for your confirmation</strong>.
+          </p>
+          <p class="fm-text" style="color:var(--warning)">
+            This is intended for advanced users only. Misuse or misconfiguration can lead to
+            unintended actions that may be difficult to reverse.
+          </p>
+          <div class="fm-buttons">
+            <button class="fm-btn fm-btn-cancel" id="fm-cancel-1">Cancel</button>
+            <button class="fm-btn fm-btn-proceed" id="fm-proceed-1">I Understand, Continue</button>
+          </div>
+        `;
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        document.getElementById('fm-cancel-1').addEventListener('click', () => overlay.remove());
+        document.getElementById('fm-proceed-1').addEventListener('click', () => {
+          overlay.remove();
+          showFreeModeWarning2();
+        });
+      }
+
+      function showFreeModeWarning2() {
+        const overlay = createOverlay();
+        const modal = document.createElement('div');
+        modal.className = 'fm-modal';
+        modal.innerHTML = `
+          <div class="fm-icon" style="color:var(--error)">⛔</div>
+          <h2 class="fm-title">Final Confirmation</h2>
+          <p class="fm-text">
+            You are about to enable <strong>Free Mode</strong>. By proceeding you acknowledge that:
+          </p>
+          <ul class="fm-list">
+            <li>The agent will act without supervision or confirmation prompts</li>
+            <li>Actions taken by the agent may have real-world consequences</li>
+            <li>You accept full responsibility for all actions performed in Free Mode</li>
+          </ul>
+          <label class="fm-checkbox-label">
+            <input type="checkbox" id="fm-checkbox">
+            <span>I fully understand the terms and accept all responsibility</span>
+          </label>
+          <div class="fm-buttons">
+            <button class="fm-btn fm-btn-cancel" id="fm-cancel-2">Cancel</button>
+            <button class="fm-btn fm-btn-confirm" id="fm-confirm-2" disabled>Enable Free Mode</button>
+          </div>
+        `;
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        const checkbox = document.getElementById('fm-checkbox');
+        const confirmBtn = document.getElementById('fm-confirm-2');
+
+        checkbox.addEventListener('change', () => {
+          confirmBtn.disabled = !checkbox.checked;
+        });
+
+        document.getElementById('fm-cancel-2').addEventListener('click', () => overlay.remove());
+        confirmBtn.addEventListener('click', () => {
+          if (!checkbox.checked) return;
+          overlay.remove();
+          // Actually enable free mode
+          modeSelect.value = 'free';
+          previousMode = 'free';
+          addLog('warn', 'settings', 'Free Mode enabled by user');
+          recordAction('mode_change', 'Free Mode enabled', 'hub');
+        });
+      }
+
+      function createOverlay() {
+        const overlay = document.createElement('div');
+        overlay.className = 'fm-overlay';
+        return overlay;
+      }
+    })();
+
+    // ─── Provider badge sync ───
+    document.getElementById('setting-provider').addEventListener('change', (e) => {
+      const names = { openai:'OpenAI', anthropic:'Anthropic', google:'Google', groq:'Groq', mistral:'Mistral', deepseek:'DeepSeek', ollama:'Ollama' };
+      document.getElementById('provider-badge').textContent = names[e.target.value] || e.target.value;
+    });
 
     // ─── Util ───
     function escapeHtml(str) {
