@@ -139,7 +139,7 @@ export const config = {
       model: optionalEnv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
     },
     ollama: {
-      enabled: optionalBool('OLLAMA_ENABLED', true),
+      enabled: optionalBool('OLLAMA_ENABLED', false),
       baseUrl: optionalEnv('OLLAMA_BASE_URL', 'http://127.0.0.1:11434'),
       model: optionalEnv('OLLAMA_MODEL', 'gemma4'),
     },

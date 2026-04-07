@@ -1,15 +1,15 @@
 {
   "name": "paw-hub",
-  "version": "3.4.0",
+  "version": "4.0.1",
   "description": "PAW Hub — Your AI Agent OS for Desktop",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc",
-    "start": "electron dist/main.js",
+    "start": "tsc && electron dist/main.js",
     "dev": "tsc && electron dist/main.js",
-    "package:mac": "electron-builder --mac",
-    "package:win": "electron-builder --win",
-    "package:linux": "electron-builder --linux"
+    "package:mac": "tsc && electron-builder --mac",
+    "package:win": "tsc && electron-builder --win",
+    "package:linux": "tsc && electron-builder --linux"
   },
   "build": {
     "appId": "ai.pawagents.desktop",
@@ -18,13 +18,22 @@
     "mac": {
       "category": "public.app-category.developer-tools",
       "icon": "build/icon.icns",
-      "target": ["dmg", "zip"]
+      "target": [
+        "dmg",
+        "zip"
+      ]
     },
     "win": {
-      "target": ["nsis", "portable"]
+      "target": [
+        "nsis",
+        "portable"
+      ]
     },
     "linux": {
-      "target": ["AppImage", "deb"],
+      "target": [
+        "AppImage",
+        "deb"
+      ],
       "category": "Development"
     },
     "files": [
@@ -35,13 +44,13 @@
     ]
   },
   "dependencies": {
-    "electron": "^33.0.0",
+    "electron": "^41.1.1",
     "ws": "^8.20.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/ws": "^8.18.1",
-    "electron-builder": "^25.0.0",
+    "electron-builder": "^26.0.0",
     "typescript": "^5.6.0"
   }
 }
