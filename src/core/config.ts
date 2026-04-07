@@ -151,11 +151,16 @@ export const config = {
     walletEncryptionKey: optionalEnv('SOLANA_WALLET_ENCRYPTION_KEY', ''),
     network: optionalEnv('SOLANA_NETWORK', 'devnet'),
   },
-  // ─── Purp ───
+  // ─── Purp v1.2.1 ───
   purp: {
     compilerPath: optionalEnv('PURP_COMPILER_PATH', ''),
     projectDir: optionalEnv('PURP_PROJECT_DIR', './purp'),
     autoCompile: optionalBool('PURP_AUTO_COMPILE', true),
+    defaultNetwork: optionalEnv('PURP_DEFAULT_NETWORK', 'devnet'),
+    defaultTemplate: optionalEnv('PURP_DEFAULT_TEMPLATE', 'hello-world'),
+    enableLinter: optionalBool('PURP_ENABLE_LINTER', true),
+    enableFormatter: optionalBool('PURP_ENABLE_FORMATTER', true),
+    stdlibModules: optionalEnv('PURP_STDLIB_MODULES', 'accounts,tokens,nfts,pdas,cpi,events,math,serialization,wallet,frontend,defi,governance,game,web,token-extensions'),
   },
   // ─── DeFi ───
   defi: {

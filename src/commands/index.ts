@@ -67,7 +67,7 @@ export class CommandHandler {
       '• Store & search semantic memory',
       '• Connect to MCP tool servers',
       '• Check Solana wallets & transfer SOL',
-      '• Compile & deploy Purp SCL v1.0 programs',
+      '• Compile & deploy Purp SCL v1.2.1 programs',
       '• Simulate transactions before sending',
       '• Call APIs & fetch data',
       '• Run scheduled tasks (cron)',
@@ -248,7 +248,7 @@ export class CommandHandler {
       'API calls • Browser • File ops • HTTP (GET/POST)',
       'Multi-agent delegation • Vector memory • MCP tools',
       'Workflows • Data transform • System utils',
-      'Blockchain (Solana) • Tx simulation • Purp SCL v1.0',
+      'Blockchain (Solana) • Tx simulation • Purp SCL v1.2.1',
     ].join('\n');
   }
 
@@ -277,7 +277,7 @@ export class CommandHandler {
       '• Memory store (key-value)',
       '• Solana transfers & balance checks',
       '• SPL token operations',
-      '• Purp SCL v1.0 compilation & deployment',
+      '• Purp SCL v1.2.1 compilation & deployment',
       '• Transaction simulation sandbox',
       '• Cron scheduling',
       '• Webhook handling',
@@ -307,7 +307,7 @@ export class CommandHandler {
       'Purp Autonomous Workers',
       'The operating system for autonomous AI agents.',
       '',
-      '• Purp SCL v1.0.0 compatible',
+      '• Purp SCL v1.2.1 compatible',
       '• Multi-channel (Telegram, Discord, Slack, WhatsApp, Email, SMS, WebChat)',
       '• WebSocket Gateway + Web Dashboard',
       '• Browser automation (Puppeteer)',

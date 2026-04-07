@@ -359,12 +359,13 @@ export interface AgentToAgentMessage {
   timestamp: string;
 }
 
-// ─── Purp v0.3 ───
+// ─── Purp v1.2.1 ───
 
 export interface PurpCompileResult {
   success: boolean;
   rust_output?: string;
   typescript_sdk?: string;
+  frontend_output?: string;
   idl?: string;
   errors: PurpError[];
   warnings: string[];
@@ -376,6 +377,7 @@ export interface PurpError {
   column: number;
   message: string;
   severity: 'error' | 'warning';
+  code?: number;
   suggestion?: string;
 }
 
@@ -385,7 +387,43 @@ export interface PurpProjectConfig {
   description?: string;
   author?: string;
   dependencies: Record<string, string>;
-  network: 'devnet' | 'testnet' | 'mainnet-beta';
+  network: 'devnet' | 'testnet' | 'mainnet-beta' | 'localnet';
+  stdlib?: PurpStdlibModule[];
+  template?: string;
+  plugins?: string[];
+}
+
+export type PurpStdlibModule =
+  | 'accounts' | 'tokens' | 'nfts' | 'pdas' | 'cpi' | 'events' | 'math'
+  | 'serialization' | 'wallet' | 'frontend' | 'defi' | 'governance' | 'game'
+  | 'web' | 'token-extensions';
+
+export type PurpTemplate =
+  | 'hello-world' | 'memecoin-launcher' | 'nft-mint' | 'cnft-mint'
+  | 'staking-rewards' | 'game-contract' | 'fullstack-dapp' | 'website-wallet'
+  | 'analytics-dashboard' | 'bot' | 'ai-solana-app';
+
+export type PurpCliCommand =
+  | 'init' | 'new' | 'build' | 'check' | 'deploy' | 'test' | 'dev'
+  | 'lint' | 'format' | 'install' | 'publish' | 'generate' | 'audit'
+  | 'doctor' | 'clean';
+
+export interface PurpLintResult {
+  file: string;
+  rule: string;
+  severity: 'error' | 'warning';
+  message: string;
+  line: number;
+  column: number;
+  suggestion?: string;
+}
+
+export interface PurpAuditResult {
+  file: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  rule: string;
+  message: string;
+  line?: number;
 }
 
 // ─── Intelligence & Memory ───

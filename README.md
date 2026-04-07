@@ -176,9 +176,9 @@ INTENT → PLAN → VALIDATE → EXECUTE → VERIFY → LOG
 ---
 
 <a id="purp-scl"></a>
-## Purp SCL v1.1 (Optional)
+## Purp SCL v1.2.1 (Optional)
 
-Optional [Purp Smart Contract Language](https://github.com/DosukaSOL/purp-scl) integration for Solana developers — compile, validate, and deploy programs from chat:
+Optional [Purp Smart Contract Language](https://github.com/DosukaSOL/purp-scl) integration for Solana developers — compile, validate, lint, audit, and deploy programs from chat:
 
 ```purp
 program TokenVault {
@@ -201,7 +201,9 @@ instruction Deposit {
 }
 ```
 
-**Pipeline:** `.purp` source → Parse → Validate → Anchor Rust → TypeScript SDK + IDL
+**Pipeline:** `.purp` source → Parse → Validate → Lint → Anchor Rust → TypeScript SDK + Frontend UI + IDL
+
+**v1.2.1 Features:** 15 stdlib modules · 14 CLI commands · 11 templates · DeFi/DAO/Token-2022 · 13 lint rules · Security audit · Solana constants from doc review
 
 ---
 

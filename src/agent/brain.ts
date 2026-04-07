@@ -46,7 +46,7 @@ Core:
 - memory_set / memory_get: Key-value memory store
 - system_time / system_sleep: System utilities
 - internal_log / internal_assert / internal_variable: Internal tools
-- purp_compile: Compile Purp SCL v1.0 programs
+- purp_compile: Compile Purp SCL v1.2.1 programs
 
 Browser Automation:
 - browser_navigate: Open a URL in headless browser
