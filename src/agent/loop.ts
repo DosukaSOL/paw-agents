@@ -8,7 +8,7 @@ import { ModelRouter } from '../models/router';
 import { SkillEngine } from '../skills/engine';
 import { ValidationEngine } from '../validation/engine';
 import { ExecutionEngine, ToolHandler } from '../execution/engine';
-import { Clawtrace } from '../clawtrace/index';
+import { TraceLogger } from '../trace/index';
 import { SolanaExecutor } from '../integrations/solana/executor';
 import { PurpEngine } from '../integrations/purp/engine';
 import { SelfHealingSystem } from '../self-healing/index';
@@ -32,7 +32,7 @@ export interface AgentResponse {
 
 // Pending confirmations stored per user (with expiry to prevent memory leaks)
 const CONFIRMATION_TTL_MS = 5 * 60 * 1000; // 5 minutes
-const pendingConfirmations = new Map<string, { plan: AgentPlan; trace: Clawtrace; created_at: number }>();
+const pendingConfirmations = new Map<string, { plan: AgentPlan; trace: TraceLogger; created_at: number }>();
 
 // Periodic cleanup of expired confirmations
 setInterval(() => {
@@ -111,7 +111,7 @@ export class PawAgent {
 
   // ─── Main agent loop ───
   async process(userId: string, rawMessage: string): Promise<AgentResponse> {
-    const trace = new Clawtrace();
+    const trace = new TraceLogger();
     const startTime = Date.now();
 
     try {
@@ -322,7 +322,7 @@ export class PawAgent {
   }
 
   // ─── Handle confirmation ───
-  private async handleConfirmation(userId: string, confirmed: boolean, trace: Clawtrace): Promise<AgentResponse> {
+  private async handleConfirmation(userId: string, confirmed: boolean, trace: TraceLogger): Promise<AgentResponse> {
     const pending = pendingConfirmations.get(userId);
     if (!pending) {
       return {
@@ -356,7 +356,7 @@ export class PawAgent {
   }
 
   // ─── Execute a confirmed plan ───
-  private async executePlan(plan: AgentPlan, trace: Clawtrace, startTime: number): Promise<AgentResponse> {
+  private async executePlan(plan: AgentPlan, trace: TraceLogger, startTime: number): Promise<AgentResponse> {
     trace.log('execution', {
       plan,
       metadata: { execution_mode: plan.execution_mode },
@@ -411,7 +411,7 @@ export class PawAgent {
       };
     }
 
-    // ═══ STEP 10: Log (Clawtrace) ═══
+    // ═══ STEP 10: Log (Trace) ═══
     trace.log('logging', {
       execution: result,
       output: result.final_output,

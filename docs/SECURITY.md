@@ -37,7 +37,7 @@ Detects and blocks:
 - AES-256-GCM encryption at rest
 - PBKDF2 key derivation (100,000 iterations)
 - Keys decrypted only during signing, zeroed immediately
-- Never exposed to LLM, logs, or Clawtrace
+- Never exposed to LLM, logs, or trace output
 
 ### 5. Execution Sandbox
 - Purp programs validated against instruction whitelist
@@ -50,7 +50,7 @@ Detects and blocks:
 - Configurable via environment variables
 - Automatic cleanup of stale buckets
 
-### 7. Clawtrace Scrubbing
+### 7. Trace Log Scrubbing
 - All keys, tokens, and secrets redacted before logging
 - Pattern-based scrubbing (base58 keys, API tokens)
 - Field-name-based scrubbing (any field containing "secret", "key", "password", "token")

@@ -1,14 +1,14 @@
-// ─── Clawtrace — Full Agent Reasoning Trace Logger ───
+// ─── PAW Trace Logger — Full Agent Reasoning Trace ───
 // Logs EVERYTHING: input, reasoning, plan, validation, execution, result.
 // Fully structured, fully auditable.
 
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuid } from 'uuid';
-import { ClawtraceEntry, AgentPhase } from '../core/types';
+import { TraceEntry, AgentPhase } from '../core/types';
 import { config } from '../core/config';
 
-const LOG_DIR = config.clawtrace.logDir;
+const LOG_DIR = config.trace.logDir;
 
 function ensureLogDir(): void {
   if (!fs.existsSync(LOG_DIR)) {
@@ -46,9 +46,9 @@ function scrub(data: unknown): unknown {
   return data;
 }
 
-export class Clawtrace {
+export class TraceLogger {
   private sessionId: string;
-  private entries: ClawtraceEntry[] = [];
+  private entries: TraceEntry[] = [];
 
   constructor(sessionId?: string) {
     this.sessionId = sessionId ?? uuid();
@@ -59,8 +59,8 @@ export class Clawtrace {
     return this.sessionId;
   }
 
-  log(phase: AgentPhase, data: Partial<Omit<ClawtraceEntry, 'trace_id' | 'session_id' | 'timestamp' | 'phase'>>): void {
-    const entry: ClawtraceEntry = {
+  log(phase: AgentPhase, data: Partial<Omit<TraceEntry, 'trace_id' | 'session_id' | 'timestamp' | 'phase'>>): void {
+    const entry: TraceEntry = {
       trace_id: uuid(),
       session_id: this.sessionId,
       timestamp: new Date().toISOString(),
@@ -71,7 +71,7 @@ export class Clawtrace {
     };
 
     // Scrub before storing/writing
-    const scrubbed = scrub(entry) as ClawtraceEntry;
+    const scrubbed = scrub(entry) as TraceEntry;
     this.entries.push(scrubbed);
 
     // Append to file
@@ -80,11 +80,11 @@ export class Clawtrace {
       fs.appendFileSync(filePath, JSON.stringify(scrubbed) + '\n');
     } catch (err) {
       // Logging failure must not crash the agent
-      console.error('[Clawtrace] Write error:', (err as Error).message);
+      console.error('[TraceLogger] Write error:', (err as Error).message);
     }
   }
 
-  getEntries(): ClawtraceEntry[] {
+  getEntries(): TraceEntry[] {
     return [...this.entries];
   }
 
@@ -98,9 +98,9 @@ export class Clawtrace {
   }
 
   // Load a previous session's trace from disk
-  static loadSession(sessionId: string): ClawtraceEntry[] {
+  static loadSession(sessionId: string): TraceEntry[] {
     ensureLogDir();
-    const entries: ClawtraceEntry[] = [];
+    const entries: TraceEntry[] = [];
     const files = fs.readdirSync(LOG_DIR).filter(f => f.includes(sessionId));
     for (const file of files) {
       const content = fs.readFileSync(path.join(LOG_DIR, file), 'utf-8');

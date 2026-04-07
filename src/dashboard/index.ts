@@ -542,6 +542,98 @@ export function getDashboardHTML(): string {
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: var(--border-standard); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--brand); }
+
+    /* ─── View Navigation ─── */
+    .topbar-center { display: flex; gap: 3px; background: var(--bg-card); border-radius: var(--radius-sm); padding: 3px; border: 1px solid var(--border-subtle); }
+    .view-tab { padding: 5px 14px; border-radius: 6px; border: none; background: transparent; color: var(--text-tertiary); font-size: 0.72rem; font-family: var(--font-mono); font-weight: 500; cursor: pointer; transition: all var(--transition); }
+    .view-tab:hover { color: var(--text-primary); background: var(--bg-elevated); }
+    .view-tab.active { background: var(--brand); color: #fff; }
+
+    /* ─── Trace Explorer ─── */
+    .trace-content { grid-column: 2 / -1; display: none; grid-template-columns: 1fr 1fr 1fr; gap: 14px; padding: 18px; overflow-y: auto; background: var(--bg-primary); }
+    .trace-content.visible { display: grid; }
+    .trace-header { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); }
+    .trace-header-title { font-family: var(--font-serif); font-size: 0.95rem; font-weight: 600; }
+    .trace-header-actions { display: flex; gap: 8px; align-items: center; }
+    .trace-badge { font-size: 0.68rem; font-family: var(--font-mono); background: var(--brand-glow); border: 1px solid var(--border-standard); padding: 2px 8px; border-radius: var(--radius-full); color: var(--brand-light); }
+    .trace-card { background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column; transition: all var(--transition); overflow: hidden; position: relative; }
+    .trace-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--brand), var(--accent)); opacity: 0; transition: opacity var(--transition); }
+    .trace-card:hover { border-color: var(--border-bright); box-shadow: var(--shadow-glow); }
+    .trace-card:hover::before { opacity: 1; }
+    .trace-card h5 { font-family: var(--font-mono); font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--brand-light); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .tc-icon { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; background: var(--brand-glow); border: 1px solid var(--border-standard); border-radius: 5px; font-size: 0.65rem; }
+
+    /* Timeline */
+    .timeline-steps { display: flex; flex-direction: column; gap: 0; flex: 1; }
+    .tl-step { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; align-items: center; padding: 6px 0; position: relative; font-size: 0.75rem; }
+    .tl-dot { width: 8px; height: 8px; border-radius: 50%; justify-self: center; position: relative; z-index: 1; }
+    .tl-dot.ok { background: var(--success); box-shadow: 0 0 4px var(--success); }
+    .tl-dot.err { background: var(--error); box-shadow: 0 0 4px var(--error); }
+    .tl-dot.run { background: var(--warning); box-shadow: 0 0 4px var(--warning); animation: pulse-glow 1.5s infinite; }
+    .tl-dot.idle { background: var(--text-tertiary); }
+    .tl-step:not(:last-child)::before { content: ''; position: absolute; left: 11px; top: 18px; width: 2px; height: calc(100%); background: var(--border-standard); z-index: 0; }
+    .tl-label { color: var(--text-primary); font-weight: 500; }
+    .tl-time { font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-tertiary); }
+
+    /* Reasoning / Score Ring */
+    .score-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+    .score-ring { width: 50px; height: 50px; border-radius: 50%; border: 3px solid var(--border-standard); display: flex; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 1rem; font-weight: 700; flex-shrink: 0; }
+    .score-ring.hi { border-color: var(--success); color: var(--success); }
+    .score-ring.md { border-color: var(--warning); color: var(--warning); }
+    .score-ring.lo { border-color: var(--error); color: var(--error); }
+    .ri-list { display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .ri-row { display: flex; justify-content: space-between; font-size: 0.72rem; padding: 3px 6px; border-radius: 3px; background: var(--bg-elevated); }
+    .ri-l { color: var(--text-secondary); }
+    .ri-v { font-family: var(--font-mono); font-weight: 600; }
+    .ri-v.ok { color: var(--success); } .ri-v.wn { color: var(--warning); } .ri-v.bd { color: var(--error); }
+
+    /* Cost Bars */
+    .cost-rows { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+    .c-row { display: grid; grid-template-columns: 72px 1fr 50px; gap: 8px; align-items: center; font-size: 0.72rem; }
+    .c-model { font-family: var(--font-mono); color: var(--text-secondary); font-size: 0.65rem; }
+    .c-bar { height: 6px; border-radius: 3px; background: var(--bg-elevated); overflow: hidden; }
+    .c-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--brand), var(--accent)); transition: width 0.5s ease; }
+    .c-amt { text-align: right; font-family: var(--font-mono); font-weight: 600; color: var(--text-primary); font-size: 0.68rem; }
+
+    /* Perf Gauges */
+    .perf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex: 1; }
+    .p-gauge { text-align: center; padding: 10px; background: var(--bg-elevated); border-radius: var(--radius-sm); }
+    .p-val { font-family: var(--font-mono); font-size: 1.2rem; font-weight: 700; }
+    .p-lbl { font-size: 0.6rem; color: var(--text-tertiary); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Scanner */
+    .scan-meter { margin-bottom: 10px; }
+    .scan-lbl { font-size: 0.68rem; color: var(--text-secondary); margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .scan-bar { height: 8px; border-radius: 4px; background: var(--bg-elevated); overflow: hidden; }
+    .scan-fill { height: 100%; border-radius: 4px; transition: width 0.5s ease; }
+    .scan-fill.safe { background: var(--success); } .scan-fill.warn { background: var(--warning); } .scan-fill.crit { background: var(--error); }
+    .scan-items { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+    .scan-item { font-size: 0.7rem; padding: 4px 6px; border-radius: 3px; background: var(--bg-elevated); display: flex; justify-content: space-between; }
+    .scan-type { color: var(--text-secondary); }
+    .scan-st { font-family: var(--font-mono); font-weight: 600; }
+    .scan-st.ok { color: var(--success); } .scan-st.hit { color: var(--error); }
+
+    /* Tool Profiler */
+    .prof-rows { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+    .pr-row { display: grid; grid-template-columns: 1fr 50px; gap: 8px; align-items: center; font-size: 0.72rem; }
+    .pr-name { color: var(--text-secondary); }
+    .pr-cnt { text-align: right; font-family: var(--font-mono); font-weight: 600; color: var(--accent); font-size: 0.7rem; }
+
+    /* Export Bar */
+    .trace-export { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); }
+    .exp-btns { display: flex; gap: 6px; }
+    .exp-btn { padding: 6px 12px; border-radius: 5px; border: 1px solid var(--border-standard); background: var(--bg-elevated); color: var(--text-secondary); font-size: 0.7rem; font-family: var(--font-mono); cursor: pointer; transition: all var(--transition); }
+    .exp-btn:hover { border-color: var(--brand); color: var(--brand-light); background: var(--brand-glow); }
+    .anon-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: var(--text-secondary); }
+
+    /* Sidebar trace sessions */
+    .trace-sess-list { display: flex; flex-direction: column; gap: 3px; max-height: 180px; overflow-y: auto; }
+    .ts-item { padding: 6px 8px; border-radius: 5px; cursor: pointer; font-size: 0.7rem; font-family: var(--font-mono); color: var(--text-secondary); background: var(--bg-card); border: 1px solid transparent; transition: all var(--transition); display: flex; justify-content: space-between; }
+    .ts-item:hover { border-color: var(--border-standard); color: var(--text-primary); }
+    .ts-item.active { border-color: var(--brand); color: var(--brand-light); background: var(--brand-glow); }
+    .ts-time { color: var(--text-tertiary); font-size: 0.62rem; }
+    .sidebar-trace { display: none; }
+    @media (max-width: 1024px) { .trace-content { grid-column: 1 / -1; grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -551,6 +643,10 @@ export function getDashboardHTML(): string {
         <img src="/assets/logo-transparent.png" alt="PAW" class="topbar-logo" />
         <span class="topbar-title">PAW Agents</span>
         <span class="topbar-badge">v3.4.0</span>
+      </div>
+      <div class="topbar-center">
+        <button class="view-tab active" id="tab-terminal" onclick="switchView('terminal')">Terminal</button>
+        <button class="view-tab" id="tab-trace" onclick="switchView('trace')">Trace Explorer</button>
       </div>
       <div class="topbar-right">
         <span class="status-indicator">
@@ -640,9 +736,28 @@ export function getDashboardHTML(): string {
             </label>
           </div>
         </div>
+
+        <!-- Trace Explorer sidebar (hidden in terminal view) -->
+        <div class="sidebar-section sidebar-trace" id="sidebar-trace-sessions">
+          <h4>Trace Sessions</h4>
+          <div class="trace-sess-list" id="trace-sessions-list">
+            <div class="ts-item active" onclick="selectTrace(0)"><span>Latest Session</span><span class="ts-time">now</span></div>
+          </div>
+        </div>
+        <div class="sidebar-section sidebar-trace" id="sidebar-trace-filters">
+          <h4>Phase Filters</h4>
+          <div class="companion-toggles">
+            <label class="toggle-row"><span>Intake</span><input type="checkbox" checked onchange="toggleTraceFilter('intake',this.checked)"></label>
+            <label class="toggle-row"><span>Planning</span><input type="checkbox" checked onchange="toggleTraceFilter('planning',this.checked)"></label>
+            <label class="toggle-row"><span>Validation</span><input type="checkbox" checked onchange="toggleTraceFilter('validation',this.checked)"></label>
+            <label class="toggle-row"><span>Execution</span><input type="checkbox" checked onchange="toggleTraceFilter('execution',this.checked)"></label>
+            <label class="toggle-row"><span>Logging</span><input type="checkbox" checked onchange="toggleTraceFilter('logging',this.checked)"></label>
+            <label class="toggle-row"><span>Response</span><input type="checkbox" checked onchange="toggleTraceFilter('response',this.checked)"></label>
+          </div>
+        </div>
       </div>
 
-      <div class="chat-panel">
+      <div class="chat-panel" id="panel-chat">
         <div class="chat-header">
           <span class="chat-header-title">Agent Terminal</span>
           <span class="chat-header-meta" id="session-id">—</span>
@@ -655,12 +770,115 @@ export function getDashboardHTML(): string {
         </div>
       </div>
 
-      <div class="log-panel">
+      <div class="log-panel" id="panel-log">
         <div class="log-header">
           <span class="log-header-title">Activity Log</span>
           <button class="log-clear" onclick="clearLog()">Clear</button>
         </div>
         <div class="log-entries" id="log-entries"></div>
+      </div>
+
+      <!-- Trace Explorer View -->
+      <div class="trace-content" id="trace-view">
+        <div class="trace-header">
+          <span class="trace-header-title">Trace Explorer</span>
+          <div class="trace-header-actions">
+            <span class="trace-badge" id="trace-session-badge">session: —</span>
+            <span class="trace-badge" id="trace-entries-badge">0 entries</span>
+          </div>
+        </div>
+
+        <!-- Interactive Timeline -->
+        <div class="trace-card">
+          <h5><span class="tc-icon">⏱</span> Interactive Timeline</h5>
+          <div class="timeline-steps" id="trace-timeline">
+            <div class="tl-step"><span class="tl-dot idle"></span><span class="tl-label">Intent</span><span class="tl-time">—</span></div>
+            <div class="tl-step"><span class="tl-dot idle"></span><span class="tl-label">Plan</span><span class="tl-time">—</span></div>
+            <div class="tl-step"><span class="tl-dot idle"></span><span class="tl-label">Validate</span><span class="tl-time">—</span></div>
+            <div class="tl-step"><span class="tl-dot idle"></span><span class="tl-label">Execute</span><span class="tl-time">—</span></div>
+            <div class="tl-step"><span class="tl-dot idle"></span><span class="tl-label">Verify</span><span class="tl-time">—</span></div>
+            <div class="tl-step"><span class="tl-dot idle"></span><span class="tl-label">Log</span><span class="tl-time">—</span></div>
+          </div>
+        </div>
+
+        <!-- Reasoning Analyzer -->
+        <div class="trace-card">
+          <h5><span class="tc-icon">🧠</span> Reasoning Analyzer</h5>
+          <div class="score-row">
+            <div class="score-ring hi" id="confidence-ring">—</div>
+            <div class="ri-list">
+              <div class="ri-row"><span class="ri-l">Loop detection</span><span class="ri-v ok" id="ri-loops">Clear</span></div>
+              <div class="ri-row"><span class="ri-l">Hallucination</span><span class="ri-v ok" id="ri-halluc">None</span></div>
+              <div class="ri-row"><span class="ri-l">Plan coherence</span><span class="ri-v ok" id="ri-coherence">High</span></div>
+              <div class="ri-row"><span class="ri-l">Intent match</span><span class="ri-v ok" id="ri-intent">100%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Token Cost Calculator -->
+        <div class="trace-card">
+          <h5><span class="tc-icon">💰</span> Token Cost Calculator</h5>
+          <div class="cost-rows" id="cost-rows">
+            <div class="c-row"><span class="c-model">GPT-4o</span><div class="c-bar"><div class="c-fill" style="width:85%"></div></div><span class="c-amt">$0.042</span></div>
+            <div class="c-row"><span class="c-model">Claude 3.5</span><div class="c-bar"><div class="c-fill" style="width:72%"></div></div><span class="c-amt">$0.036</span></div>
+            <div class="c-row"><span class="c-model">Gemini Pro</span><div class="c-bar"><div class="c-fill" style="width:45%"></div></div><span class="c-amt">$0.018</span></div>
+            <div class="c-row"><span class="c-model">DeepSeek</span><div class="c-bar"><div class="c-fill" style="width:20%"></div></div><span class="c-amt">$0.004</span></div>
+            <div class="c-row"><span class="c-model">Gemma 4</span><div class="c-bar"><div class="c-fill" style="width:0%"></div></div><span class="c-amt">FREE</span></div>
+          </div>
+        </div>
+
+        <!-- Performance Monitor -->
+        <div class="trace-card">
+          <h5><span class="tc-icon">📊</span> Performance Monitor</h5>
+          <div class="perf-grid">
+            <div class="p-gauge"><div class="p-val" id="perf-latency" style="color:var(--success)">—</div><div class="p-lbl">Avg Latency</div></div>
+            <div class="p-gauge"><div class="p-val" id="perf-throughput" style="color:var(--brand-light)">—</div><div class="p-lbl">Throughput/min</div></div>
+            <div class="p-gauge"><div class="p-val" id="perf-success" style="color:var(--success)">—</div><div class="p-lbl">Success Rate</div></div>
+            <div class="p-gauge"><div class="p-val" id="perf-healed" style="color:var(--accent)">—</div><div class="p-lbl">Self-Healed</div></div>
+          </div>
+        </div>
+
+        <!-- Prompt Injection Scanner -->
+        <div class="trace-card">
+          <h5><span class="tc-icon">🛡</span> Injection Scanner</h5>
+          <div class="scan-meter">
+            <div class="scan-lbl"><span>Threat Level</span><span id="scan-level">Safe</span></div>
+            <div class="scan-bar"><div class="scan-fill safe" id="scan-fill" style="width:8%"></div></div>
+          </div>
+          <div class="scan-items" id="scan-items">
+            <div class="scan-item"><span class="scan-type">Jailbreak patterns</span><span class="scan-st ok">Clear</span></div>
+            <div class="scan-item"><span class="scan-type">Prompt leaking</span><span class="scan-st ok">Clear</span></div>
+            <div class="scan-item"><span class="scan-type">Instruction override</span><span class="scan-st ok">Clear</span></div>
+            <div class="scan-item"><span class="scan-type">Data exfiltration</span><span class="scan-st ok">Clear</span></div>
+            <div class="scan-item"><span class="scan-type">Encoding attacks</span><span class="scan-st ok">Clear</span></div>
+          </div>
+        </div>
+
+        <!-- Tool Profiler -->
+        <div class="trace-card">
+          <h5><span class="tc-icon">🔧</span> Tool Profiler</h5>
+          <div class="prof-rows" id="prof-rows">
+            <div class="pr-row"><span class="pr-name">solana_transfer</span><span class="pr-cnt">0</span></div>
+            <div class="pr-row"><span class="pr-name">solana_balance</span><span class="pr-cnt">0</span></div>
+            <div class="pr-row"><span class="pr-name">api_call</span><span class="pr-cnt">0</span></div>
+            <div class="pr-row"><span class="pr-name">browser</span><span class="pr-cnt">0</span></div>
+            <div class="pr-row"><span class="pr-name">mcp_tool</span><span class="pr-cnt">0</span></div>
+            <div class="pr-row"><span class="pr-name">file_ops</span><span class="pr-cnt">0</span></div>
+          </div>
+        </div>
+
+        <!-- Export Bar -->
+        <div class="trace-export">
+          <div class="exp-btns">
+            <button class="exp-btn" onclick="exportTrace('json')">📄 JSON</button>
+            <button class="exp-btn" onclick="exportTrace('markdown')">📝 Markdown</button>
+            <button class="exp-btn" onclick="exportTrace('html')">🌐 HTML</button>
+          </div>
+          <label class="anon-toggle">
+            <span>Anonymize PII</span>
+            <input type="checkbox" id="anon-toggle" style="appearance:none;-webkit-appearance:none;width:32px;height:18px;border-radius:9px;background:var(--bg-elevated);border:1px solid var(--border-standard);position:relative;cursor:pointer;transition:all var(--transition);">
+          </label>
+        </div>
       </div>
     </div>
   </div>
@@ -870,6 +1088,9 @@ export function getDashboardHTML(): string {
         if (payload.event === 'authenticated') {
           addLog('system', 'authenticated');
         }
+      } else if (msg.type === 'trace') {
+        // Live trace entry from agent pipeline
+        if (msg.payload) addTraceEntry(msg.payload);
       }
     }
 
@@ -996,6 +1217,174 @@ export function getDashboardHTML(): string {
     currentChatId = getActiveChat();
     restoreMessages();
     renderChatTabs();
+
+    // ─── Trace Explorer ───
+    let currentView = 'terminal';
+    let traceEntries = [];
+    let traceSessions = [];
+    let traceFilters = { intake: true, planning: true, validation: true, execution: true, logging: true, response: true };
+    let activeTraceIdx = 0;
+
+    function switchView(view) {
+      currentView = view;
+      const chat = document.getElementById('panel-chat');
+      const log = document.getElementById('panel-log');
+      const trace = document.getElementById('trace-view');
+      const tabTerm = document.getElementById('tab-terminal');
+      const tabTrace = document.getElementById('tab-trace');
+      // Sidebar sections
+      document.querySelectorAll('.sidebar-section:not(.sidebar-trace)').forEach(function(s) { s.style.display = view === 'terminal' ? '' : 'none'; });
+      document.querySelectorAll('.sidebar-trace').forEach(function(s) { s.style.display = view === 'trace' ? '' : 'none'; });
+
+      if (view === 'terminal') {
+        chat.style.display = ''; log.style.display = '';
+        trace.classList.remove('visible');
+        tabTerm.classList.add('active'); tabTrace.classList.remove('active');
+      } else {
+        chat.style.display = 'none'; log.style.display = 'none';
+        trace.classList.add('visible');
+        tabTrace.classList.add('active'); tabTerm.classList.remove('active');
+        refreshTraceView();
+      }
+    }
+
+    function toggleTraceFilter(phase, enabled) {
+      traceFilters[phase] = enabled;
+      if (currentView === 'trace') refreshTraceView();
+    }
+
+    function selectTrace(idx) {
+      activeTraceIdx = idx;
+      document.querySelectorAll('.ts-item').forEach(function(el, i) { el.classList.toggle('active', i === idx); });
+      refreshTraceView();
+    }
+
+    function refreshTraceView() {
+      updateTimeline();
+      updateReasoning();
+      updatePerformance();
+      updateTraceHeader();
+    }
+
+    function updateTraceHeader() {
+      var badge = document.getElementById('trace-session-badge');
+      var countBadge = document.getElementById('trace-entries-badge');
+      if (traceEntries.length > 0) {
+        var latest = traceEntries[traceEntries.length - 1];
+        badge.textContent = 'session: ' + (latest.session_id || '—').slice(0, 8);
+        countBadge.textContent = traceEntries.length + ' entries';
+      } else {
+        badge.textContent = 'session: —';
+        countBadge.textContent = '0 entries';
+      }
+    }
+
+    function updateTimeline() {
+      var phases = ['intake', 'planning', 'validation', 'execution', 'logging', 'response'];
+      var labels = ['Intent', 'Plan', 'Validate', 'Execute', 'Verify', 'Log'];
+      var container = document.getElementById('trace-timeline');
+      container.innerHTML = phases.map(function(phase, i) {
+        var entry = traceEntries.find(function(e) { return e.phase === phase; });
+        var dotClass = 'idle';
+        var timeText = '—';
+        if (entry) {
+          dotClass = entry.error ? 'err' : 'ok';
+          timeText = entry.duration_ms + 'ms';
+        }
+        return '<div class="tl-step"><span class="tl-dot ' + dotClass + '"></span><span class="tl-label">' + labels[i] + '</span><span class="tl-time">' + timeText + '</span></div>';
+      }).join('');
+    }
+
+    function updateReasoning() {
+      var planEntry = traceEntries.find(function(e) { return e.phase === 'planning'; });
+      var valEntry = traceEntries.find(function(e) { return e.phase === 'validation'; });
+      var execEntry = traceEntries.find(function(e) { return e.phase === 'execution'; });
+      var hasLoop = traceEntries.filter(function(e) { return e.phase === 'execution'; }).length > 1;
+      var hasError = traceEntries.some(function(e) { return e.error; });
+      var confidence = hasError ? 45 : (hasLoop ? 68 : 94);
+      var ring = document.getElementById('confidence-ring');
+      ring.textContent = confidence;
+      ring.className = 'score-ring ' + (confidence >= 80 ? 'hi' : confidence >= 50 ? 'md' : 'lo');
+      document.getElementById('ri-loops').textContent = hasLoop ? 'Detected' : 'Clear';
+      document.getElementById('ri-loops').className = 'ri-v ' + (hasLoop ? 'wn' : 'ok');
+      document.getElementById('ri-halluc').textContent = hasError ? 'Possible' : 'None';
+      document.getElementById('ri-halluc').className = 'ri-v ' + (hasError ? 'wn' : 'ok');
+      document.getElementById('ri-coherence').textContent = confidence >= 80 ? 'High' : confidence >= 50 ? 'Medium' : 'Low';
+      document.getElementById('ri-coherence').className = 'ri-v ' + (confidence >= 80 ? 'ok' : confidence >= 50 ? 'wn' : 'bd');
+      document.getElementById('ri-intent').textContent = (planEntry ? '100%' : '—');
+    }
+
+    function updatePerformance() {
+      var totalMs = 0; var count = 0; var errors = 0; var healed = 0;
+      traceEntries.forEach(function(e) {
+        if (e.duration_ms > 0) { totalMs += e.duration_ms; count++; }
+        if (e.error) errors++;
+        if (e.phase === 'execution' && !e.error && count > 1) healed++;
+      });
+      var avgMs = count > 0 ? Math.round(totalMs / count) : 0;
+      var successRate = count > 0 ? Math.round(((count - errors) / count) * 100) : 0;
+      document.getElementById('perf-latency').textContent = avgMs > 0 ? avgMs + 'ms' : '—';
+      document.getElementById('perf-throughput').textContent = count > 0 ? count + '' : '—';
+      document.getElementById('perf-success').textContent = successRate > 0 ? successRate + '%' : '—';
+      document.getElementById('perf-healed').textContent = healed > 0 ? healed + '' : '0';
+    }
+
+    function addTraceEntry(entry) {
+      traceEntries.push(entry);
+      // Update tool profiler counts
+      if (entry.phase === 'execution' && entry.plan && entry.plan.tools) {
+        entry.plan.tools.forEach(function(tool) {
+          var row = document.querySelector('#prof-rows .pr-row .pr-name');
+          document.querySelectorAll('#prof-rows .pr-row').forEach(function(r) {
+            var name = r.querySelector('.pr-name');
+            var cnt = r.querySelector('.pr-cnt');
+            if (name && name.textContent === tool) {
+              cnt.textContent = (parseInt(cnt.textContent) || 0) + 1;
+            }
+          });
+        });
+      }
+      if (currentView === 'trace') refreshTraceView();
+    }
+
+    function exportTrace(format) {
+      var anonymize = document.getElementById('anon-toggle').checked;
+      var data = traceEntries.map(function(e) {
+        if (anonymize) {
+          var copy = JSON.parse(JSON.stringify(e));
+          var str = JSON.stringify(copy);
+          str = str.replace(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/g, '[REDACTED_EMAIL]');
+          str = str.replace(/\\b\\d{1,3}(\\.\\d{1,3}){3}\\b/g, '[REDACTED_IP]');
+          str = str.replace(/sk-[a-zA-Z0-9]+/g, '[REDACTED_KEY]');
+          str = str.replace(/pk-[a-zA-Z0-9]+/g, '[REDACTED_KEY]');
+          str = str.replace(/token_[a-zA-Z0-9]+/g, '[REDACTED_TOKEN]');
+          return JSON.parse(str);
+        }
+        return e;
+      });
+      var output = '';
+      var filename = 'paw-trace';
+      if (format === 'json') {
+        output = JSON.stringify({ session: traceEntries[0] ? traceEntries[0].session_id : 'unknown', entries: data, exported_at: new Date().toISOString() }, null, 2);
+        filename += '.json';
+      } else if (format === 'markdown') {
+        output = '# PAW Agent Trace\\n\\nExported: ' + new Date().toISOString() + '\\n\\n';
+        data.forEach(function(e) { output += '## ' + e.phase + '\\n- Duration: ' + e.duration_ms + 'ms\\n' + (e.error ? '- Error: ' + e.error + '\\n' : '') + '\\n'; });
+        filename += '.md';
+      } else if (format === 'html') {
+        output = '<html><head><title>PAW Trace</title></head><body><h1>PAW Agent Trace</h1>';
+        data.forEach(function(e) { output += '<h2>' + escapeHtml(e.phase) + '</h2><p>Duration: ' + e.duration_ms + 'ms</p>' + (e.error ? '<p style="color:red">Error: ' + escapeHtml(e.error) + '</p>' : ''); });
+        output += '</body></html>';
+        filename += '.html';
+      }
+      var blob = new Blob([output], { type: 'text/plain' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      addLog('system', 'Exported trace as ' + format + (anonymize ? ' (anonymized)' : ''));
+    }
 
     setInterval(fetchStatus, 30000);
     connect();

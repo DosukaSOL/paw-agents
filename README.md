@@ -94,7 +94,7 @@ npm start
 | **Tools** | 45+ built-in tools across 13 categories |
 | **Safety** | Prompt injection defense, rate limiting, risk scoring, URL sandboxing, tx simulation |
 | **Keys** | AES-256-GCM encryption, Ed25519 signing, zeroed after use |
-| **Logging** | Clawtrace JSONL audit trail with auto-redacted secrets |
+| **Logging** | JSONL audit trail with auto-redacted secrets |
 | **Recovery** | Self-healing: diagnose → fix → retry → escalate |
 | **Dashboard** | Real-time web UI: chat, status, logs, mode toggle, session persistence |
 | **Mission Control** | Real-time agent monitoring, task queues, metrics, alerts, live logs |
@@ -152,7 +152,7 @@ INTENT → PLAN → VALIDATE → EXECUTE → VERIFY → LOG
 
 - **LLM = reasoning only.** Generates structured JSON plans, never executes.
 - **System = execution only.** Runs validated plans, never reasons.
-- **Everything is logged.** Full Clawtrace audit trail with auto-redacted secrets.
+- **Everything is logged.** Full audit trail with auto-redacted secrets.
 - **Self-healing.** Failures → diagnose → fix → retry → escalate.
 
 ---
@@ -229,7 +229,7 @@ Every DeFi operation passes through the full pipeline — quote → simulate →
 | **Execution** | Sandboxed — file sandbox, HTTPS-only APIs, blocked internal IPs |
 | **Blockchain** | Simulation before every tx, risk scoring, confirmation gate |
 | **DeFi** | Slippage caps, price impact limits, route depth limits, balance checks |
-| **Logging** | All secrets auto-redacted from Clawtrace |
+| **Logging** | All secrets auto-redacted from trace logs |
 | **Recovery** | Self-healing: diagnose → fix → retry → escalate |
 
 See [Security Model](docs/SECURITY.md) for the full threat model.
@@ -350,7 +350,7 @@ paw-agents/
 │   ├── intelligence/               # Profiler, RAG, fast path, branching
 │   ├── integrations/               # 11 channel adapters + Solana + Purp
 │   ├── security/                   # Sanitizer, keystore, rate limiter
-│   ├── clawtrace/                  # JSONL audit logger
+│   ├── trace/                      # JSONL audit logger
 │   ├── mission-control/            # Real-time monitoring & management
 │   ├── plugins/                    # Plugin marketplace system
 │   ├── multi-tenant/               # Tenant isolation & management

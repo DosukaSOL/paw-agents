@@ -62,7 +62,7 @@
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────┐
-│                    CLAWTRACE                             │
+│                    TRACE LOGGER                          │
 │           Full reasoning trace logger                    │
 │     Input → Plan → Validation → Execution → Result      │
 └─────────────────────────────────────────────────────────┘
@@ -88,7 +88,7 @@ INTENT → PLAN → VALIDATION → EXECUTION → VERIFICATION
 - **System = execution only** — only runs validated plans
 - **All blockchain txs simulated first** — no blind execution
 - **Keys encrypted at rest** — never exposed to LLM or logs
-- **Everything logged** — full Clawtrace audit trail
+- **Everything logged** — full audit trail
 - **Self-healing** — diagnose, fix, retry, escalate
 
 ## Module Dependency Graph
@@ -103,7 +103,7 @@ index.ts
         ├── execution/engine.ts (ExecutionEngine)
         │     ├── integrations/solana/executor.ts
         │     └── integrations/purp/engine.ts
-        ├── clawtrace/index.ts (Clawtrace)
+        ├── trace/index.ts (TraceLogger)
         ├── security/sanitizer.ts
         ├── security/rate-limiter.ts
         └── self-healing/index.ts

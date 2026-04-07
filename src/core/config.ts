@@ -198,10 +198,10 @@ export const config = {
     rateLimitPerMinute: safeParseInt('RATE_LIMIT_PER_MINUTE', 30, 1),
     sandboxMode: optionalEnv('SANDBOX_MODE', 'strict'),
   },
-  // ─── Clawtrace ───
-  clawtrace: {
-    logDir: optionalEnv('CLAWTRACE_LOG_DIR', './logs/clawtrace'),
-    retentionDays: safeParseInt('CLAWTRACE_RETENTION_DAYS', 90, 1),
+  // ─── Trace Logger ───
+  trace: {
+    logDir: optionalEnv('TRACE_LOG_DIR', './logs/trace'),
+    retentionDays: safeParseInt('TRACE_RETENTION_DAYS', 90, 1),
   },
   // ─── Cron ───
   cron: {

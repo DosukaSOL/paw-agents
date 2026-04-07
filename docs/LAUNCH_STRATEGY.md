@@ -27,7 +27,7 @@ The operating system for autonomous AI workers.
 - Solana blockchain integration with mandatory simulation
 - Multi-model AI support (OpenAI, Anthropic) with fallback
 - Skill-based extensibility via skill.md
-- Full audit trail via Clawtrace
+- Full audit trail via trace logger
 - Self-healing failure recovery
 - Production-grade security (encrypted keys, injection defense, sandboxing)
 
@@ -74,7 +74,7 @@ PAW Agents fixes this:
 ✅ Mandatory validation pipeline
 ✅ All blockchain txs simulated first
 ✅ Keys encrypted, zeroed after use
-✅ Full Clawtrace audit trail
+✅ Full audit trail
 ✅ Self-healing on failures
 ```
 
@@ -130,7 +130,7 @@ Star ⭐ if you believe AI agents should be safe by default.
 2. **Easy to extend**: Write a YAML file (skill.md), drop it in `/skills`
 3. **Multi-model**: Not locked into one AI provider
 4. **Blockchain-ready**: Built for Solana from day one
-5. **Auditable**: Clawtrace makes debugging trivial
+5. **Auditable**: Trace explorer makes debugging trivial
 6. **TypeScript**: Clean, typed, modular codebase
 7. **Install in minutes**: Not weeks of configuration
 

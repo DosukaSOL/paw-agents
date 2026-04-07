@@ -197,9 +197,9 @@ export interface SkillExample {
   expected_output: Record<string, unknown>;
 }
 
-// ─── Clawtrace ───
+// ─── Trace Logger ───
 
-export interface ClawtraceEntry {
+export interface TraceEntry {
   trace_id: string;
   session_id: string;
   timestamp: string;
