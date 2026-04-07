@@ -189,6 +189,8 @@ function setupIPC(): void {
         'GROQ_API_KEY', 'GROQ_MODEL',
         'MISTRAL_API_KEY', 'MISTRAL_MODEL',
         'DEEPSEEK_API_KEY', 'DEEPSEEK_MODEL',
+        'XAI_API_KEY', 'XAI_MODEL',
+        'COHERE_API_KEY', 'COHERE_MODEL',
         'OLLAMA_ENABLED', 'OLLAMA_BASE_URL', 'OLLAMA_MODEL',
       ]);
       for (const key of Object.keys(updates)) {

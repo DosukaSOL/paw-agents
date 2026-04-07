@@ -525,7 +525,10 @@
         <div class="alert-bar" id="mc-alerts"></div>
         <div class="mc-grid">
           <div class="mc-panel">
-            <div class="mc-panel-title">Agents</div>
+            <div class="mc-panel-title" style="display:flex;align-items:center;justify-content:space-between">
+              <span>Agents</span>
+              <button id="mc-add-agent" style="background:var(--brand);border:none;border-radius:6px;padding:3px 10px;color:#fff;font-size:10px;font-weight:600;cursor:pointer;transition:background 0.2s" title="Add Agent">+ New Agent</button>
+            </div>
             <div id="mc-agents">
               <div class="mc-agent-row"><div class="mc-agent-dot active"></div><div class="mc-agent-name">PAW Main Agent</div><div class="mc-agent-task">Ready</div></div>
             </div>
@@ -568,7 +571,7 @@
           <div class="cli-chat-area" id="chat-messages">
             <div class="chat-msg agent">
               <div class="chat-msg-bubble">Welcome to PAW! I'm your AI agent. How can I help?</div>
-              <div class="chat-msg-meta">PAW Agent · just now</div>
+              <div class="chat-msg-meta">agent · just now</div>
             </div>
           </div>
           <!-- Terminal output (hidden by default, toggle with mode button) -->
@@ -627,7 +630,7 @@
           </div>
           <div class="settings-row">
             <div><div class="settings-label">Default Provider</div><div class="settings-desc">Primary AI model provider</div></div>
-            <select class="settings-select" id="setting-provider"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="google">Google</option><option value="groq">Groq</option><option value="mistral">Mistral</option><option value="deepseek">DeepSeek</option><option value="ollama">Ollama (Local)</option></select>
+            <select class="settings-select" id="setting-provider"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="google">Google</option><option value="groq">Groq</option><option value="mistral">Mistral</option><option value="deepseek">DeepSeek</option><option value="xai">xAI (Grok)</option><option value="cohere">Cohere</option><option value="ollama">Ollama (Local)</option></select>
           </div>
         </div>
 
@@ -708,6 +711,32 @@
             <select class="settings-select" id="cfg-deepseek-model"><option value="deepseek-chat">deepseek-chat</option><option value="deepseek-coder">deepseek-coder</option></select>
           </div>
           <div class="cfg-status" id="cfg-deepseek-status"></div>
+        </div>
+
+        <div class="settings-section provider-config" id="cfg-xai">
+          <div class="settings-title">xAI (Grok) Configuration</div>
+          <div class="settings-row">
+            <div><div class="settings-label">API Key</div><div class="settings-desc">Your xAI API key from console.x.ai</div></div>
+            <div class="key-input-wrap"><input type="password" class="settings-input" id="cfg-xai-key" placeholder="xai-..." autocomplete="off"><button class="key-toggle" data-target="cfg-xai-key" title="Show/hide">&#128065;</button></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Model</div><div class="settings-desc">xAI model to use</div></div>
+            <select class="settings-select" id="cfg-xai-model"><option value="grok-3">grok-3</option><option value="grok-3-mini">grok-3-mini</option><option value="grok-2">grok-2</option></select>
+          </div>
+          <div class="cfg-status" id="cfg-xai-status"></div>
+        </div>
+
+        <div class="settings-section provider-config" id="cfg-cohere">
+          <div class="settings-title">Cohere Configuration</div>
+          <div class="settings-row">
+            <div><div class="settings-label">API Key</div><div class="settings-desc">Your Cohere API key from dashboard.cohere.com</div></div>
+            <div class="key-input-wrap"><input type="password" class="settings-input" id="cfg-cohere-key" placeholder="..." autocomplete="off"><button class="key-toggle" data-target="cfg-cohere-key" title="Show/hide">&#128065;</button></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Model</div><div class="settings-desc">Cohere model to use</div></div>
+            <select class="settings-select" id="cfg-cohere-model"><option value="command-r-plus">command-r-plus</option><option value="command-r">command-r</option><option value="command-light">command-light</option></select>
+          </div>
+          <div class="cfg-status" id="cfg-cohere-status"></div>
         </div>
 
         <div class="settings-section provider-config" id="cfg-ollama">
@@ -861,6 +890,10 @@
         addChatMessage('agent', text);
         addPawTraceLog('info', 'agent', 'Response: ' + text.substring(0, 200));
         addLog('info', 'agent', 'Response: ' + text.substring(0, 120));
+        // TTS: speak response when voice mode is active
+        if (typeof window._pawTTSEnabled === 'function' && window._pawTTSEnabled() && typeof window._pawSpeak === 'function') {
+          window._pawSpeak(text);
+        }
         // Mark agent as ready on first successful response
         if (!document.getElementById('status-agent').classList.contains('active')) {
           document.getElementById('status-agent').classList.add('active');
@@ -923,7 +956,7 @@
       const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
       const div = document.createElement('div');
       div.className = 'chat-msg ' + role;
-      div.innerHTML = '<div class="chat-msg-bubble">' + escapeHtml(text) + '</div><div class="chat-msg-meta">' + (role === 'user' ? 'You' : 'PAW Agent') + ' · ' + time + '</div>';
+      div.innerHTML = '<div class="chat-msg-bubble">' + escapeHtml(text) + '</div><div class="chat-msg-meta">' + (role === 'user' ? 'user' : 'agent') + ' · ' + time + '</div>';
       container.appendChild(div);
       if (isNearBottom) container.scrollTop = container.scrollHeight;
     }
@@ -955,7 +988,7 @@
     const cliCommands = {
       help: () => 'Available commands:\n  /status — Show agent status\n  /mode <supervised|autonomous|free> — Set agent mode\n  /providers — List AI providers\n  /plugins — List installed plugins\n  /workflows — List workflow templates\n  /history — Show action history\n  /clear — Clear chat\n  /health — Check gateway health',
       status: () => 'Gateway: ' + (state.connected ? 'Connected ✓' : 'Disconnected ✗') + '\nView: ' + state.view + '\nActions: ' + state.actions.length,
-      providers: () => 'AI Providers:\n  ● Ollama (gemma4) — FREE, local\n  ● OpenAI (gpt-4o)\n  ● Anthropic (claude-sonnet-4-20250514)\n  ● Google (gemma-3-27b-it)\n  ● Groq (llama-3.3-70b)\n  ● Mistral (mistral-large)\n  ● DeepSeek (deepseek-chat)',
+      providers: () => 'AI Providers (9):\n  ● Ollama (gemma4) — FREE, local\n  ● OpenAI (gpt-4o)\n  ● Anthropic (claude-sonnet-4-20250514)\n  ● Google (gemma-3-27b-it)\n  ● Groq (llama-3.3-70b)\n  ● Mistral (mistral-large)\n  ● DeepSeek (deepseek-chat)\n  ● xAI/Grok (grok-3)\n  ● Cohere (command-r-plus)',
       plugins: () => 'Installed Plugins: 4\n  DeFi Price Alerts — active\n  Usage Analytics — active\n  GitHub Integration — loaded\n  Advanced Scheduler — loaded',
       workflows: () => 'Workflow Templates: 4\n  Daily Portfolio Check\n  New User Onboarding\n  Price Alert & Auto-Action\n  Multi-Channel Broadcast',
       clear: () => { document.getElementById('chat-messages').innerHTML = ''; return ''; },
@@ -1070,7 +1103,7 @@
       }
       // Provider & model info from gateway sync
       if (data.provider || data.model) {
-        const providerNames = { openai:'OpenAI', anthropic:'Anthropic', google:'Google', groq:'Groq', mistral:'Mistral', deepseek:'DeepSeek', ollama:'Ollama' };
+        const providerNames = { openai:'OpenAI', anthropic:'Anthropic', google:'Google', groq:'Groq', mistral:'Mistral', deepseek:'DeepSeek', xai:'xAI/Grok', cohere:'Cohere', ollama:'Ollama' };
         const providerLabel = providerNames[data.provider] || data.provider || '—';
         const modelLabel = data.model || '';
         document.getElementById('stat-provider').textContent = modelLabel ? providerLabel + ' · ' + modelLabel : providerLabel;
@@ -1124,6 +1157,8 @@
       groq:      { keyField: 'cfg-groq-key',       modelField: 'cfg-groq-model',       envKey: 'GROQ_API_KEY',       envModel: 'GROQ_MODEL' },
       mistral:   { keyField: 'cfg-mistral-key',    modelField: 'cfg-mistral-model',    envKey: 'MISTRAL_API_KEY',    envModel: 'MISTRAL_MODEL' },
       deepseek:  { keyField: 'cfg-deepseek-key',   modelField: 'cfg-deepseek-model',   envKey: 'DEEPSEEK_API_KEY',   envModel: 'DEEPSEEK_MODEL' },
+      xai:       { keyField: 'cfg-xai-key',        modelField: 'cfg-xai-model',        envKey: 'XAI_API_KEY',        envModel: 'XAI_MODEL' },
+      cohere:    { keyField: 'cfg-cohere-key',      modelField: 'cfg-cohere-model',     envKey: 'COHERE_API_KEY',     envModel: 'COHERE_MODEL' },
       ollama:    { keyField: null,                  modelField: 'cfg-ollama-model',     envKey: null,                 envModel: 'OLLAMA_MODEL' },
     };
 
@@ -1148,7 +1183,7 @@
         // Set provider dropdown
         if (cfg.DEFAULT_MODEL_PROVIDER) {
           document.getElementById('setting-provider').value = cfg.DEFAULT_MODEL_PROVIDER;
-          const names = { openai:'OpenAI', anthropic:'Anthropic', google:'Google', groq:'Groq', mistral:'Mistral', deepseek:'DeepSeek', ollama:'Ollama' };
+          const names = { openai:'OpenAI', anthropic:'Anthropic', google:'Google', groq:'Groq', mistral:'Mistral', deepseek:'DeepSeek', xai:'xAI/Grok', cohere:'Cohere', ollama:'Ollama' };
           document.getElementById('provider-badge').textContent = names[cfg.DEFAULT_MODEL_PROVIDER] || cfg.DEFAULT_MODEL_PROVIDER;
         }
 
@@ -1159,12 +1194,16 @@
         if (cfg.GROQ_API_KEY)      document.getElementById('cfg-groq-key').value = cfg.GROQ_API_KEY;
         if (cfg.MISTRAL_API_KEY)   document.getElementById('cfg-mistral-key').value = cfg.MISTRAL_API_KEY;
         if (cfg.DEEPSEEK_API_KEY)  document.getElementById('cfg-deepseek-key').value = cfg.DEEPSEEK_API_KEY;
+        if (cfg.XAI_API_KEY)       document.getElementById('cfg-xai-key').value = cfg.XAI_API_KEY;
+        if (cfg.COHERE_API_KEY)    document.getElementById('cfg-cohere-key').value = cfg.COHERE_API_KEY;
 
         if (cfg.DEFAULT_MODEL_NAME) setSelectOrCustom('cfg-openai-model', cfg.DEFAULT_MODEL_NAME);
         if (cfg.GOOGLE_AI_MODEL)    setSelectOrCustom('cfg-google-model', cfg.GOOGLE_AI_MODEL);
         if (cfg.GROQ_MODEL)         setSelectOrCustom('cfg-groq-model', cfg.GROQ_MODEL);
         if (cfg.MISTRAL_MODEL)      setSelectOrCustom('cfg-mistral-model', cfg.MISTRAL_MODEL);
         if (cfg.DEEPSEEK_MODEL)     setSelectOrCustom('cfg-deepseek-model', cfg.DEEPSEEK_MODEL);
+        if (cfg.XAI_MODEL)          setSelectOrCustom('cfg-xai-model', cfg.XAI_MODEL);
+        if (cfg.COHERE_MODEL)       setSelectOrCustom('cfg-cohere-model', cfg.COHERE_MODEL);
         if (cfg.OLLAMA_BASE_URL)    document.getElementById('cfg-ollama-url').value = cfg.OLLAMA_BASE_URL;
         if (cfg.OLLAMA_MODEL)       document.getElementById('cfg-ollama-model').value = cfg.OLLAMA_MODEL;
 
@@ -1196,6 +1235,8 @@
         { id: 'cfg-groq-status', hasKey: !!cfg.GROQ_API_KEY },
         { id: 'cfg-mistral-status', hasKey: !!cfg.MISTRAL_API_KEY },
         { id: 'cfg-deepseek-status', hasKey: !!cfg.DEEPSEEK_API_KEY },
+        { id: 'cfg-xai-status', hasKey: !!cfg.XAI_API_KEY },
+        { id: 'cfg-cohere-status', hasKey: !!cfg.COHERE_API_KEY },
         { id: 'cfg-ollama-status', hasKey: true }, // Ollama is local, no key needed
       ];
       checks.forEach(({ id, hasKey }) => {
@@ -1235,6 +1276,14 @@
       const deepseekKey = document.getElementById('cfg-deepseek-key').value.trim();
       if (deepseekKey) updates.DEEPSEEK_API_KEY = deepseekKey;
       updates.DEEPSEEK_MODEL = document.getElementById('cfg-deepseek-model').value;
+
+      const xaiKey = document.getElementById('cfg-xai-key').value.trim();
+      if (xaiKey) updates.XAI_API_KEY = xaiKey;
+      updates.XAI_MODEL = document.getElementById('cfg-xai-model').value;
+
+      const cohereKey = document.getElementById('cfg-cohere-key').value.trim();
+      if (cohereKey) updates.COHERE_API_KEY = cohereKey;
+      updates.COHERE_MODEL = document.getElementById('cfg-cohere-model').value;
 
       updates.OLLAMA_BASE_URL = document.getElementById('cfg-ollama-url').value.trim();
       updates.OLLAMA_MODEL = document.getElementById('cfg-ollama-model').value.trim();
@@ -1372,7 +1421,7 @@
 
     // ─── Provider badge sync ───
     document.getElementById('setting-provider').addEventListener('change', (e) => {
-      const names = { openai:'OpenAI', anthropic:'Anthropic', google:'Google', groq:'Groq', mistral:'Mistral', deepseek:'DeepSeek', ollama:'Ollama' };
+      const names = { openai:'OpenAI', anthropic:'Anthropic', google:'Google', groq:'Groq', mistral:'Mistral', deepseek:'DeepSeek', xai:'xAI/Grok', cohere:'Cohere', ollama:'Ollama' };
       document.getElementById('provider-badge').textContent = names[e.target.value] || e.target.value;
     });
 
@@ -1397,12 +1446,65 @@
       });
     })();
 
-    // ─── Voice Mode ───
+    // ─── Voice Mode + TTS + Wake Word ───
     (function() {
       const voiceBtn = document.getElementById('voice-btn');
       let isListening = false;
       let recognition = null;
+      let wakeWordRecognition = null;
+      let wakeWordActive = false;
+      let ttsEnabled = true;
+      let selectedVoice = null;
+      let voiceRetries = 0;
+      const MAX_VOICE_RETRIES = 3;
 
+      // ─── TTS Setup ───
+      function initTTS() {
+        if (!window.speechSynthesis) return;
+        // Wait for voices to load
+        function loadVoices() {
+          const voices = window.speechSynthesis.getVoices();
+          if (voices.length === 0) return;
+          // Prefer natural-sounding English voices
+          const preferred = [
+            'Google UK English Female', 'Google US English', 'Samantha', 'Karen',
+            'Daniel', 'Alex', 'Moira', 'Tessa', 'Fiona', 'Victoria'
+          ];
+          for (const name of preferred) {
+            const match = voices.find(v => v.name.includes(name));
+            if (match) { selectedVoice = match; break; }
+          }
+          if (!selectedVoice) {
+            // Fallback: any English voice
+            selectedVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+          }
+          if (selectedVoice) {
+            addPawTraceLog('info', 'voice', 'TTS voice: ' + selectedVoice.name);
+          }
+        }
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+      }
+      initTTS();
+
+      function speak(text) {
+        if (!ttsEnabled || !window.speechSynthesis || !text) return;
+        // Don't speak error messages or very long responses
+        if (text.length > 500) text = text.substring(0, 500) + '...';
+        window.speechSynthesis.cancel(); // Cancel any ongoing speech
+        const utterance = new SpeechSynthesisUtterance(text);
+        if (selectedVoice) utterance.voice = selectedVoice;
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        utterance.volume = 0.9;
+        window.speechSynthesis.speak(utterance);
+      }
+
+      // Expose speak function globally so agent responses can trigger it
+      window._pawSpeak = speak;
+      window._pawTTSEnabled = () => ttsEnabled && isListening;
+
+      // ─── Voice Input (STT) ───
       voiceBtn.addEventListener('click', () => {
         if (isListening) {
           stopListening();
@@ -1414,44 +1516,192 @@
       function startListening() {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) {
-          addLog('warn', 'voice', 'Speech recognition not supported in this browser');
+          addChatMessage('agent', 'Voice input is not supported in this environment. Try using a Chromium-based browser.');
+          addLog('warn', 'voice', 'SpeechRecognition API not available');
           return;
         }
+        voiceRetries = 0;
+        createRecognition();
+      }
+
+      function createRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         recognition = new SpeechRecognition();
-        recognition.continuous = false;
-        recognition.interimResults = false;
+        recognition.continuous = true;
+        recognition.interimResults = true;
         recognition.lang = 'en-US';
+        recognition.maxAlternatives = 1;
 
         recognition.onstart = () => {
           isListening = true;
+          voiceRetries = 0;
           voiceBtn.classList.add('listening');
           voiceBtn.title = 'Listening... Click to stop';
-          addLog('info', 'voice', 'Listening for voice input...');
+          addLog('info', 'voice', 'Voice mode active — speak to interact');
+          addPawTraceLog('info', 'voice', 'Voice mode ON');
         };
+
         recognition.onresult = (event) => {
-          const transcript = event.results[0][0].transcript;
-          if (transcript.trim()) {
-            document.getElementById('chat-input').value = transcript;
-            sendMessage(transcript.trim());
-            document.getElementById('chat-input').value = '';
-            addPawTraceLog('info', 'voice', 'Transcribed: ' + transcript.trim().substring(0, 80));
+          let finalTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            }
+          }
+          if (finalTranscript.trim()) {
+            const text = finalTranscript.trim();
+            addPawTraceLog('info', 'voice', 'Heard: ' + text.substring(0, 80));
+            sendMessage(text);
           }
         };
-        recognition.onerror = (event) => {
-          addLog('warn', 'voice', 'Voice error: ' + event.error);
-          stopListening();
-        };
-        recognition.onend = () => { stopListening(); };
 
-        try { recognition.start(); } catch(e) { addLog('warn', 'voice', 'Could not start voice input'); }
+        recognition.onerror = (event) => {
+          // 'aborted' is normal when we stop manually
+          if (event.error === 'aborted') return;
+          // 'no-speech' is normal — just keep listening
+          if (event.error === 'no-speech') return;
+          // 'not-allowed' means mic permission denied
+          if (event.error === 'not-allowed') {
+            addChatMessage('agent', 'Microphone access was denied. Please allow mic access in your system settings.');
+            addLog('error', 'voice', 'Mic permission denied');
+            stopListening();
+            return;
+          }
+          addLog('warn', 'voice', 'Voice error: ' + event.error);
+        };
+
+        recognition.onend = () => {
+          // If we're still supposed to be listening, restart (auto-recovery)
+          if (isListening && voiceRetries < MAX_VOICE_RETRIES) {
+            voiceRetries++;
+            try { recognition.start(); } catch(e) {
+              addLog('warn', 'voice', 'Could not restart voice. Retrying...');
+              setTimeout(() => {
+                if (isListening) {
+                  try { recognition.start(); } catch(e2) { stopListening(); }
+                }
+              }, 500);
+            }
+          } else if (isListening) {
+            addLog('warn', 'voice', 'Voice recognition stopped after retries — click mic to restart');
+            stopListening();
+          }
+        };
+
+        try {
+          recognition.start();
+        } catch(e) {
+          addLog('warn', 'voice', 'Could not start voice input: ' + e.message);
+          stopListening();
+        }
       }
 
       function stopListening() {
         isListening = false;
         voiceBtn.classList.remove('listening');
         voiceBtn.title = 'Voice Mode';
-        if (recognition) { try { recognition.stop(); } catch(e) {} recognition = null; }
+        if (recognition) {
+          try { recognition.stop(); } catch(e) {}
+          recognition = null;
+        }
+        addPawTraceLog('info', 'voice', 'Voice mode OFF');
       }
+
+      // ─── "Hey PAW" Wake Word ───
+      function startWakeWord() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return;
+
+        wakeWordRecognition = new SpeechRecognition();
+        wakeWordRecognition.continuous = true;
+        wakeWordRecognition.interimResults = true;
+        wakeWordRecognition.lang = 'en-US';
+
+        wakeWordRecognition.onresult = (event) => {
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript.toLowerCase();
+            if (transcript.includes('hey paw') || transcript.includes('hey pa') || transcript.includes('hey paul')) {
+              addPawTraceLog('info', 'voice', 'Wake word detected!');
+              addLog('info', 'voice', '"Hey PAW" detected — activating voice mode');
+              // Stop wake word listener and activate full voice mode
+              stopWakeWord();
+              startListening();
+              break;
+            }
+          }
+        };
+
+        wakeWordRecognition.onerror = (event) => {
+          if (event.error === 'aborted' || event.error === 'no-speech') return;
+        };
+
+        wakeWordRecognition.onend = () => {
+          // Restart wake word listening unless full voice mode is active
+          if (wakeWordActive && !isListening) {
+            try { wakeWordRecognition.start(); } catch(e) {
+              setTimeout(() => {
+                if (wakeWordActive && !isListening) {
+                  try { wakeWordRecognition.start(); } catch(e2) {}
+                }
+              }, 1000);
+            }
+          }
+        };
+
+        wakeWordActive = true;
+        try {
+          wakeWordRecognition.start();
+          addPawTraceLog('info', 'voice', '"Hey PAW" wake word listening active');
+        } catch(e) {
+          wakeWordActive = false;
+        }
+      }
+
+      function stopWakeWord() {
+        wakeWordActive = false;
+        if (wakeWordRecognition) {
+          try { wakeWordRecognition.stop(); } catch(e) {}
+          wakeWordRecognition = null;
+        }
+      }
+
+      // Auto-start wake word on launch (can be toggled in settings)
+      // Delayed to avoid interfering with startup
+      setTimeout(() => {
+        // Only start if we're not already in voice mode
+        if (!isListening) {
+          try { startWakeWord(); } catch(e) {}
+        }
+      }, 5000);
+    })();
+
+    // ─── Multi-Agent Management ───
+    (function() {
+      const addBtn = document.getElementById('mc-add-agent');
+      const agentsContainer = document.getElementById('mc-agents');
+      let agentCount = 1;
+      const agentRoles = ['Research Agent', 'Code Agent', 'Data Agent', 'Writing Agent', 'QA Agent', 'Support Agent'];
+
+      addBtn.addEventListener('click', () => {
+        agentCount++;
+        const roleName = agentRoles[(agentCount - 2) % agentRoles.length];
+        const agentId = 'agent-' + agentCount;
+        const row = document.createElement('div');
+        row.className = 'mc-agent-row';
+        row.id = agentId;
+        row.innerHTML = '<div class="mc-agent-dot idle"></div><div class="mc-agent-name">' + escapeHtml(roleName) + '</div><div class="mc-agent-task" style="display:flex;gap:6px;align-items:center;margin-left:auto">Idle<button style="background:transparent;border:1px solid var(--border-subtle);border-radius:4px;padding:1px 6px;color:var(--text-tertiary);cursor:pointer;font-size:9px" data-remove="' + agentId + '">✕</button></div>';
+        agentsContainer.appendChild(row);
+        document.getElementById('stat-agents').textContent = agentCount;
+        addPawTraceLog('info', 'crew', 'Agent added: ' + roleName);
+        addLog('info', 'crew', 'New agent registered: ' + roleName);
+        // Remove button handler
+        row.querySelector('[data-remove]').addEventListener('click', () => {
+          row.remove();
+          agentCount--;
+          document.getElementById('stat-agents').textContent = agentCount;
+          addPawTraceLog('info', 'crew', 'Agent removed: ' + roleName);
+        });
+      });
     })();
 
     // ─── Trace / Thought Replay ───

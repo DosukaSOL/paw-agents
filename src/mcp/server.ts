@@ -244,7 +244,7 @@ export class PawMCPServer {
             serverInfo: {
               name: 'paw-agents',
               version: '4.0.0',
-              description: 'PAW Agents — The operating system for autonomous AI agents. 21+ channels, 7 AI providers, multi-agent crews, deep research, workflow graphs, and more.',
+              description: 'PAW Agents — The operating system for autonomous AI agents. 21+ channels, 9 AI providers, multi-agent crews, deep research, workflow graphs, and more.',
             },
           },
         };

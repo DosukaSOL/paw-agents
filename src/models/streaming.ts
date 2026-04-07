@@ -370,6 +370,22 @@ export class StreamingEngine extends EventEmitter {
       'ollama', `${config.models.ollama.baseUrl}/v1`,
       '', config.models.ollama.model
     ));
+
+    // xAI (Grok) — OpenAI-compatible
+    if ((config.models as any).xai?.apiKey) {
+      this.providers.push(new OpenAICompatibleStream(
+        'xai', 'https://api.x.ai/v1',
+        (config.models as any).xai.apiKey, (config.models as any).xai.model ?? 'grok-3'
+      ));
+    }
+
+    // Cohere — uses different streaming format, register as OpenAI-compatible for now
+    if ((config.models as any).cohere?.apiKey) {
+      this.providers.push(new OpenAICompatibleStream(
+        'cohere', 'https://api.cohere.com/compatibility/v1',
+        (config.models as any).cohere.apiKey, (config.models as any).cohere.model ?? 'command-r-plus'
+      ));
+    }
   }
 
   // ─── Stream from preferred provider ───

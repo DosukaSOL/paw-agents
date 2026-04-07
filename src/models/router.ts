@@ -254,6 +254,94 @@ class GroqProvider implements ModelProvider {
   }
 }
 
+// ─── xAI Provider (Grok — OpenAI-compatible) ───
+class XAIProvider implements ModelProvider {
+  name = 'xai';
+  model: string;
+  private apiKey: string;
+
+  constructor(cfg: { apiKey: string; model: string }) {
+    this.apiKey = cfg.apiKey;
+    this.model = cfg.model;
+  }
+
+  async available(): Promise<boolean> {
+    return this.apiKey.length > 0;
+  }
+
+  async generate(system: string, prompt: string): Promise<string> {
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.model,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.1,
+        max_tokens: 4096,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`xAI API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json() as { choices: Array<{ message: { content: string } }> };
+    const text = data.choices?.[0]?.message?.content;
+    if (!text) throw new Error('Empty response from xAI');
+    return text;
+  }
+}
+
+// ─── Cohere Provider (Command R+) ───
+class CohereProvider implements ModelProvider {
+  name = 'cohere';
+  model: string;
+  private apiKey: string;
+
+  constructor(cfg: { apiKey: string; model: string }) {
+    this.apiKey = cfg.apiKey;
+    this.model = cfg.model;
+  }
+
+  async available(): Promise<boolean> {
+    return this.apiKey.length > 0;
+  }
+
+  async generate(system: string, prompt: string): Promise<string> {
+    const response = await fetch('https://api.cohere.com/v2/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.apiKey}`,
+      },
+      body: JSON.stringify({
+        model: this.model,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: prompt },
+        ],
+        temperature: 0.1,
+        max_tokens: 4096,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Cohere API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json() as { message?: { content?: Array<{ text: string }> } };
+    const text = data.message?.content?.[0]?.text;
+    if (!text) throw new Error('Empty response from Cohere');
+    return text;
+  }
+}
+
 // ─── Ollama Provider (Local — Gemma 4, Llama, etc.) ───
 class OllamaProvider implements ModelProvider {
   name = 'ollama';
@@ -354,12 +442,37 @@ export class ModelRouter {
       }));
     }
 
+    // xAI (Grok) — OpenAI-compatible
+    if ((config.models as any).xai?.apiKey) {
+      this.providers.push(new XAIProvider({
+        apiKey: (config.models as any).xai.apiKey,
+        model: (config.models as any).xai.model ?? 'grok-3',
+      }));
+    }
+
+    // Cohere (Command R+)
+    if ((config.models as any).cohere?.apiKey) {
+      this.providers.push(new CohereProvider({
+        apiKey: (config.models as any).cohere.apiKey,
+        model: (config.models as any).cohere.model ?? 'command-r-plus',
+      }));
+    }
+
     // Ollama — local, no API key needed
     if (config.models.ollama.enabled) {
       this.providers.push(new OllamaProvider({
         baseUrl: config.models.ollama.baseUrl,
         model: config.models.ollama.model,
       }));
+    }
+
+    // Diagnostic logging
+    const registered = this.providers.map(p => p.name);
+    console.log(`[ModelRouter] Registered providers: ${registered.length > 0 ? registered.join(', ') : 'NONE'}`);
+    if (registered.length === 0) {
+      console.warn('[ModelRouter] ⚠ No providers registered. Check your .env keys.');
+    } else {
+      console.log(`[ModelRouter] Default provider: ${this.defaultProviderName}`);
     }
   }
 

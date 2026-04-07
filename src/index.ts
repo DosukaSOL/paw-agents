@@ -35,6 +35,19 @@ import { WorkflowGraphEngine } from './workflows/graph';
 import { PluginManager } from './plugins/manager';
 
 async function main(): Promise<void> {
+  // Diagnostic: log provider detection
+  const providers: string[] = [];
+  if (config.models.openai.apiKey) providers.push('OpenAI');
+  if (config.models.anthropic.apiKey) providers.push('Anthropic');
+  if (config.models.google.apiKey) providers.push('Google');
+  if (config.models.mistral.apiKey) providers.push('Mistral');
+  if (config.models.deepseek.apiKey) providers.push('DeepSeek');
+  if (config.models.groq.apiKey) providers.push('Groq');
+  if ((config.models as any).xai?.apiKey) providers.push('xAI/Grok');
+  if ((config.models as any).cohere?.apiKey) providers.push('Cohere');
+  if (config.models.ollama.enabled) providers.push('Ollama');
+  const providerList = providers.length > 0 ? providers.join(', ') : 'NONE — check .env';
+
   console.log(`
   ╔═══════════════════════════════════════════════════╗
   ║                                                   ║
@@ -46,8 +59,9 @@ async function main(): Promise<void> {
   ║   Mode: ${config.agent.mode.padEnd(35)}    ║
   ║   Gateway: ws://${config.gateway.host}:${String(config.gateway.port).padEnd(22)}  ║
   ║   MCP: http://${config.mcp.serverHost}:${String(config.mcp.serverPort).padEnd(24)}  ║
-  ║   Network: ${config.solana.network.padEnd(33)}  ║
+  ║   Default: ${config.models.defaultProvider.padEnd(33)}  ║
   ║   Ollama: ${(config.models.ollama.enabled ? config.models.ollama.model : 'disabled').padEnd(33)}  ║
+  ║   Providers: ${providerList.substring(0, 30).padEnd(30)}  ║
   ║                                                   ║
   ╚═══════════════════════════════════════════════════╝
   `);

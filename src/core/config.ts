@@ -1,8 +1,25 @@
 // ─── PAW Agents Configuration ───
 import { config as loadEnv } from 'dotenv';
 import { SecurityPolicy, AgentMode } from './types';
+import path from 'path';
 
-loadEnv();
+// Load .env with explicit path so it works regardless of cwd
+const envPath = path.resolve(__dirname, '..', '..', '.env');
+loadEnv({ path: envPath });
+// Also try cwd-based path as fallback (dotenv won't overwrite existing vars)
+const cwdPath = path.resolve(process.cwd(), '.env');
+if (cwdPath !== envPath) loadEnv({ path: cwdPath });
+
+// Filter out placeholder API keys
+function validApiKey(key: string, fallback: string): string {
+  const val = process.env[key] ?? fallback;
+  if (!val) return '';
+  // Reject obvious placeholders
+  if (/^your_.*_here$/i.test(val)) return '';
+  if (/^sk-placeholder/i.test(val)) return '';
+  if (val === 'CHANGE_ME' || val === 'xxx' || val === 'test') return '';
+  return val;
+}
 
 function optionalEnv(key: string, fallback: string): string {
   return process.env[key] ?? fallback;
@@ -116,27 +133,35 @@ export const config = {
   // ─── Models ───
   models: {
     openai: {
-      apiKey: optionalEnv('OPENAI_API_KEY', ''),
+      apiKey: validApiKey('OPENAI_API_KEY', ''),
       model: optionalEnv('DEFAULT_MODEL_NAME', 'gpt-4o'),
     },
     anthropic: {
-      apiKey: optionalEnv('ANTHROPIC_API_KEY', ''),
+      apiKey: validApiKey('ANTHROPIC_API_KEY', ''),
     },
     google: {
-      apiKey: optionalEnv('GOOGLE_AI_API_KEY', ''),
+      apiKey: validApiKey('GOOGLE_AI_API_KEY', ''),
       model: optionalEnv('GOOGLE_AI_MODEL', 'gemma-3-27b-it'),
     },
     mistral: {
-      apiKey: optionalEnv('MISTRAL_API_KEY', ''),
+      apiKey: validApiKey('MISTRAL_API_KEY', ''),
       model: optionalEnv('MISTRAL_MODEL', 'mistral-large-latest'),
     },
     deepseek: {
-      apiKey: optionalEnv('DEEPSEEK_API_KEY', ''),
+      apiKey: validApiKey('DEEPSEEK_API_KEY', ''),
       model: optionalEnv('DEEPSEEK_MODEL', 'deepseek-chat'),
     },
     groq: {
-      apiKey: optionalEnv('GROQ_API_KEY', ''),
+      apiKey: validApiKey('GROQ_API_KEY', ''),
       model: optionalEnv('GROQ_MODEL', 'llama-3.3-70b-versatile'),
+    },
+    xai: {
+      apiKey: validApiKey('XAI_API_KEY', ''),
+      model: optionalEnv('XAI_MODEL', 'grok-3'),
+    },
+    cohere: {
+      apiKey: validApiKey('COHERE_API_KEY', ''),
+      model: optionalEnv('COHERE_MODEL', 'command-r-plus'),
     },
     ollama: {
       enabled: optionalBool('OLLAMA_ENABLED', false),
