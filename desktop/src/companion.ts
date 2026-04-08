@@ -28,25 +28,25 @@ export const DEFAULT_PAWL_CONFIG: PawlConfig = {
   size: 96,
 };
 
-// Sprite frame map — matches pawl-sprites.svg layout (128px per frame, 4 cols × 3 rows)
+// Sprite frame map — matches pawl-sprites.png layout (384×341 per frame, 4 cols × 3 rows, 1536×1024)
 export const SPRITE_MAP = {
   // Row 0: Idle / Walk
-  idle_front:   { x: 0,   y: 0 },
-  walk_right_1: { x: 128, y: 0 },
-  walk_right_2: { x: 256, y: 0 },
-  walk_right_3: { x: 384, y: 0 },
+  idle_front:   { col: 0, row: 0 },
+  walk_right_1: { col: 1, row: 0 },
+  walk_right_2: { col: 2, row: 0 },
+  walk_right_3: { col: 3, row: 0 },
 
   // Row 1: Emotions
-  love:         { x: 0,   y: 128 },
-  excited:      { x: 128, y: 128 },
-  happy:        { x: 256, y: 128 },
-  mad:          { x: 384, y: 128 },
+  love:         { col: 0, row: 1 },
+  excited:      { col: 1, row: 1 },
+  happy:        { col: 2, row: 1 },
+  mad:          { col: 3, row: 1 },
 
   // Row 2: Rest / Joy
-  sleep:        { x: 0,   y: 256 },
-  sleep_zzz:    { x: 128, y: 256 },
-  sleep_peek:   { x: 256, y: 256 },
-  wag:          { x: 384, y: 256 },
+  sleep:        { col: 0, row: 2 },
+  sleep_zzz:    { col: 1, row: 2 },
+  sleep_peek:   { col: 2, row: 2 },
+  wag:          { col: 3, row: 2 },
 } as const;
 
 export type SpriteFrame = keyof typeof SPRITE_MAP;
