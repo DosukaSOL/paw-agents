@@ -47,8 +47,8 @@ export function sanitizeInput(raw: string): SanitizationResult {
   // Normalize Unicode (NFKC) and strip zero-width characters to prevent injection bypass
   text = text.normalize('NFKC').replace(/[\u200B-\u200F\u2028-\u202F\uFEFF\u00AD]/g, '');
 
-  // Normalize whitespace
-  text = text.replace(/\s+/g, ' ').trim();
+  // Normalize horizontal whitespace only (preserve newlines for code blocks)
+  text = text.replace(/[^\S\n]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
 
   // Detect prompt injection
   const matched: string[] = [];

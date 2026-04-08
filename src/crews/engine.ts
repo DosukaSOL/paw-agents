@@ -343,7 +343,7 @@ export class CrewEngine {
 
       for (const task of queue) {
         for (const depId of (adj.get(task.id) ?? [])) {
-          const newDeg = (inDegree.get(depId) ?? 1) - 1;
+          const newDeg = (inDegree.get(depId) ?? 0) - 1;
           inDegree.set(depId, newDeg);
           if (newDeg === 0) {
             const dep = taskMap.get(depId);

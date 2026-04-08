@@ -189,6 +189,14 @@ Generate the execution plan as strict JSON. Nothing else.`;
       throw new Error('AI response missing required fields: intent, plan');
     }
 
+    // Validate plan step structure
+    for (let i = 0; i < (parsed.plan as unknown[]).length; i++) {
+      const step = (parsed.plan as unknown[])[i];
+      if (typeof step !== 'object' || step === null) {
+        throw new Error(`Plan step ${i} is not a valid object`);
+      }
+    }
+
     return {
       intent: String(parsed.intent),
       response: parsed.response ? String(parsed.response) : undefined,

@@ -11,6 +11,7 @@ export class DiscordAdapter implements ChannelAdapter {
   private handler: MessageHandler | null = null;
   private client: unknown = null;
   private channelMap = new Map<string, string>(); // userId -> last channelId
+  private static readonly MAX_CHANNEL_MAP_SIZE = 10_000;
 
   async start(): Promise<void> {
     const token = config.discord.botToken;
@@ -34,10 +35,16 @@ export class DiscordAdapter implements ChannelAdapter {
       client.on(Events.MessageCreate, async (message: { author: { bot: boolean; id: string }; content: string; channel: { id: string } }) => {
         if (message.author.bot) return;
         const userId = `discord:${message.author.id}`;
-        // Store the source channel for reply routing
+        // Store the source channel for reply routing (with LRU eviction)
+        if (this.channelMap.size >= DiscordAdapter.MAX_CHANNEL_MAP_SIZE && !this.channelMap.has(userId)) {
+          const oldest = this.channelMap.keys().next().value;
+          if (oldest) this.channelMap.delete(oldest);
+        }
         this.channelMap.set(userId, message.channel.id);
         if (this.handler) {
-          await this.handler(userId, message.content, 'discord');
+          await this.handler(userId, message.content, 'discord').catch(err =>
+            console.error('[PAW:Discord] Handler error:', (err as Error).message)
+          );
         }
       });
 

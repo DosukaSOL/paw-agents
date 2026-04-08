@@ -308,14 +308,15 @@ export class PawAgent {
       return this.executePlan(plan, trace, startTime);
 
     } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
       trace.log('execution', {
-        error: (err as Error).message,
+        error: errMsg,
         duration_ms: Date.now() - startTime,
       });
       return {
         success: false,
         message: 'An unexpected error occurred. The issue has been logged.',
-        error: (err as Error).message,
+        error: errMsg,
         trace_id: trace.getSessionId(),
       };
     }

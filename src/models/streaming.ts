@@ -195,10 +195,13 @@ class GoogleStream implements StreamProvider {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:streamGenerateContent?key=${encodeURIComponent(this.apiKey)}&alt=sse`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:streamGenerateContent?alt=sse`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-goog-api-key': this.apiKey,
+        },
         body: JSON.stringify({
           system_instruction: { parts: [{ text: system }] },
           contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -273,7 +276,7 @@ class OpenAICompatibleStream implements StreamProvider {
     if (this.apiKey) headers['Authorization'] = `Bearer ${this.apiKey}`;
 
     const controller = new AbortController();
-    const timeoutMs = this.name === 'ollama' ? 5_000 : 30_000;
+    const timeoutMs = this.name === 'ollama' ? 60_000 : 30_000;
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
     const response = await fetch(`${this.baseUrl}/chat/completions`, {

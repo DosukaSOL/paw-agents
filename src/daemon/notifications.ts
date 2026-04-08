@@ -57,11 +57,9 @@ export class NotificationManager extends EventEmitter {
     const shellBody = safeBody.replace(/'/g, "'\"'\"'");
 
     if (process.platform === 'darwin') {
-      // macOS: use osascript
-      execSync(
-        `osascript -e 'display notification "${shellBody}" with title "🐾 PAW" subtitle "${shellTitle}"'`,
-        { timeout: 5000 }
-      );
+      // macOS: use osascript with -e argument passed safely
+      const script = `display notification "${shellBody}" with title "🐾 PAW" subtitle "${shellTitle}"`;
+      spawn('osascript', ['-e', script], { timeout: 5000, stdio: 'ignore' }).unref();
     } else if (process.platform === 'linux') {
       // Linux: use notify-send
       spawn('notify-send', ['🐾 PAW — ' + title, body], { detached: true, stdio: 'ignore' }).unref();

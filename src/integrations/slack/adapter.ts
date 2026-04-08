@@ -35,7 +35,9 @@ export class SlackAdapter implements ChannelAdapter {
         const text = args.message?.text as string | undefined;
         if (!user || !text) return;
         if (this.handler) {
-          await this.handler(`slack:${user}`, text, 'slack');
+          await this.handler(`slack:${user}`, text, 'slack').catch(err =>
+            console.error('[PAW:Slack] Handler error:', (err as Error).message)
+          );
         }
       });
 

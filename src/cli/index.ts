@@ -7,7 +7,8 @@ import * as readline from 'readline';
 import { PawAgent } from '../agent/loop';
 import { config } from '../core/config';
 
-const VERSION = '3.2.0';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { version: VERSION } = require('../../package.json');
 
 // ─── ANSI Colors ───
 const c = {

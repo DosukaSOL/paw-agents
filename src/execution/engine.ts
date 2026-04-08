@@ -210,8 +210,8 @@ export class ExecutionEngine {
       const url = params.url as string;
       const method = (params.method as string ?? 'GET').toUpperCase();
 
-      // Sandbox: only allow HTTPS
-      if (!url.startsWith('https://')) {
+      // Sandbox: only allow HTTPS (case-insensitive per RFC 3986)
+      if (!url.toLowerCase().startsWith('https://')) {
         throw new Error('API calls must use HTTPS');
       }
 
@@ -227,16 +227,18 @@ export class ExecutionEngine {
         body: method !== 'GET' ? JSON.stringify(params.body) : undefined,
       });
 
-      return {
-        status: response.status,
-        body: await response.json().catch(() => response.text()),
-      };
+      const contentType = response.headers.get('content-type') ?? '';
+      const body = contentType.includes('application/json')
+        ? await response.json().catch(() => response.text())
+        : await response.text();
+
+      return { status: response.status, body };
     });
 
     // ─── HTTP convenience tools ───
     this.registerTool('http_get', async (params) => {
       const url = params.url as string;
-      if (!url.startsWith('https://')) throw new Error('HTTP calls must use HTTPS');
+      if (!url.toLowerCase().startsWith('https://')) throw new Error('HTTP calls must use HTTPS');
       const hostname = new URL(url).hostname.replace(/^\[|\]$/g, '');
       if (this.isBlockedHost(hostname)) {
         throw new Error('Blocked: internal address');
@@ -244,12 +246,16 @@ export class ExecutionEngine {
       const response = await fetch(url, {
         headers: params.headers as Record<string, string> ?? {},
       });
-      return { status: response.status, body: await response.json().catch(() => response.text()) };
+      const ct = response.headers.get('content-type') ?? '';
+      const body = ct.includes('application/json')
+        ? await response.json().catch(() => response.text())
+        : await response.text();
+      return { status: response.status, body };
     });
 
     this.registerTool('http_post', async (params) => {
       const url = params.url as string;
-      if (!url.startsWith('https://')) throw new Error('HTTP calls must use HTTPS');
+      if (!url.toLowerCase().startsWith('https://')) throw new Error('HTTP calls must use HTTPS');
       const hostname = new URL(url).hostname.replace(/^\[|\]$/g, '');
       if (this.isBlockedHost(hostname)) {
         throw new Error('Blocked: internal address');
@@ -259,11 +265,17 @@ export class ExecutionEngine {
         headers: { 'Content-Type': 'application/json', ...(params.headers as Record<string, string> ?? {}) },
         body: JSON.stringify(params.body),
       });
-      return { status: response.status, body: await response.json().catch(() => response.text()) };
+      const ct = response.headers.get('content-type') ?? '';
+      const body = ct.includes('application/json')
+        ? await response.json().catch(() => response.text())
+        : await response.text();
+      return { status: response.status, body };
     });
 
     // ─── File operations (sandboxed to working directory) ───
-    const SANDBOX_ROOT = path.resolve(process.cwd(), 'data');
+    const rawSandboxRoot = path.resolve(process.cwd(), 'data');
+    // Resolve symlinks on the sandbox root itself to prevent escape via symlinked root
+    const SANDBOX_ROOT = fs.existsSync(rawSandboxRoot) ? fs.realpathSync(rawSandboxRoot) : rawSandboxRoot;
 
     const resolveSafe = (filePath: string): string => {
       const resolved = path.resolve(SANDBOX_ROOT, filePath);

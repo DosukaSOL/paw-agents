@@ -239,6 +239,7 @@ export class ValidationEngine {
 
   // ─── Helpers ───
   private extractLamports(params: Record<string, unknown>): number {
+    if (!params) return 0;
     for (const key of ['lamports', 'amount', 'value']) {
       if (params[key] !== undefined && params[key] !== null) {
         const v = Number(params[key]);

@@ -39,7 +39,9 @@ export class WhatsAppAdapter implements ChannelAdapter {
           if (!text) continue;
 
           if (this.handler) {
-            await this.handler(`whatsapp:${jid}`, text, 'whatsapp');
+            await this.handler(`whatsapp:${jid}`, text, 'whatsapp').catch(err =>
+              console.error('[PAW:WhatsApp] Handler error:', (err as Error).message)
+            );
           }
         }
       });

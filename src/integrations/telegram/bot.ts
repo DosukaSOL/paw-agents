@@ -22,6 +22,10 @@ export class TelegramBot {
   private setupHandlers(): void {
     // Main message handler — routes commands and messages
     this.bot.on('text', async (ctx) => {
+      if (!ctx.from) {
+        await ctx.reply('Unable to process messages without user context.');
+        return;
+      }
       const userId = String(ctx.from.id);
       const message = ctx.message.text;
 

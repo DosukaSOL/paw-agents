@@ -97,6 +97,10 @@ export class MissionControl {
       payload,
     };
     this.taskQueue.push(task);
+    // Prune old tasks to prevent unbounded memory growth
+    if (this.taskQueue.length > 500) {
+      this.taskQueue = this.taskQueue.slice(-500);
+    }
     this.tasksTodayCount++;
     this.broadcast();
     return id;

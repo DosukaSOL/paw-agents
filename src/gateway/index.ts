@@ -74,7 +74,7 @@ export class PawGateway {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           status: 'ok',
-          version: '3.6.0',
+          version: '4.0.0',
           clients: this.clients.size,
           uptime: process.uptime(),
         }));
@@ -243,7 +243,20 @@ export class PawGateway {
             crossAppSync.addMessage(userId, String(msg.payload), 'user', channel);
             missionControl.recordMessage();
 
-            const response = await this.agent.process(userId, String(msg.payload));
+            let response: unknown;
+            try {
+              response = await this.agent.process(userId, String(msg.payload));
+            } catch (processErr) {
+              console.error('[Gateway] agent.process error:', (processErr as Error).message);
+              this.sendToClient(clientId, {
+                type: 'event',
+                channel: 'webchat',
+                from: 'system',
+                payload: { event: 'error', message: 'Agent processing failed' },
+                timestamp: new Date().toISOString(),
+              });
+              return;
+            }
             const durationMs = Date.now() - startTime;
 
             // Record in cross-app sync and mission control
@@ -544,12 +557,7 @@ export class PawGateway {
     if (!a || !b) return false;
     const bufA = Buffer.from(a);
     const bufB = Buffer.from(b);
-    const maxLen = Math.max(bufA.length, bufB.length);
-    const paddedA = Buffer.alloc(maxLen, 0);
-    const paddedB = Buffer.alloc(maxLen, 0);
-    bufA.copy(paddedA, 0, 0, bufA.length);
-    bufB.copy(paddedB, 0, 0, bufB.length);
-    const equal = timingSafeEqual(paddedA, paddedB);
-    return equal && bufA.length === bufB.length;
+    if (bufA.length !== bufB.length) return false;
+    return timingSafeEqual(bufA, bufB);
   }
 }
