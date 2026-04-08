@@ -47,10 +47,11 @@
     }
     #sprite-sheet {
       position: absolute;
-      width: 480px; /* 128*5 * (96/128) = 480 scaled — 5 columns */
-      height: 480px; /* 128*5 * (96/128) = 480 scaled — 5 rows */
+      width: 384px; /* 128*4 * (96/128) = 384 scaled — 4 columns */
+      height: 288px; /* 128*3 * (96/128) = 288 scaled — 3 rows */
       /* We scale from 128px frames to 96px display */
       transform-origin: top left;
+      transition: transform 0.15s ease;
     }
 
     /* ─── Notification Bubble ─── */
@@ -120,32 +121,23 @@
 
   <script>
     // ─── Sprite Frame Map ───
+    // Sprite frame map — matches pawl-sprites.svg layout (128px per frame, 4 cols × 3 rows)
     const SPRITE_MAP = {
+      // Row 0: Idle / Walk
       idle_front:   { x: 0,   y: 0 },
-      idle_left:    { x: 128, y: 0 },
-      idle_right:   { x: 256, y: 0 },
-      sit_front:    { x: 384, y: 0 },
-      blink:        { x: 512, y: 0 },
-      happy:        { x: 0,   y: 128 },
+      walk_right_1: { x: 128, y: 0 },
+      walk_right_2: { x: 256, y: 0 },
+      walk_right_3: { x: 384, y: 0 },
+      // Row 1: Emotions
+      love:         { x: 0,   y: 128 },
       excited:      { x: 128, y: 128 },
-      mad:          { x: 256, y: 128 },
-      sad:          { x: 384, y: 128 },
-      confused:     { x: 512, y: 128 },
-      bark:         { x: 0,   y: 256 },
-      alert:        { x: 128, y: 256 },
-      success:      { x: 256, y: 256 },
-      error:        { x: 384, y: 256 },
-      thinking:     { x: 512, y: 256 },
-      walk_left_1:  { x: 0,   y: 384 },
-      walk_left_2:  { x: 128, y: 384 },
-      walk_right_1: { x: 256, y: 384 },
-      walk_right_2: { x: 384, y: 384 },
-      jump:         { x: 512, y: 384 },
-      sleep:        { x: 0,   y: 512 },
-      wag_1:        { x: 128, y: 512 },
-      wag_2:        { x: 256, y: 512 },
-      notification: { x: 384, y: 512 },
-      love:         { x: 512, y: 512 },
+      happy:        { x: 256, y: 128 },
+      mad:          { x: 384, y: 128 },
+      // Row 2: Rest / Joy
+      sleep:        { x: 0,   y: 256 },
+      sleep_zzz:    { x: 128, y: 256 },
+      sleep_peek:   { x: 256, y: 256 },
+      wag:          { x: 384, y: 256 },
     };
 
     const FRAME_SIZE = 128;
@@ -156,12 +148,16 @@
     const pawlEl = document.getElementById('pawl');
     let notificationTimeout = null;
 
-    function setFrame(frameName) {
-      const frame = SPRITE_MAP[frameName];
+    function setFrame(frameName, flip) {
+      const name = typeof frameName === 'object' ? frameName.frame : frameName;
+      const shouldFlip = typeof frameName === 'object' ? frameName.flip : (flip || false);
+      const frame = SPRITE_MAP[name];
       if (!frame) return;
       // Position the sprite sheet so the correct frame is visible
       spriteSheet.style.left = -(frame.x * SCALE) + 'px';
       spriteSheet.style.top = -(frame.y * SCALE) + 'px';
+      // Flip horizontally for left-direction walking
+      spriteSheet.parentElement.style.transform = shouldFlip ? 'scaleX(-1)' : 'scaleX(1)';
     }
 
     // Start with idle
@@ -214,9 +210,9 @@
 
     // ─── IPC listeners ───
     if (window.pawlAPI) {
-      window.pawlAPI.onFrame((frame) => {
-        setFrame(frame);
-        if (frame === 'jump') {
+      window.pawlAPI.onFrame((data) => {
+        setFrame(data);
+        if (data === 'excited' || (data && data.frame === 'excited')) {
           pawlEl.classList.add('bounce');
           setTimeout(() => pawlEl.classList.remove('bounce'), 400);
         }

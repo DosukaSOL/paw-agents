@@ -273,7 +273,7 @@ export class PawGateway {
             const userId = client.info.user_id ?? `webchat:${clientId}`;
             const channel = client.info.channel;
             const startTime = Date.now();
-            const systemPrompt = 'You are PAW, an autonomous AI agent. Be helpful, concise, and accurate.';
+            const systemPrompt = 'You are PAW — a versatile AI assistant. Be natural and conversational. Match the user\'s tone: casual for casual, technical for technical. Help with anything — coding, writing, research, brainstorming, or just chatting. Be concise, warm, and real. You have tools for Solana, browser automation, file ops, and more — but only mention them when relevant to what the user asks. Never open by listing capabilities.';
 
             crossAppSync.addChannelToSession(userId, channel);
             crossAppSync.addMessage(userId, String(msg.payload), 'user', channel);

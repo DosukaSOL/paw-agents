@@ -1456,16 +1456,22 @@
       let ttsEnabled = true;
       let selectedVoice = null;
       let voiceRetries = 0;
-      const MAX_VOICE_RETRIES = 3;
+      const MAX_VOICE_RETRIES = 5;
+
+      // Check if SpeechRecognition is available
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        addLog('warn', 'voice', 'SpeechRecognition API not available in this environment');
+        voiceBtn.title = 'Voice not available';
+        voiceBtn.style.opacity = '0.4';
+      }
 
       // ─── TTS Setup ───
       function initTTS() {
         if (!window.speechSynthesis) return;
-        // Wait for voices to load
         function loadVoices() {
           const voices = window.speechSynthesis.getVoices();
           if (voices.length === 0) return;
-          // Prefer natural-sounding English voices
           const preferred = [
             'Google UK English Female', 'Google US English', 'Samantha', 'Karen',
             'Daniel', 'Alex', 'Moira', 'Tessa', 'Fiona', 'Victoria'
@@ -1475,7 +1481,6 @@
             if (match) { selectedVoice = match; break; }
           }
           if (!selectedVoice) {
-            // Fallback: any English voice
             selectedVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
           }
           if (selectedVoice) {
@@ -1489,9 +1494,8 @@
 
       function speak(text) {
         if (!ttsEnabled || !window.speechSynthesis || !text) return;
-        // Don't speak error messages or very long responses
         if (text.length > 500) text = text.substring(0, 500) + '...';
-        window.speechSynthesis.cancel(); // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         if (selectedVoice) utterance.voice = selectedVoice;
         utterance.rate = 1.0;
@@ -1500,32 +1504,34 @@
         window.speechSynthesis.speak(utterance);
       }
 
-      // Expose speak function globally so agent responses can trigger it
       window._pawSpeak = speak;
       window._pawTTSEnabled = () => ttsEnabled && isListening;
 
       // ─── Voice Input (STT) ───
       voiceBtn.addEventListener('click', () => {
-        if (isListening) {
-          stopListening();
+        if (!SpeechRecognition) {
+          addChatMessage('agent', 'Voice input is not supported in this environment.');
           return;
         }
+        if (isListening) {
+          stopListening();
+          // Re-enable wake word after manual stop
+          if (!wakeWordActive) setTimeout(() => startWakeWord(), 500);
+          return;
+        }
+        // Stop wake word before starting full voice
+        stopWakeWord();
         startListening();
       });
 
       function startListening() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-          addChatMessage('agent', 'Voice input is not supported in this environment. Try using a Chromium-based browser.');
-          addLog('warn', 'voice', 'SpeechRecognition API not available');
-          return;
-        }
+        if (!SpeechRecognition) return;
         voiceRetries = 0;
         createRecognition();
       }
 
       function createRecognition() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) return;
         recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.interimResults = true;
@@ -1556,32 +1562,34 @@
         };
 
         recognition.onerror = (event) => {
-          // 'aborted' is normal when we stop manually
           if (event.error === 'aborted') return;
-          // 'no-speech' is normal — just keep listening
           if (event.error === 'no-speech') return;
-          // 'not-allowed' means mic permission denied
           if (event.error === 'not-allowed') {
             addChatMessage('agent', 'Microphone access was denied. Please allow mic access in your system settings.');
             addLog('error', 'voice', 'Mic permission denied');
             stopListening();
             return;
           }
+          if (event.error === 'network') {
+            addLog('warn', 'voice', 'Voice requires internet for speech recognition (uses Google services)');
+          }
           addLog('warn', 'voice', 'Voice error: ' + event.error);
         };
 
         recognition.onend = () => {
-          // If we're still supposed to be listening, restart (auto-recovery)
           if (isListening && voiceRetries < MAX_VOICE_RETRIES) {
             voiceRetries++;
-            try { recognition.start(); } catch(e) {
-              addLog('warn', 'voice', 'Could not restart voice. Retrying...');
-              setTimeout(() => {
-                if (isListening) {
-                  try { recognition.start(); } catch(e2) { stopListening(); }
+            setTimeout(() => {
+              if (isListening && recognition) {
+                try { recognition.start(); } catch(e) {
+                  setTimeout(() => {
+                    if (isListening) {
+                      try { createRecognition(); } catch(e2) { stopListening(); }
+                    }
+                  }, 1000);
                 }
-              }, 500);
-            }
+              }
+            }, 300);
           } else if (isListening) {
             addLog('warn', 'voice', 'Voice recognition stopped after retries — click mic to restart');
             stopListening();
@@ -1609,51 +1617,69 @@
 
       // ─── "Hey PAW" Wake Word ───
       function startWakeWord() {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (!SpeechRecognition) return;
+        if (wakeWordActive) return; // Already running
+        if (isListening) return; // Full voice mode is active
 
-        wakeWordRecognition = new SpeechRecognition();
-        wakeWordRecognition.continuous = true;
-        wakeWordRecognition.interimResults = true;
-        wakeWordRecognition.lang = 'en-US';
+        try {
+          wakeWordRecognition = new SpeechRecognition();
+          wakeWordRecognition.continuous = true;
+          wakeWordRecognition.interimResults = true;
+          wakeWordRecognition.lang = 'en-US';
 
-        wakeWordRecognition.onresult = (event) => {
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const transcript = event.results[i][0].transcript.toLowerCase();
-            if (transcript.includes('hey paw') || transcript.includes('hey pa') || transcript.includes('hey paul')) {
-              addPawTraceLog('info', 'voice', 'Wake word detected!');
-              addLog('info', 'voice', '"Hey PAW" detected — activating voice mode');
-              // Stop wake word listener and activate full voice mode
-              stopWakeWord();
-              startListening();
-              break;
+          wakeWordRecognition.onresult = (event) => {
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+              const transcript = event.results[i][0].transcript.toLowerCase().trim();
+              // Match various pronunciations of "Hey PAW"
+              if (transcript.includes('hey paw') || transcript.includes('hey pa') || 
+                  transcript.includes('hey paul') || transcript.includes('hey pow') ||
+                  transcript.includes('a paw') || transcript.includes('hey pah')) {
+                addPawTraceLog('info', 'voice', 'Wake word detected: "' + transcript + '"');
+                addLog('info', 'voice', '"Hey PAW" detected — activating voice mode');
+                addChatMessage('agent', 'Hey! I\'m listening. Go ahead.');
+                stopWakeWord();
+                setTimeout(() => startListening(), 200);
+                return;
+              }
             }
-          }
-        };
+          };
 
-        wakeWordRecognition.onerror = (event) => {
-          if (event.error === 'aborted' || event.error === 'no-speech') return;
-        };
+          wakeWordRecognition.onerror = (event) => {
+            if (event.error === 'aborted' || event.error === 'no-speech') return;
+            if (event.error === 'not-allowed') {
+              addLog('warn', 'voice', 'Wake word needs mic permission');
+              wakeWordActive = false;
+              return;
+            }
+          };
 
-        wakeWordRecognition.onend = () => {
-          // Restart wake word listening unless full voice mode is active
-          if (wakeWordActive && !isListening) {
-            try { wakeWordRecognition.start(); } catch(e) {
+          wakeWordRecognition.onend = () => {
+            // Auto-restart wake word unless full voice mode took over
+            if (wakeWordActive && !isListening) {
               setTimeout(() => {
                 if (wakeWordActive && !isListening) {
-                  try { wakeWordRecognition.start(); } catch(e2) {}
+                  try { 
+                    wakeWordRecognition.start(); 
+                  } catch(e) {
+                    // Recreate if the old instance is dead
+                    setTimeout(() => {
+                      if (wakeWordActive && !isListening) {
+                        wakeWordActive = false;
+                        startWakeWord();
+                      }
+                    }, 2000);
+                  }
                 }
-              }, 1000);
+              }, 500);
             }
-          }
-        };
+          };
 
-        wakeWordActive = true;
-        try {
+          wakeWordActive = true;
           wakeWordRecognition.start();
-          addPawTraceLog('info', 'voice', '"Hey PAW" wake word listening active');
+          addPawTraceLog('info', 'voice', '"Hey PAW" wake word listener active');
         } catch(e) {
           wakeWordActive = false;
+          addLog('warn', 'voice', 'Could not start wake word listener: ' + e.message);
         }
       }
 
@@ -1665,14 +1691,12 @@
         }
       }
 
-      // Auto-start wake word on launch (can be toggled in settings)
-      // Delayed to avoid interfering with startup
+      // Auto-start wake word on launch (delayed to avoid startup conflicts)
       setTimeout(() => {
-        // Only start if we're not already in voice mode
-        if (!isListening) {
-          try { startWakeWord(); } catch(e) {}
+        if (!isListening && SpeechRecognition) {
+          startWakeWord();
         }
-      }, 5000);
+      }, 3000);
     })();
 
     // ─── Multi-Agent Management ───

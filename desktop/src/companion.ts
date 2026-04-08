@@ -28,49 +28,32 @@ export const DEFAULT_PAWL_CONFIG: PawlConfig = {
   size: 96,
 };
 
-// Sprite frame map — matches pawl-sprites.svg layout (128px per frame)
+// Sprite frame map — matches pawl-sprites.svg layout (128px per frame, 4 cols × 3 rows)
 export const SPRITE_MAP = {
-  // Row 0: Idle states
+  // Row 0: Idle / Walk
   idle_front:   { x: 0,   y: 0 },
-  idle_left:    { x: 128, y: 0 },
-  idle_right:   { x: 256, y: 0 },
-  sit_front:    { x: 384, y: 0 },
-  blink:        { x: 512, y: 0 },
+  walk_right_1: { x: 128, y: 0 },
+  walk_right_2: { x: 256, y: 0 },
+  walk_right_3: { x: 384, y: 0 },
 
   // Row 1: Emotions
-  happy:        { x: 0,   y: 128 },
+  love:         { x: 0,   y: 128 },
   excited:      { x: 128, y: 128 },
-  mad:          { x: 256, y: 128 },
-  sad:          { x: 384, y: 128 },
-  confused:     { x: 512, y: 128 },
+  happy:        { x: 256, y: 128 },
+  mad:          { x: 384, y: 128 },
 
-  // Row 2: Actions
-  bark:         { x: 0,   y: 256 },
-  alert:        { x: 128, y: 256 },
-  success:      { x: 256, y: 256 },
-  error:        { x: 384, y: 256 },
-  thinking:     { x: 512, y: 256 },
-
-  // Row 3: Movement
-  walk_left_1:  { x: 0,   y: 384 },
-  walk_left_2:  { x: 128, y: 384 },
-  walk_right_1: { x: 256, y: 384 },
-  walk_right_2: { x: 384, y: 384 },
-  jump:         { x: 512, y: 384 },
-
-  // Row 4: Special
-  sleep:        { x: 0,   y: 512 },
-  wag_1:        { x: 128, y: 512 },
-  wag_2:        { x: 256, y: 512 },
-  notification: { x: 384, y: 512 },
-  love:         { x: 512, y: 512 },
+  // Row 2: Rest / Joy
+  sleep:        { x: 0,   y: 256 },
+  sleep_zzz:    { x: 128, y: 256 },
+  sleep_peek:   { x: 256, y: 256 },
+  wag:          { x: 384, y: 256 },
 } as const;
 
 export type SpriteFrame = keyof typeof SPRITE_MAP;
 
 // Emotion pool for RNG click reactions
 const CLICK_EMOTIONS: SpriteFrame[] = [
-  'happy', 'excited', 'mad', 'sad', 'confused', 'love', 'bark',
+  'happy', 'excited', 'mad', 'love', 'wag',
 ];
 
 export class PawlCompanion {
@@ -197,10 +180,10 @@ export class PawlCompanion {
 
     // Show alert frame
     const frameForType: Record<string, SpriteFrame> = {
-      info: 'alert',
-      success: 'success',
-      error: 'error',
-      warning: 'alert',
+      info: 'excited',
+      success: 'happy',
+      error: 'mad',
+      warning: 'excited',
     };
 
     this.setFrame(frameForType[notif.type] ?? 'alert');
@@ -231,9 +214,9 @@ export class PawlCompanion {
 
   // ─── Frame management ───
 
-  setFrame(frame: SpriteFrame): void {
+  setFrame(frame: SpriteFrame, flip = false): void {
     this.currentFrame = frame;
-    this.sendToRenderer('pawl:frame', frame);
+    this.sendToRenderer('pawl:frame', { frame, flip });
   }
 
   // ─── Animations ───
@@ -246,21 +229,17 @@ export class PawlCompanion {
 
       const rand = Math.random();
       if (rand < 0.15) {
-        // Blink
-        this.setFrame('blink');
+        // Blink (quick close-open using sleep_peek)
+        this.setFrame('sleep_peek');
         setTimeout(() => this.setFrame('idle_front'), 200);
       } else if (rand < 0.25) {
-        // Look around
-        const dir = Math.random() < 0.5 ? 'idle_left' : 'idle_right';
-        this.setFrame(dir);
-        setTimeout(() => this.setFrame('idle_front'), 1500);
-      } else if (rand < 0.30) {
         // Wag tail
-        this.setFrame('wag_1');
-        setTimeout(() => this.setFrame('wag_2'), 200);
-        setTimeout(() => this.setFrame('wag_1'), 400);
-        setTimeout(() => this.setFrame('wag_2'), 600);
-        setTimeout(() => this.setFrame('idle_front'), 800);
+        this.setFrame('wag');
+        setTimeout(() => this.setFrame('idle_front'), 1200);
+      } else if (rand < 0.30) {
+        // Happy moment
+        this.setFrame('happy');
+        setTimeout(() => this.setFrame('idle_front'), 1500);
       }
     }, 3000);
   }
@@ -286,10 +265,9 @@ export class PawlCompanion {
           return;
         }
 
-        // Alternate walk frames
-        const frame1: SpriteFrame = direction === 'left' ? 'walk_left_1' : 'walk_right_1';
-        const frame2: SpriteFrame = direction === 'left' ? 'walk_left_2' : 'walk_right_2';
-        this.setFrame(step % 2 === 0 ? frame1 : frame2);
+        // Alternate walk frames (use walk_right_*, flip via CSS for left)
+        const walkFrames: SpriteFrame[] = ['walk_right_1', 'walk_right_2', 'walk_right_3'];
+        this.setFrame(walkFrames[step % walkFrames.length], direction === 'left');
 
         const moveBy = direction === 'left' ? -6 : 6;
         this.posX = Math.max(0, Math.min(width - size, this.posX + moveBy));
@@ -328,10 +306,10 @@ export class PawlCompanion {
     if (!this.isAsleep) return;
     this.isAsleep = false;
 
-    // Jump up excitedly
-    this.setFrame('jump');
-    setTimeout(() => this.setFrame('excited'), 500);
-    setTimeout(() => this.setFrame('idle_front'), 1500);
+    // Wake up excitedly
+    this.setFrame('excited');
+    setTimeout(() => this.setFrame('happy'), 600);
+    setTimeout(() => this.setFrame('idle_front'), 1400);
     this.resetIdleTimer();
   }
 
@@ -356,7 +334,7 @@ export class PawlCompanion {
       this.setFrame(emotion);
 
       if (this.config.sounds) {
-        this.sendToRenderer('pawl:sound', emotion === 'bark' ? 'bark' : 'yip');
+        this.sendToRenderer('pawl:sound', emotion === 'excited' ? 'bark' : 'yip');
       }
 
       setTimeout(() => this.setFrame('idle_front'), 2000);

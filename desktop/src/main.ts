@@ -2,7 +2,7 @@
 // Combines Dashboard, Mission Control, CLI Companion, Plugins, and Workflows
 // into a single unified desktop application with Pawl companion.
 
-import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, session } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import WebSocket from 'ws';
@@ -20,6 +20,9 @@ let reconnectDelay = 3000;
 const MAX_RECONNECT_DELAY = 30000;
 let pawl: PawlCompanion | null = null;
 
+// Enable speech recognition in Electron (requires Google cloud service access)
+app.commandLine.appendSwitch('enable-speech-dispatcher');
+
 // ─── Create Hub window (primary) ───
 function createHubWindow(): void {
   hubWindow = new BrowserWindow({
@@ -35,7 +38,7 @@ function createHubWindow(): void {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: true,
+      sandbox: false,
     },
   });
 
@@ -266,6 +269,12 @@ function createTray(): void {
 
 // ─── App lifecycle ───
 app.whenReady().then(() => {
+  // Grant microphone permission for voice mode / wake word
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
+    const allowed = ['media', 'microphone', 'audioCapture'];
+    callback(allowed.includes(permission));
+  });
+
   createHubWindow();
   createTray();
   setupIPC();
