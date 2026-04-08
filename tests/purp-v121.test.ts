@@ -1,12 +1,12 @@
-// ─── Purp SCL v1.2.1 Compatibility Tests ───
+// ─── Purp SCL v2.0.1 Compatibility Tests ───
 
 import { PurpEngine } from '../src/integrations/purp/engine';
 import { PurpStdlibModule, PurpTemplate, PurpCliCommand } from '../src/core/types';
 import { config } from '../src/core/config';
 
 describe('Purp v1.2.1 — Metadata & Constants', () => {
-  test('upstream version is 1.2.1', () => {
-    expect(PurpEngine.UPSTREAM_VERSION).toBe('1.2.1');
+  test('upstream version is 2.0.1', () => {
+    expect(PurpEngine.UPSTREAM_VERSION).toBe('2.0.1');
   });
 
   test('exposes 15 stdlib modules', () => {
@@ -282,7 +282,7 @@ pub instruction update(#[mut] signer authority, value: u64) {
     expect(result.rust_output).toBeDefined();
     expect(result.typescript_sdk).toBeDefined();
     expect(result.frontend_output).toBeDefined();
-    expect(result.frontend_output).toContain('Purp SCL v1.2.1');
+    expect(result.frontend_output).toContain('Purp SCL v2.0.1');
     expect(result.frontend_output).toContain('wallet-adapter-react');
     expect(result.idl).toBeDefined();
   });
@@ -306,7 +306,7 @@ pub instruction increment(#[mut] signer user) {
     expect(result.frontend_output).toBeUndefined();
   });
 
-  test('Rust output header references v1.2.1', () => {
+  test('Rust output header references v2.0.1', () => {
     const source = `
 program TestProg {
 }
@@ -321,10 +321,10 @@ pub instruction set_value(#[mut] signer admin, val: u64) {
 `;
     const program = purp.parse(source) as any;
     const result = purp.compile(program);
-    expect(result.rust_output).toContain('v1.2.1');
+    expect(result.rust_output).toContain('v2.0.1');
   });
 
-  test('TypeScript SDK header references v1.2.1', () => {
+  test('TypeScript SDK header references v2.0.1', () => {
     const source = `
 program TestProg {
 }
@@ -339,7 +339,7 @@ pub instruction set_value(#[mut] signer admin, val: u64) {
 `;
     const program = purp.parse(source) as any;
     const result = purp.compile(program);
-    expect(result.typescript_sdk).toContain('v1.2.1');
+    expect(result.typescript_sdk).toContain('v2.0.1');
   });
 
   test('warns on deprecated ai stdlib import', () => {
@@ -645,7 +645,7 @@ pub instruction create_greeting(#[mut] signer author, #[init] account greeting, 
 `;
     const program = purp.parse(source) as any;
     expect(program.name).toBe('HelloWorld');
-    expect(program.version).toBe('1.2.1');
+    expect(program.version).toBe('2.0.1');
     expect(program.accounts).toHaveLength(1);
     expect(program.instructions).toHaveLength(1);
   });

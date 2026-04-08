@@ -475,7 +475,7 @@ error VaultErrors {
     expect(program.name).toBe('legacy');
   });
 
-  test('compiles Purp v0.3 to Anchor Rust', () => {
+  test('compiles Purp v0.3 to Pinocchio Rust', () => {
     const purp = new PurpEngine();
     const source = `
 program SimpleToken {
@@ -495,9 +495,9 @@ instruction Mint {
     const program = purp.parse(source);
     const result = purp.compile(program as any);
     expect(result.success).toBe(true);
-    expect(result.rust_output).toContain('anchor_lang');
-    expect(result.rust_output).toContain('pub mod simple_token');
-    expect(result.rust_output).toContain('pub fn mint');
+    expect(result.rust_output).toContain('pinocchio');
+    expect(result.rust_output).toContain('process_instruction');
+    expect(result.rust_output).toContain('mint');
     expect(result.typescript_sdk).toContain('SimpleTokenClient');
   });
 
@@ -945,7 +945,7 @@ pub instruction create_greeting(#[mut] #[signer] author, #[init] account greetin
     expect(program.instructions.length).toBeGreaterThanOrEqual(1);
   });
 
-  test('compiles v1.0 with Context struct naming', () => {
+  test('compiles v1.0 with Pinocchio instruction dispatch', () => {
     const purp = new PurpEngine();
     const source = `
 program Counter {
@@ -966,7 +966,8 @@ instruction Increment {
     const result = purp.compile(program as any);
     expect(result.success).toBe(true);
     if (result.rust_output) {
-      expect(result.rust_output).toContain('Context');
+      expect(result.rust_output).toContain('process_instruction');
+      expect(result.rust_output).toContain('entrypoint!');
     }
   });
 });

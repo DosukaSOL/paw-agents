@@ -24,3 +24,4 @@ coverage/
 
 # Session data
 data/
+package-lock 2.json
