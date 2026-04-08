@@ -37,6 +37,9 @@
   <a href="docs/ARCHITECTURE.md">Architecture</a>
 </p>
 
+> [!WARNING]
+> PAW is currently in early beta — expect rough edges and the occasional bug. We're actively improving things and would love your feedback and contributions!
+
 ---
 
 ## What is PAW?
