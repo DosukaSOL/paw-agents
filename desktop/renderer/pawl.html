@@ -38,19 +38,17 @@
       transform: scale(0.92);
     }
 
-    /* SVG sprite clipping */
+    /* Individual frame display */
     #sprite-container {
       width: 96px;
       height: 85px;
       overflow: hidden;
       position: relative;
     }
-    #sprite-sheet {
-      position: absolute;
-      width: 384px;  /* 1536 * SCALE_X */
-      height: 256px; /* 1024 * SCALE_Y */
-      transform-origin: top left;
-      transition: transform 0.15s ease;
+    #sprite-display {
+      width: 96px;
+      height: 85px;
+      object-fit: contain;
       image-rendering: auto;
     }
 
@@ -115,57 +113,37 @@
 <body>
   <div id="pawl">
     <div id="sprite-container">
-      <img id="sprite-sheet" src="../../assets/pawl-sprites.png" alt="Pawl" draggable="false" />
+      <img id="sprite-display" src="../../assets/pawl-frames/idle_front.png" alt="Pawl" draggable="false" />
     </div>
   </div>
 
   <script>
-    // ─── Sprite Frame Map ───
-    // Sprite frame map — matches pawl-sprites.png layout (384×341 per frame, 4 cols × 3 rows, 1536×1024 total)
-    const SPRITE_MAP = {
-      // Row 0: Idle / Walk
-      idle_front:   { col: 0, row: 0 },
-      walk_right_1: { col: 1, row: 0 },
-      walk_right_2: { col: 2, row: 0 },
-      walk_right_3: { col: 3, row: 0 },
-      // Row 1: Emotions
-      love:         { col: 0, row: 1 },
-      excited:      { col: 1, row: 1 },
-      happy:        { col: 2, row: 1 },
-      mad:          { col: 3, row: 1 },
-      // Row 2: Rest / Joy
-      sleep:        { col: 0, row: 2 },
-      sleep_zzz:    { col: 1, row: 2 },
-      sleep_peek:   { col: 2, row: 2 },
-      wag:          { col: 3, row: 2 },
-    };
+    // ─── Individual Frame Rendering ───
+    const FRAME_NAMES = [
+      'idle_front', 'walk_right_1', 'walk_right_2', 'walk_right_3',
+      'love', 'excited', 'happy', 'mad',
+      'sleep', 'sleep_zzz', 'sleep_peek', 'wag',
+    ];
+    const FRAME_BASE = '../../assets/pawl-frames/';
 
-    // Source image: 1536×1024, 4 cols × 3 rows
-    const COLS = 4;
-    const ROWS = 3;
-    const IMG_W = 1536;
-    const IMG_H = 1024;
-    const FRAME_W = IMG_W / COLS; // 384
-    const FRAME_H = IMG_H / ROWS; // ~341.3
-    const DISPLAY_W = 96;
-    const DISPLAY_H = Math.round(DISPLAY_W * (FRAME_H / FRAME_W)); // ~85
-    const SCALE_X = DISPLAY_W / FRAME_W;
-    const SCALE_Y = DISPLAY_H / FRAME_H;
+    // Preload all frame images
+    const frameCache = {};
+    FRAME_NAMES.forEach(name => {
+      const img = new Image();
+      img.src = FRAME_BASE + name + '.png';
+      frameCache[name] = img;
+    });
 
-    const spriteSheet = document.getElementById('sprite-sheet');
+    const spriteDisplay = document.getElementById('sprite-display');
     const pawlEl = document.getElementById('pawl');
     let notificationTimeout = null;
 
     function setFrame(frameName, flip) {
       const name = typeof frameName === 'object' ? frameName.frame : frameName;
       const shouldFlip = typeof frameName === 'object' ? frameName.flip : (flip || false);
-      const frame = SPRITE_MAP[name];
-      if (!frame) return;
-      // Position the sprite sheet so the correct frame is visible
-      spriteSheet.style.left = -(frame.col * DISPLAY_W) + 'px';
-      spriteSheet.style.top = -(frame.row * DISPLAY_H) + 'px';
-      // Flip horizontally for left-direction walking
-      spriteSheet.parentElement.style.transform = shouldFlip ? 'scaleX(-1)' : 'scaleX(1)';
+      if (!frameCache[name]) return;
+      spriteDisplay.src = FRAME_BASE + name + '.png';
+      spriteDisplay.style.transform = shouldFlip ? 'scaleX(-1)' : 'scaleX(1)';
     }
 
     // Start with idle
