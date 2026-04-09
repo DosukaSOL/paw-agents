@@ -1,0 +1,125 @@
+name: Build & Release PAW Hub
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v4.0.1)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            platform: mac
+          - os: windows-latest
+            platform: win
+          - os: ubuntu-latest
+            platform: linux
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Build framework
+        run: npm run build
+
+      - name: Install desktop dependencies
+        working-directory: desktop
+        run: npm ci
+
+      - name: Build desktop
+        working-directory: desktop
+        run: npm run build
+
+      - name: Package for ${{ matrix.platform }}
+        working-directory: desktop
+        run: npx electron-builder --${{ matrix.platform }} --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.platform }}
+          path: |
+            desktop/dist/*.dmg
+            desktop/dist/*.zip
+            desktop/dist/*.exe
+            desktop/dist/*.AppImage
+            desktop/dist/*.deb
+          if-no-files-found: warn
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: List artifacts
+        run: find artifacts -type f | head -30
+
+      - name: Determine tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          name: PAW Hub ${{ steps.tag.outputs.tag }}
+          body: |
+            ## PAW Hub ${{ steps.tag.outputs.tag }}
+
+            **Downloads:**
+            | OS | File | Type |
+            |---|---|---|
+            | 🪟 Windows | `.exe` | Installer (NSIS) |
+            | 🪟 Windows | `portable.exe` | Portable |
+            | 🍎 macOS | `.dmg` | Disk Image |
+            | 🍎 macOS | `.zip` | Zip Archive |
+            | 🐧 Linux | `.AppImage` | AppImage |
+            | 🐧 Linux | `.deb` | Debian Package |
+
+            **Requirements:** Node.js 20+ for the PAW Gateway.
+            Ollama recommended for free local AI.
+
+            **Install from source (alternative):**
+            ```bash
+            git clone https://github.com/DosukaSOL/paw-agents.git
+            cd paw-agents && npm install && npm run build
+            cd desktop && npm install && npm start
+            ```
+          files: artifacts/**/*
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

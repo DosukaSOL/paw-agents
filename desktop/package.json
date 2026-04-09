@@ -2,6 +2,7 @@
   "name": "paw-hub",
   "version": "4.0.1",
   "description": "PAW Hub — Your AI Agent OS for Desktop",
+  "author": "Dosuka",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc",
@@ -15,9 +16,11 @@
     "appId": "ai.pawagents.desktop",
     "productName": "PAW Agents",
     "icon": "icon.png",
+    "afterPack": "./afterPack.js",
     "mac": {
       "category": "public.app-category.developer-tools",
       "icon": "build/icon.icns",
+      "identity": null,
       "target": [
         "dmg",
         "zip"
@@ -46,13 +49,13 @@
     ]
   },
   "dependencies": {
-    "electron": "^41.1.1",
     "ws": "^8.20.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/ws": "^8.18.1",
-    "electron-builder": "^26.0.0",
+    "electron": "^41.1.1",
+    "electron-builder": "^26.8.1",
     "typescript": "^5.6.0"
   }
 }
