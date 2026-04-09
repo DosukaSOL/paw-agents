@@ -2,7 +2,11 @@
   "name": "paw-hub",
   "version": "4.0.1",
   "description": "PAW Hub — Your AI Agent OS for Desktop",
-  "author": "Dosuka",
+  "author": {
+    "name": "Dosuka",
+    "email": "dosukasol@users.noreply.github.com"
+  },
+  "homepage": "https://github.com/DosukaSOL/paw-agents",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc",
@@ -35,6 +39,7 @@
     },
     "linux": {
       "icon": "build/icon.png",
+      "maintainer": "Dosuka <dosukasol@users.noreply.github.com>",
       "target": [
         "AppImage",
         "deb"
