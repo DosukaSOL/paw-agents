@@ -7,6 +7,10 @@
     "email": "dosukasol@users.noreply.github.com"
   },
   "homepage": "https://github.com/DosukaSOL/paw-agents",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DosukaSOL/paw-agents.git"
+  },
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc",
