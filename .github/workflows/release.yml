@@ -37,14 +37,14 @@ jobs:
           node-version: 20
 
       - name: Install root dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build framework
         run: npm run build
 
       - name: Install desktop dependencies
         working-directory: desktop
-        run: npm ci
+        run: npm install
 
       - name: Build desktop
         working-directory: desktop
