@@ -305,7 +305,7 @@ export class PawAgent {
       }
 
       // ═══ STEP 8: Execute ═══
-      return this.executePlan(plan, trace, startTime);
+      return this.executePlan(plan, trace, startTime, userId);
 
     } catch (err) {
       const errMsg = err instanceof Error ? err.message : String(err);
@@ -353,11 +353,11 @@ export class PawAgent {
       duration_ms: 0,
     });
 
-    return this.executePlan(pending.plan, pending.trace, Date.now());
+    return this.executePlan(pending.plan, pending.trace, Date.now(), userId);
   }
 
   // ─── Execute a confirmed plan ───
-  private async executePlan(plan: AgentPlan, trace: TraceLogger, startTime: number): Promise<AgentResponse> {
+  private async executePlan(plan: AgentPlan, trace: TraceLogger, startTime: number, userId: string): Promise<AgentResponse> {
     trace.log('execution', {
       plan,
       metadata: { execution_mode: plan.execution_mode },
@@ -379,7 +379,7 @@ export class PawAgent {
         result.error.message,
         plan,
         (hint) => this.brain.generatePlan(plan.intent, [], plan.tools ?? [], hint),
-        (p) => this.validator.validate(p, this.getUserMode(`webhook:${plan.id}`)),
+        (p) => this.validator.validate(p, this.getUserMode(userId)),
         (p) => this.executor.execute(p),
       );
 

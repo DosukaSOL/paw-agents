@@ -4,6 +4,7 @@
 
 import { ChannelAdapter, ChannelType } from '../../core/types';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
+import { config } from '../../core/config';
 
 type MessageHandler = (userId: string, message: string, channel: ChannelType) => Promise<void>;
 
@@ -66,8 +67,9 @@ export class RestApiAdapter implements ChannelAdapter {
   }
 
   private async handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
-    // CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // CORS — use gateway config origins
+    const allowedOrigin = config.gateway.corsOrigins.includes('*') ? '*' : config.gateway.corsOrigins[0] ?? '';
+    res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
     res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 

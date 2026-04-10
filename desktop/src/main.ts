@@ -38,7 +38,7 @@ function createHubWindow(): void {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false,
+      sandbox: true,
     },
   });
 
@@ -77,6 +77,12 @@ function createWindow(): void {
 
 // ─── WebSocket connection to PAW Gateway ───
 function connectGateway(): void {
+  // Clear any pending reconnect timer first to prevent races
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+
   if (ws) {
     ws.close();
     ws = null;

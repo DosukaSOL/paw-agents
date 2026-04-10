@@ -1537,13 +1537,17 @@ export class PurpEngine {
       return { success: false, output: `Unknown Purp CLI command: ${command}` };
     }
 
-    // Sanitize args
-    const safeArgs = args.map(a => a.replace(/[;&|`$]/g, ''));
-    const fullCmd = `${compilerPath} ${command} ${safeArgs.join(' ')}`.trim();
+    // Validate compiler path exists and is not a shell meta path
+    if (!/^[a-zA-Z0-9_.\-\/\\:]+$/.test(compilerPath)) {
+      return { success: false, output: 'Invalid compiler path characters' };
+    }
+
+    // Sanitize args — reject any arg with shell metacharacters
+    const safeArgs = args.filter(a => /^[a-zA-Z0-9_.\-\/\\:=@]+$/.test(a));
 
     try {
-      const { execSync } = await import('child_process');
-      const output = execSync(fullCmd, {
+      const { execFileSync } = await import('child_process');
+      const output = execFileSync(compilerPath, [command, ...safeArgs], {
         cwd: config.purp.projectDir,
         timeout: 60_000,
         encoding: 'utf-8',

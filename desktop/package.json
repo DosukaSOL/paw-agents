@@ -16,9 +16,11 @@
     "build": "tsc",
     "start": "tsc && electron dist/main.js",
     "dev": "tsc && electron dist/main.js",
-    "package:mac": "tsc && electron-builder --mac",
-    "package:win": "tsc && electron-builder --win",
-    "package:linux": "tsc && electron-builder --linux"
+    "clean": "node -e \"const fs=require('fs');['dist/mac-arm64','dist/win-unpacked','dist/win-arm64-unpacked','dist/linux-unpacked','dist/builder-debug.yml'].forEach(p=>{try{fs.rmSync(p,{recursive:true,force:true})}catch(_){}})\"",
+    "prepackage": "npm run clean && npm run build",
+    "package:mac": "npm run prepackage && electron-builder --mac",
+    "package:win": "npm run prepackage && electron-builder --win",
+    "package:linux": "npm run prepackage && electron-builder --linux"
   },
   "build": {
     "appId": "ai.pawagents.desktop",
@@ -51,7 +53,17 @@
       "category": "Development"
     },
     "files": [
-      "dist/**/*",
+      "dist/**/*.js",
+      "!dist/**/mac-*/**",
+      "!dist/**/win-*/**",
+      "!dist/**/linux-*/**",
+      "!dist/builder-debug.yml",
+      "!dist/**/*.blockmap",
+      "!dist/**/*.dmg",
+      "!dist/**/*.zip",
+      "!dist/**/*.exe",
+      "!dist/**/*.AppImage",
+      "!dist/**/*.deb",
       "renderer/**/*",
       "icon.png",
       "build/**/*"

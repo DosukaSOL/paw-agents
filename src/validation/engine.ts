@@ -49,7 +49,10 @@ export class ValidationEngine {
       errors.push({ code: 'MISSING_INTENT', field: 'intent', message: 'Plan must have an intent', severity: 'fatal' });
     }
     if (!Array.isArray(plan.plan) || plan.plan.length === 0) {
-      errors.push({ code: 'EMPTY_PLAN', field: 'plan', message: 'Plan must have at least one step', severity: 'fatal' });
+      // Allow empty plans for conversational intents (no tools needed)
+      if (plan.execution_mode !== 'system') {
+        errors.push({ code: 'EMPTY_PLAN', field: 'plan', message: 'Plan must have at least one step', severity: 'fatal' });
+      }
     }
     if (!plan.execution_mode || !['purp', 'js', 'api', 'system'].includes(plan.execution_mode)) {
       errors.push({ code: 'INVALID_EXEC_MODE', field: 'execution_mode', message: 'Invalid execution mode', severity: 'fatal' });

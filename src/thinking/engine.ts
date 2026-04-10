@@ -320,7 +320,11 @@ Format your response as:
   }
 
   updateConfig(updates: Partial<ThinkingConfig>): void {
-    Object.assign(this.config, updates);
+    // Safe merge — prevent prototype pollution
+    for (const [key, value] of Object.entries(updates)) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
+      (this.config as any)[key] = value;
+    }
   }
 
   getConfig(): ThinkingConfig {

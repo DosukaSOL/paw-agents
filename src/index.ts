@@ -381,3 +381,13 @@ main().catch((err) => {
   console.error('[PAW] Fatal error:', err);
   process.exit(1);
 });
+
+// Global safety nets
+process.on('unhandledRejection', (reason) => {
+  console.error('[PAW] Unhandled rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[PAW] Uncaught exception:', err);
+  process.exit(1);
+});

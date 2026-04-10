@@ -43,18 +43,25 @@ function connectGateway() {
   }
 
   try {
-    const url = authToken
-      ? `${gatewayUrl}?token=${encodeURIComponent(authToken)}`
-      : gatewayUrl;
-
-    ws = new WebSocket(url);
+    // Connect without token in URL — send auth after connection
+    ws = new WebSocket(gatewayUrl);
 
     ws.onopen = () => {
       console.log('[PAW Extension] Connected to gateway');
+      // Authenticate via message instead of query parameter
+      if (authToken) {
+        ws.send(JSON.stringify({
+          type: 'message',
+          auth_token: authToken,
+          channel: 'browser-extension',
+          payload: '',
+        }));
+      }
       ws.send(JSON.stringify({
         type: 'register',
         channel: 'browser-extension',
         client_id: `ext_${Date.now()}`,
+        auth_token: authToken || undefined,
       }));
       updateBadge('connected');
     };

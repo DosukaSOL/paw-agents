@@ -128,7 +128,7 @@ export const config = {
     port: safeParseInt('GATEWAY_PORT', 18789, 1, 65535),
     host: optionalEnv('GATEWAY_HOST', '127.0.0.1'),
     authToken: optionalEnv('GATEWAY_AUTH_TOKEN', ''),
-    corsOrigins: optionalEnv('GATEWAY_CORS_ORIGINS', '*').split(',').map(o => o.trim()).filter(Boolean),
+    corsOrigins: optionalEnv('GATEWAY_CORS_ORIGINS', 'http://127.0.0.1:18789').split(',').map(o => o.trim()).filter(Boolean),
   },
   // ─── Models ───
   models: {

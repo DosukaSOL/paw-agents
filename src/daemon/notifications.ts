@@ -50,31 +50,32 @@ export class NotificationManager extends EventEmitter {
 
   // ─── Send native OS notification ───
   private sendNative(title: string, body: string): void {
-    const safeTitle = title.replace(/"/g, '\\"');
-    const safeBody = body.replace(/"/g, '\\"');
-    // For shell single-quoted strings, escape ' as '"'"'
-    const shellTitle = safeTitle.replace(/'/g, "'\"'\"'");
-    const shellBody = safeBody.replace(/'/g, "'\"'\"'");
+    // Strip all control characters and limit length to prevent injection
+    const safeTitle = title.replace(/[\x00-\x1f\x7f]/g, '').substring(0, 200);
+    const safeBody = body.replace(/[\x00-\x1f\x7f]/g, '').substring(0, 500);
 
     if (process.platform === 'darwin') {
-      // macOS: use osascript with -e argument passed safely
-      const script = `display notification "${shellBody}" with title "🐾 PAW" subtitle "${shellTitle}"`;
-      spawn('osascript', ['-e', script], { timeout: 5000, stdio: 'ignore' }).unref();
+      // macOS: pass script via stdin to avoid shell escaping issues entirely
+      const script = `display notification "${safeBody.replace(/[\\"/]/g, ' ')}" with title "🐾 PAW" subtitle "${safeTitle.replace(/[\\"/]/g, ' ')}"`;
+      const child = spawn('osascript', ['-'], { timeout: 5000, stdio: ['pipe', 'ignore', 'ignore'] });
+      child.stdin?.write(script);
+      child.stdin?.end();
+      child.unref();
     } else if (process.platform === 'linux') {
-      // Linux: use notify-send
-      spawn('notify-send', ['🐾 PAW — ' + title, body], { detached: true, stdio: 'ignore' }).unref();
+      // Linux: use notify-send with args array (no shell interpolation)
+      spawn('notify-send', ['🐾 PAW — ' + safeTitle, safeBody], { detached: true, stdio: 'ignore' }).unref();
     } else if (process.platform === 'win32') {
-      // Windows: use PowerShell toast
+      // Windows: use PowerShell with encoded command to avoid string interpolation
+      const xml = `<toast><visual><binding template="ToastText02"><text id="1">PAW: ${safeTitle.replace(/[<>&"']/g, ' ')}</text><text id="2">${safeBody.replace(/[<>&"']/g, ' ')}</text></binding></visual></toast>`;
       const ps = `
-        [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
-        $template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText02)
-        $textNodes = $template.GetElementsByTagName("text")
-        $textNodes.Item(0).AppendChild($template.CreateTextNode("PAW: ${safeTitle}")) | Out-Null
-        $textNodes.Item(1).AppendChild($template.CreateTextNode("${safeBody}")) | Out-Null
-        $toast = [Windows.UI.Notifications.ToastNotification]::new($template)
-        [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("PAW").Show($toast)
-      `;
-      spawn('powershell', ['-Command', ps], { detached: true, stdio: 'ignore' }).unref();
+[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] | Out-Null
+$xml = New-Object Windows.Data.Xml.Dom.XmlDocument
+$xml.LoadXml('${xml.replace(/'/g, "''")}') 
+$toast = [Windows.UI.Notifications.ToastNotification]::new($xml)
+[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('PAW').Show($toast)
+`;
+      const encoded = Buffer.from(ps, 'utf16le').toString('base64');
+      spawn('powershell', ['-NoProfile', '-EncodedCommand', encoded], { detached: true, stdio: 'ignore' }).unref();
     }
   }
 

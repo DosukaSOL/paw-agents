@@ -106,7 +106,12 @@ Respond with ONLY the JavaScript code to modify this element in the page. Use do
         prompt
       );
 
-      // Execute the AI-generated code in the browser
+      // Execute the AI-generated code in the browser (sandboxed page context)
+      // Sanitize: reject obvious dangerous patterns like require(), import(), process, __dirname
+      const dangerousPatterns = /\b(require|import|process|__dirname|__filename|child_process|eval|Function)\b/;
+      if (dangerousPatterns.test(code)) {
+        return { success: false, changes: '', error: 'Generated code contains blocked patterns' };
+      }
       await this.browser.evaluate(code);
 
       return {

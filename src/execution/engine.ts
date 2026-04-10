@@ -337,8 +337,16 @@ export class ExecutionEngine {
       const operation = params.operation as string;
 
       switch (operation) {
-        case 'json_parse':
-          return JSON.parse(String(data));
+        case 'json_parse': {
+          const parsed = JSON.parse(String(data));
+          // Strip prototype pollution keys from parsed result
+          if (parsed && typeof parsed === 'object') {
+            delete parsed.__proto__;
+            delete parsed.constructor;
+            delete parsed.prototype;
+          }
+          return parsed;
+        }
         case 'json_stringify':
           return JSON.stringify(data, null, 2);
         case 'base64_encode':

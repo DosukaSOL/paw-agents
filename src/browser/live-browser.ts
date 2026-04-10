@@ -78,7 +78,6 @@ export class LiveBrowser extends EventEmitter {
       this.context = await chromium.launchPersistentContext(this.sessionDir, {
         headless,
         viewport: { width: 1280, height: 800 },
-        ignoreHTTPSErrors: true,
         args: ['--disable-blink-features=AutomationControlled'],
       });
       this.browser = { close: () => this.context.close() };
@@ -89,7 +88,6 @@ export class LiveBrowser extends EventEmitter {
       });
       this.context = await this.browser.newContext({
         viewport: { width: 1280, height: 800 },
-        ignoreHTTPSErrors: true,
       });
     }
 
@@ -120,6 +118,21 @@ export class LiveBrowser extends EventEmitter {
   async navigate(url: string, tabId?: string): Promise<{ url: string; title: string }> {
     const page = this.getPage(tabId);
     const startTime = Date.now();
+
+    // Validate URL — block file://, internal IPs, and private networks (SSRF protection)
+    const parsed = new URL(url);
+    const protocol = parsed.protocol.toLowerCase();
+    if (protocol !== 'http:' && protocol !== 'https:') {
+      throw new Error(`Blocked navigation: only http/https allowed, got ${protocol}`);
+    }
+    const hostname = parsed.hostname.toLowerCase();
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1'
+      || hostname.startsWith('192.168.') || hostname.startsWith('10.')
+      || /^172\.(1[6-9]|2\d|3[01])\./.test(hostname)
+      || hostname.endsWith('.local') || hostname === '0.0.0.0'
+      || hostname.startsWith('169.254.')) {
+      throw new Error('Blocked navigation: internal/private addresses not allowed');
+    }
 
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
     const title = await page.title();

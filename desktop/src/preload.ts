@@ -3,6 +3,21 @@
 
 import { contextBridge, ipcRenderer } from 'electron';
 
+// Track listeners so we can clean them up (prevent memory leaks)
+const listeners: Array<{ channel: string; fn: (...args: any[]) => void }> = [];
+
+function addListener(channel: string, callback: (...args: any[]) => void) {
+  // Remove previous listener for this channel to prevent accumulation
+  const existing = listeners.findIndex(l => l.channel === channel);
+  if (existing >= 0) {
+    ipcRenderer.removeListener(channel, listeners[existing].fn);
+    listeners.splice(existing, 1);
+  }
+  const fn = (_event: any, ...args: any[]) => callback(...args);
+  ipcRenderer.on(channel, fn);
+  listeners.push({ channel, fn });
+}
+
 contextBridge.exposeInMainWorld('paw', {
   send: (message: string) => ipcRenderer.invoke('paw:send', message),
   status: () => ipcRenderer.invoke('paw:status'),
@@ -11,10 +26,10 @@ contextBridge.exposeInMainWorld('paw', {
   saveConfig: (updates: Record<string, string>) => ipcRenderer.invoke('paw:saveConfig', updates),
   togglePawl: (enabled: boolean) => ipcRenderer.invoke('pawl:toggle', enabled),
   onMessage: (callback: (msg: unknown) => void) => {
-    ipcRenderer.on('gateway:message', (_event, msg) => callback(msg));
+    addListener('gateway:message', callback);
   },
   onStatus: (callback: (status: string) => void) => {
-    ipcRenderer.on('gateway:status', (_event, status) => callback(status));
+    addListener('gateway:status', callback);
   },
 });
 
@@ -24,15 +39,15 @@ contextBridge.exposeInMainWorld('pawlAPI', {
   doubleclick: () => ipcRenderer.send('pawl:doubleclick'),
   drag: (dx: number, dy: number) => ipcRenderer.send('pawl:drag', dx, dy),
   onFrame: (callback: (frame: string) => void) => {
-    ipcRenderer.on('pawl:frame', (_event, frame) => callback(frame));
+    addListener('pawl:frame', callback);
   },
   onNotification: (callback: (data: { text: string; type: string }) => void) => {
-    ipcRenderer.on('pawl:notification', (_event, data) => callback(data));
+    addListener('pawl:notification', callback);
   },
   onSound: (callback: (sound: string) => void) => {
-    ipcRenderer.on('pawl:sound', (_event, sound) => callback(sound));
+    addListener('pawl:sound', callback);
   },
   onOpenApp: (callback: () => void) => {
-    ipcRenderer.on('pawl:open-app', () => callback());
+    addListener('pawl:open-app', callback);
   },
 });

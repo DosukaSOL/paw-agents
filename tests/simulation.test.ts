@@ -468,7 +468,7 @@ describe('Simulation: Streaming Engine', () => {
       // If no providers are available at all, should throw a clear error
       expect((err as Error).message).toMatch(/no streaming providers|stream error|aborted/i);
     }
-  }, 15_000);
+  }, 35_000);
 });
 
 // ═══════════════════════════════════════

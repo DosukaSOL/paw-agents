@@ -356,12 +356,18 @@ export class PawGateway {
   }
 
   async stop(): Promise<void> {
+    // Close all WebSocket clients
     for (const [, client] of this.clients) {
       client.ws.close();
     }
     this.clients.clear();
     this.wss?.close();
-    this.httpServer?.close();
+    // Properly close HTTP server with a promise
+    if (this.httpServer) {
+      await new Promise<void>((resolve) => {
+        this.httpServer!.close(() => resolve());
+      });
+    }
   }
 
   // ─── Send message to a specific client ───
@@ -429,15 +435,13 @@ export class PawGateway {
 
   // ─── Handle webhook requests ───
   private handleWebhook(req: IncomingMessage, res: ServerResponse): void {
-    // Validate webhook secret from Authorization header or query param
+    // Validate webhook secret from Authorization header only (never query params)
     const authHeader = req.headers['authorization'];
-    const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
-    const querySecret = url.searchParams.get('secret');
     const webhookSecret = config.gateway.authToken;
 
     if (webhookSecret) {
-      const providedSecret = authHeader?.replace(/^Bearer\s+/i, '') ?? querySecret;
-      if (!this.safeCompare(providedSecret ?? '', webhookSecret)) {
+      const providedSecret = authHeader?.replace(/^Bearer\s+/i, '') ?? '';
+      if (!this.safeCompare(providedSecret, webhookSecret)) {
         res.writeHead(401, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ error: 'Unauthorized' }));
         return;
@@ -498,6 +502,7 @@ export class PawGateway {
 
   // ─── Broadcast sync state to all other clients ───
   private broadcastSync(excludeClientId: string, sourceChannel: ChannelType): void {
+    const syncStats = crossAppSync.getStats();
     const syncPayload: GatewayMessage = {
       type: 'event',
       channel: sourceChannel,
@@ -510,8 +515,8 @@ export class PawGateway {
         connectedAgents: this.clients.size,
         connectedChannels: this.getActiveChannels().length,
         syncStats: {
-          sessions: crossAppSync.getStats().sessions,
-          actions: crossAppSync.getStats().actions,
+          sessions: syncStats.sessions,
+          actions: syncStats.actions,
         },
       },
       timestamp: new Date().toISOString(),
@@ -526,6 +531,7 @@ export class PawGateway {
 
   // ─── Broadcast sync to ALL clients including sender ───
   private broadcastSyncToAll(sourceChannel: ChannelType): void {
+    const syncStats = crossAppSync.getStats();
     const syncPayload: GatewayMessage = {
       type: 'event',
       channel: sourceChannel,
@@ -538,8 +544,8 @@ export class PawGateway {
         connectedAgents: this.clients.size,
         connectedChannels: this.getActiveChannels().length,
         syncStats: {
-          sessions: crossAppSync.getStats().sessions,
-          actions: crossAppSync.getStats().actions,
+          sessions: syncStats.sessions,
+          actions: syncStats.actions,
         },
       },
       timestamp: new Date().toISOString(),
@@ -554,10 +560,12 @@ export class PawGateway {
 
   // ─── Timing-safe string comparison ───
   private safeCompare(a: string, b: string): boolean {
+    if (typeof a !== 'string' || typeof b !== 'string') return false;
     if (!a || !b) return false;
-    const bufA = Buffer.from(a);
-    const bufB = Buffer.from(b);
-    if (bufA.length !== bufB.length) return false;
-    return timingSafeEqual(bufA, bufB);
+    // Pad shorter string to prevent timing leak from length difference
+    const maxLen = Math.max(a.length, b.length);
+    const bufA = Buffer.from(a.padEnd(maxLen, '\0'));
+    const bufB = Buffer.from(b.padEnd(maxLen, '\0'));
+    return a.length === b.length && timingSafeEqual(bufA, bufB);
   }
 }

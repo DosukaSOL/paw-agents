@@ -28,14 +28,16 @@ function scrub(data: unknown): unknown {
     // Redact anything that looks like a key, token, or secret
     return data
       .replace(/[1-9A-HJ-NP-Za-km-z]{87,88}/g, '[REDACTED_KEY]')
-      .replace(/\b(sk-|pk-|token_)[A-Za-z0-9\-_]+/g, '[REDACTED_TOKEN]');
+      .replace(/\b(sk-|pk-|token_|xai-|gsk_|Bearer\s+)[A-Za-z0-9\-_]+/gi, '[REDACTED_TOKEN]')
+      .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z]{2,}\b/gi, '[REDACTED_EMAIL]');
   }
   if (Array.isArray(data)) return data.map(scrub);
   if (typeof data === 'object') {
     const result: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+      if (key === '__proto__' || key === 'constructor') continue;
       const lk = key.toLowerCase();
-      if (lk.includes('secret') || lk.includes('private') || lk.includes('key') || lk.includes('password') || lk.includes('token')) {
+      if (lk.includes('secret') || lk.includes('private') || lk.includes('key') || lk.includes('password') || lk.includes('token') || lk.includes('authorization') || lk.includes('cookie') || lk.includes('credential')) {
         result[key] = '[REDACTED]';
       } else {
         result[key] = scrub(value);

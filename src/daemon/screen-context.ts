@@ -131,6 +131,10 @@ export class ScreenContextEngine extends EventEmitter {
 
   // ─── Get active browser URL on macOS ───
   private getBrowserURL(browser: string): string | undefined {
+    // Allowlist of known browser names — prevents injection via arbitrary strings
+    const ALLOWED_BROWSERS = new Set(['Safari', 'Google Chrome', 'Brave Browser', 'Microsoft Edge', 'Arc']);
+    if (!ALLOWED_BROWSERS.has(browser)) return undefined;
+
     try {
       let script: string;
       switch (browser) {
@@ -149,10 +153,12 @@ export class ScreenContextEngine extends EventEmitter {
           return undefined;
       }
 
-      return execSync(`osascript -e '${script.replace(/'/g, "'\\''")}'`, {
+      // Use execFileSync with args array to avoid shell interpolation
+      const { execFileSync } = require('child_process');
+      return (execFileSync('osascript', ['-e', script], {
         timeout: 1000,
         encoding: 'utf-8',
-      }).trim() || undefined;
+      }) as string).trim() || undefined;
     } catch {
       return undefined;
     }

@@ -39,25 +39,29 @@ class OpenAIStream implements StreamProvider {
   async stream(system: string, prompt: string, onChunk: StreamCallback): Promise<string> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: this.model,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: prompt },
-        ],
-        temperature: 0.1,
-        max_tokens: 4096,
-        stream: true,
-      }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
+    let response: Response;
+    try {
+      response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: this.model,
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: prompt },
+          ],
+          temperature: 0.1,
+          max_tokens: 4096,
+          stream: true,
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     return this.processSSE(response, 'openai', this.model, onChunk);
   }

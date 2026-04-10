@@ -6,6 +6,7 @@ import { MemoryEntry, MemoryScope } from '../core/types';
 
 export class MemorySystem {
   private store = new Map<string, MemoryEntry>();
+  private readonly maxEntries = 50_000;
 
   // Compose a scoped key
   private key(scope: MemoryScope, namespace: string, key: string): string {
@@ -15,6 +16,11 @@ export class MemorySystem {
   // Set a value
   set(scope: MemoryScope, namespace: string, key: string, value: unknown, ttlMs?: number): void {
     const k = this.key(scope, namespace, key);
+    // Evict oldest entry if at capacity
+    if (this.store.size >= this.maxEntries && !this.store.has(k)) {
+      const oldest = this.store.keys().next().value;
+      if (oldest) this.store.delete(oldest);
+    }
     this.store.set(k, {
       key,
       value,

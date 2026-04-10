@@ -179,7 +179,9 @@ export class VectorMemory {
     try {
       const dir = path.dirname(this.storePath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(this.storePath, JSON.stringify(this.entries), 'utf-8');
+      // Use async write to avoid blocking the event loop
+      const data = JSON.stringify(this.entries);
+      fs.writeFile(this.storePath, data, 'utf-8', () => {});
       this.dirty = false;
     } catch {
       // Silently fail — memory still works in-process
