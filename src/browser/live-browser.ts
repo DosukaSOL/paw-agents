@@ -1,4 +1,5 @@
-// @ts-nocheck — DOM types used inside page.evaluate() callbacks (run in browser, not Node)
+// @ts-nocheck — Playwright page.evaluate() callbacks execute in the browser context,
+// which uses DOM types (document, window, Element) unavailable in Node's type system.
 // ─── PAW Live Browser Engine ───
 // Playwright-based browser automation in HEADED mode.
 // Users watch the agent browse in real-time. Supports sessions, recording, multi-tab.

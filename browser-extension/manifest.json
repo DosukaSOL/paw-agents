@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PAW Agents",
-  "version": "3.2.0",
+  "version": "4.0.5",
   "description": "Trigger your PAW AI agent from any webpage. Send selected text, URLs, or queries directly to PAW.",
   "permissions": ["activeTab", "storage", "contextMenus"],
   "action": {

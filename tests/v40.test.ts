@@ -772,8 +772,8 @@ describe('Config v4.0', () => {
     expect(Array.isArray(config.plugins.dirs)).toBe(true);
   });
 
-  test('package version is 4.0.0', () => {
+  test('package version is 4.0.5', () => {
     const pkg = require('../package.json');
-    expect(pkg.version).toBe('4.0.0');
+    expect(pkg.version).toBe('4.0.5');
   });
 });

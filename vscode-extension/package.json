@@ -2,7 +2,7 @@
   "name": "paw-vscode",
   "displayName": "PAW Agents",
   "description": "Chat with your PAW AI agent directly from VS Code",
-  "version": "3.2.0",
+  "version": "4.0.5",
   "publisher": "paw-agents",
   "icon": "icon.png",
   "engines": {

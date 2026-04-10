@@ -360,7 +360,7 @@ async function main(): Promise<void> {
   // ─── v4.0 — Plugin Manager ───
   if (config.plugins.enabled) {
     try {
-      const pluginManager = new PluginManager(config.plugins.dirs as unknown as string[], '4.0.0');
+      const pluginManager = new PluginManager(config.plugins.dirs as unknown as string[], '4.0.5');
       if (config.plugins.autoLoad) {
         const loaded = await pluginManager.loadAll();
         console.log(`[PAW] Plugin Manager loaded ${loaded} plugins`);

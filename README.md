@@ -17,8 +17,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/DosukaSOL/paw-agents/releases"><img src="https://img.shields.io/badge/version-4.0.0-blue?style=flat-square" alt="Version" /></a>
+  <a href="https://github.com/DosukaSOL/paw-agents/releases"><img src="https://img.shields.io/badge/version-4.0.5-blue?style=flat-square" alt="Version" /></a>
   <a href="https://github.com/DosukaSOL/paw-agents/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="License" /></a>
+  <a href="https://github.com/DosukaSOL/paw-agents/actions"><img src="https://img.shields.io/badge/tests-260%20passing-brightgreen?style=flat-square" alt="Tests" /></a>
   <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square" alt="Node" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.6-blue?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript" /></a>
   <a href="https://x.com/PAWagents"><img src="https://img.shields.io/badge/𝕏-PAWagents-000000?style=flat-square&logo=x&logoColor=white" alt="X" /></a>
@@ -392,7 +393,7 @@ paw-agents/
 ├── vscode-extension/               # VS Code extension
 ├── browser-extension/              # Chrome/Firefox extension
 ├── skills/examples/                # Skill definitions
-├── tests/                          # 102 tests across 20+ suites
+├── tests/                          # 260 tests across 5 suites
 └── docs/                           # Architecture, security, spec
 ```
 
@@ -443,6 +444,6 @@ MIT
 ---
 
 <p align="center">
-  <strong>PAW Agents v4.0 — The Undisputed #1 AI Agent Framework</strong><br>
+  <strong>PAW Agents v4.0.5 — The Undisputed #1 AI Agent Framework</strong><br>
   <em>The operating system for autonomous AI agents.</em>
 </p>

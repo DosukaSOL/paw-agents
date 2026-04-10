@@ -18,7 +18,7 @@ echo ""
 echo -e "${CYAN}  =======================================${NC}"
 echo -e "${CYAN}    PAW Agents -- Setup & Launcher${NC}"
 echo -e "${CYAN}    Programmable Autonomous Workers${NC}"
-echo -e "${CYAN}    v4.0.1${NC}"
+echo -e "${CYAN}    v4.0.5${NC}"
 echo -e "${CYAN}  =======================================${NC}"
 echo ""
 

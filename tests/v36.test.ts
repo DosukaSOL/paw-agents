@@ -224,8 +224,8 @@ describe('v3.6 Channel Types', () => {
 // Version Check
 // ═══════════════════════════════════════
 describe('v3.6 Version', () => {
-  test('package.json version is 4.0.0', () => {
+  test('package.json version is 4.0.5', () => {
     const pkg = require('../package.json');
-    expect(pkg.version).toBe('4.0.0');
+    expect(pkg.version).toBe('4.0.5');
   });
 });

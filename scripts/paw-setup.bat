@@ -13,7 +13,7 @@ echo.
 echo   =======================================
 echo     PAW Agents -- Setup ^& Launcher
 echo     Programmable Autonomous Workers
-echo     v4.0.1
+echo     v4.0.5
 echo   =======================================
 echo.
 

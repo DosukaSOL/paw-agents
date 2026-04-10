@@ -74,7 +74,7 @@ export class PawGateway {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           status: 'ok',
-          version: '4.0.0',
+          version: '4.0.5',
           clients: this.clients.size,
           uptime: process.uptime(),
         }));

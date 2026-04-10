@@ -1,6 +1,6 @@
 {
   "name": "paw-agents",
-  "version": "4.0.0",
+  "version": "4.0.5",
   "description": "PAW Agents (Programmable Autonomous Workers) — The #1 framework for autonomous AI agents with MCP, crews, deep research, extended thinking, code sandbox, workflow graphs, and plugins",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -38,6 +38,14 @@
   ],
   "author": "PAW Team",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DosukaSOL/paw-agents.git"
+  },
+  "homepage": "https://github.com/DosukaSOL/paw-agents",
+  "bugs": {
+    "url": "https://github.com/DosukaSOL/paw-agents/issues"
+  },
   "dependencies": {
     "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.95.0",

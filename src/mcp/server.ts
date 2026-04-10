@@ -216,7 +216,7 @@ export class PawMCPServer {
       inputSchema: { type: 'object', properties: {}, required: [] },
     }, async () => {
       return {
-        version: '4.0.0',
+        version: '4.0.5',
         status: 'running',
         channels: 21,
         providers: 7,
@@ -243,7 +243,7 @@ export class PawMCPServer {
             },
             serverInfo: {
               name: 'paw-agents',
-              version: '4.0.0',
+              version: '4.0.5',
               description: 'PAW Agents — The operating system for autonomous AI agents. 21+ channels, 9 AI providers, multi-agent crews, deep research, workflow graphs, and more.',
             },
           },
