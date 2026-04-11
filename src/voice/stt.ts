@@ -5,6 +5,7 @@
 import { config } from '../core/config';
 import { EventEmitter } from 'events';
 import * as fs from 'fs';
+import * as fsp from 'fs/promises';
 import * as path from 'path';
 import { spawn, ChildProcess } from 'child_process';
 
@@ -86,7 +87,7 @@ class WhisperSTT implements STTProviderEngine {
 
       proc.stderr.on('data', (data) => { stderr += data.toString(); });
 
-      proc.on('close', (code) => {
+      proc.on('close', async (code) => {
         if (code !== 0) {
           reject(new Error(`Whisper failed (code ${code}): ${stderr}`));
           return;
@@ -95,7 +96,7 @@ class WhisperSTT implements STTProviderEngine {
         try {
           const baseName = path.basename(audioPath, path.extname(audioPath));
           const jsonPath = path.join('/tmp/paw-whisper', `${baseName}.json`);
-          const result = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
+          const result = JSON.parse(await fsp.readFile(jsonPath, 'utf-8'));
           const text = result.text?.trim() ?? '';
 
           resolve({
@@ -121,7 +122,7 @@ class WhisperSTT implements STTProviderEngine {
     // Write buffer to temp file, then transcribe
     const tmpPath = `/tmp/paw-whisper/input_${Date.now()}.${format}`;
     fs.mkdirSync('/tmp/paw-whisper', { recursive: true });
-    fs.writeFileSync(tmpPath, audio);
+    await fsp.writeFile(tmpPath, audio);
     try {
       return await this.transcribeFile(tmpPath);
     } finally {
@@ -144,7 +145,7 @@ class GoogleSTT implements STTProviderEngine {
   }
 
   async transcribeFile(audioPath: string): Promise<TranscriptionResult> {
-    return this.transcribeBuffer(fs.readFileSync(audioPath));
+    return this.transcribeBuffer(await fsp.readFile(audioPath));
   }
 
   async transcribeBuffer(audio: Buffer): Promise<TranscriptionResult> {
@@ -206,7 +207,7 @@ class AzureSTT implements STTProviderEngine {
   }
 
   async transcribeFile(audioPath: string): Promise<TranscriptionResult> {
-    return this.transcribeBuffer(fs.readFileSync(audioPath));
+    return this.transcribeBuffer(await fsp.readFile(audioPath));
   }
 
   async transcribeBuffer(audio: Buffer): Promise<TranscriptionResult> {
@@ -260,7 +261,7 @@ class DeepgramSTT implements STTProviderEngine {
   }
 
   async transcribeFile(audioPath: string): Promise<TranscriptionResult> {
-    return this.transcribeBuffer(fs.readFileSync(audioPath));
+    return this.transcribeBuffer(await fsp.readFile(audioPath));
   }
 
   async transcribeBuffer(audio: Buffer): Promise<TranscriptionResult> {
@@ -316,7 +317,7 @@ class AssemblyAISTT implements STTProviderEngine {
   }
 
   async transcribeFile(audioPath: string): Promise<TranscriptionResult> {
-    return this.transcribeBuffer(fs.readFileSync(audioPath));
+    return this.transcribeBuffer(await fsp.readFile(audioPath));
   }
 
   async transcribeBuffer(audio: Buffer): Promise<TranscriptionResult> {

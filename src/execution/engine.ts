@@ -221,18 +221,25 @@ export class ExecutionEngine {
         throw new Error('API calls to internal addresses are blocked');
       }
 
-      const response = await fetch(url, {
-        method,
-        headers: params.headers as Record<string, string> ?? {},
-        body: method !== 'GET' ? JSON.stringify(params.body) : undefined,
-      });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30_000);
+      try {
+        const response = await fetch(url, {
+          method,
+          headers: params.headers as Record<string, string> ?? {},
+          body: method !== 'GET' ? JSON.stringify(params.body) : undefined,
+          signal: controller.signal,
+        });
 
-      const contentType = response.headers.get('content-type') ?? '';
-      const body = contentType.includes('application/json')
-        ? await response.json().catch(() => response.text())
-        : await response.text();
+        const contentType = response.headers.get('content-type') ?? '';
+        const body = contentType.includes('application/json')
+          ? await response.json().catch(() => response.text())
+          : await response.text();
 
-      return { status: response.status, body };
+        return { status: response.status, body };
+      } finally {
+        clearTimeout(timeout);
+      }
     });
 
     // ─── HTTP convenience tools ───
@@ -243,14 +250,21 @@ export class ExecutionEngine {
       if (this.isBlockedHost(hostname)) {
         throw new Error('Blocked: internal address');
       }
-      const response = await fetch(url, {
-        headers: params.headers as Record<string, string> ?? {},
-      });
-      const ct = response.headers.get('content-type') ?? '';
-      const body = ct.includes('application/json')
-        ? await response.json().catch(() => response.text())
-        : await response.text();
-      return { status: response.status, body };
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30_000);
+      try {
+        const response = await fetch(url, {
+          headers: params.headers as Record<string, string> ?? {},
+          signal: controller.signal,
+        });
+        const ct = response.headers.get('content-type') ?? '';
+        const body = ct.includes('application/json')
+          ? await response.json().catch(() => response.text())
+          : await response.text();
+        return { status: response.status, body };
+      } finally {
+        clearTimeout(timeout);
+      }
     });
 
     this.registerTool('http_post', async (params) => {
@@ -260,16 +274,23 @@ export class ExecutionEngine {
       if (this.isBlockedHost(hostname)) {
         throw new Error('Blocked: internal address');
       }
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...(params.headers as Record<string, string> ?? {}) },
-        body: JSON.stringify(params.body),
-      });
-      const ct = response.headers.get('content-type') ?? '';
-      const body = ct.includes('application/json')
-        ? await response.json().catch(() => response.text())
-        : await response.text();
-      return { status: response.status, body };
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 30_000);
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...(params.headers as Record<string, string> ?? {}) },
+          body: JSON.stringify(params.body),
+          signal: controller.signal,
+        });
+        const ct = response.headers.get('content-type') ?? '';
+        const body = ct.includes('application/json')
+          ? await response.json().catch(() => response.text())
+          : await response.text();
+        return { status: response.status, body };
+      } finally {
+        clearTimeout(timeout);
+      }
     });
 
     // ─── File operations (sandboxed to working directory) ───

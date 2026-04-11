@@ -68,6 +68,7 @@ export class VectorMemory {
   private storePath: string;
   private dirty = false;
   private vocabSize: number;
+  private saveTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(storePath: string = './data/vector-memory.json', vocabSize: number = 512) {
     this.storePath = path.resolve(storePath);
@@ -176,12 +177,23 @@ export class VectorMemory {
 
   private save(): void {
     if (!this.dirty) return;
+    // Debounce: batch writes to max 1x per 5 seconds
+    if (this.saveTimer) return;
+    this.saveTimer = setTimeout(() => {
+      this.saveTimer = null;
+      this.flushToDisk();
+    }, 5_000);
+  }
+
+  private flushToDisk(): void {
+    if (!this.dirty) return;
     try {
       const dir = path.dirname(this.storePath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      // Use async write to avoid blocking the event loop
       const data = JSON.stringify(this.entries);
-      fs.writeFile(this.storePath, data, 'utf-8', () => {});
+      fs.writeFile(this.storePath, data, 'utf-8', (err) => {
+        if (err) { /* disk error — memory still works in-process */ }
+      });
       this.dirty = false;
     } catch {
       // Silently fail — memory still works in-process

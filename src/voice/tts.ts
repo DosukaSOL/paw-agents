@@ -6,6 +6,7 @@ import { config } from '../core/config';
 import { EventEmitter } from 'events';
 import { spawn } from 'child_process';
 import * as fs from 'fs';
+import * as fsp from 'fs/promises';
 import * as path from 'path';
 
 export type TTSProvider = 'piper' | 'elevenlabs' | 'google' | 'azure' | 'polly';
@@ -86,15 +87,15 @@ class PiperTTS implements TTSProviderEngine {
 
       proc.stderr.on('data', (data) => { stderr += data.toString(); });
 
-      proc.on('close', (code) => {
+      proc.on('close', async (code) => {
         if (code !== 0) {
           reject(new Error(`Piper TTS failed (code ${code}): ${stderr}`));
           return;
         }
 
         try {
-          const audio = fs.readFileSync(outPath);
-          fs.unlinkSync(outPath);
+          const audio = await fsp.readFile(outPath);
+          await fsp.unlink(outPath);
 
           resolve({
             audio,
@@ -465,7 +466,7 @@ export class TextToSpeech extends EventEmitter {
     const result = await this.synthesize(text, voice);
     const dir = path.dirname(outputPath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(outputPath, result.audio);
+    await fsp.writeFile(outputPath, result.audio);
     return result;
   }
 

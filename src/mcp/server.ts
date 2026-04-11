@@ -265,7 +265,13 @@ export class PawMCPServer {
           return { jsonrpc: '2.0', id, error: { code: -32601, message: `Unknown tool: ${toolName}` } };
         }
         try {
-          const result = await tool.handler(toolArgs);
+          const TOOL_TIMEOUT_MS = 60_000;
+          const result = await Promise.race([
+            tool.handler(toolArgs),
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error(`Tool '${toolName}' timed out after ${TOOL_TIMEOUT_MS / 1000}s`)), TOOL_TIMEOUT_MS)
+            ),
+          ]);
           return {
             jsonrpc: '2.0', id,
             result: { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] },
