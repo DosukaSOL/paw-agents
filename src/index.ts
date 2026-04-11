@@ -59,7 +59,7 @@ async function main(): Promise<void> {
   ║   Mode: ${config.agent.mode.padEnd(35)}    ║
   ║   Gateway: ws://${config.gateway.host}:${String(config.gateway.port).padEnd(22)}  ║
   ║   MCP: http://${config.mcp.serverHost}:${String(config.mcp.serverPort).padEnd(24)}  ║
-  ║   Default: ${config.models.defaultProvider.padEnd(33)}  ║
+  ║   Provider: ${(config.models.defaultProvider || 'not set — choose in Hub').padEnd(33)}  ║
   ║   Ollama: ${(config.models.ollama.enabled ? config.models.ollama.model : 'disabled').padEnd(33)}  ║
   ║   Providers: ${providerList.substring(0, 30).padEnd(30)}  ║
   ║                                                   ║
@@ -70,7 +70,7 @@ async function main(): Promise<void> {
   const agent = new PawAgent();
 
   // Register agent in Mission Control
-  missionControl.registerAgent('paw-main', 'PAW Main Agent', config.models.defaultProvider);
+  missionControl.registerAgent('paw-main', 'PAW Main Agent', config.models.defaultProvider || 'none');
   missionControl.log('info', 'system', 'PAW Agents v4.0 starting...');
 
   // Start WebSocket Gateway

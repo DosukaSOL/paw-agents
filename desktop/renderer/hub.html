@@ -630,7 +630,7 @@
           </div>
           <div class="settings-row">
             <div><div class="settings-label">Default Provider</div><div class="settings-desc">Primary AI model provider</div></div>
-            <select class="settings-select" id="setting-provider"><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="google">Google</option><option value="groq">Groq</option><option value="mistral">Mistral</option><option value="deepseek">DeepSeek</option><option value="xai">xAI (Grok)</option><option value="cohere">Cohere</option><option value="ollama">Ollama (Local)</option></select>
+            <select class="settings-select" id="setting-provider"><option value="" disabled selected>— Choose a provider —</option><option value="openai">OpenAI</option><option value="anthropic">Anthropic</option><option value="google">Google</option><option value="groq">Groq</option><option value="mistral">Mistral</option><option value="deepseek">DeepSeek</option><option value="xai">xAI (Grok)</option><option value="cohere">Cohere</option><option value="ollama">Ollama (Local)</option></select>
           </div>
         </div>
 
@@ -1217,6 +1217,8 @@
           document.getElementById('setting-provider').value = cfg.DEFAULT_MODEL_PROVIDER;
           const names = { openai:'OpenAI', anthropic:'Anthropic', google:'Google', groq:'Groq', mistral:'Mistral', deepseek:'DeepSeek', xai:'xAI/Grok', cohere:'Cohere', ollama:'Ollama' };
           document.getElementById('provider-badge').textContent = names[cfg.DEFAULT_MODEL_PROVIDER] || cfg.DEFAULT_MODEL_PROVIDER;
+        } else {
+          document.getElementById('provider-badge').textContent = 'Not set';
         }
 
         // Fill in keys and models

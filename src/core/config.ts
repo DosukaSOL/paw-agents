@@ -168,7 +168,7 @@ export const config = {
       baseUrl: optionalEnv('OLLAMA_BASE_URL', 'http://127.0.0.1:11434'),
       model: optionalEnv('OLLAMA_MODEL', 'gemma4'),
     },
-    defaultProvider: optionalEnv('DEFAULT_MODEL_PROVIDER', 'openai'),
+    defaultProvider: optionalEnv('DEFAULT_MODEL_PROVIDER', ''),
   },
   // ─── Solana ───
   solana: {
@@ -214,7 +214,7 @@ export const config = {
     performanceStorePath: optionalEnv('PERFORMANCE_STORE_PATH', './data/model-perf'),
     // Fast path
     fastPathEnabled: optionalBool('FAST_PATH_ENABLED', true),
-    fastPathProvider: optionalEnv('FAST_PATH_PROVIDER', 'groq'),
+    fastPathProvider: optionalEnv('FAST_PATH_PROVIDER', ''),
     fastPathMaxTokens: safeParseInt('FAST_PATH_MAX_TOKENS', 1024, 1),
     // Conversation branching
     branchingEnabled: optionalBool('BRANCHING_ENABLED', true),

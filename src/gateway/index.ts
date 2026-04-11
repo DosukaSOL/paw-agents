@@ -234,18 +234,35 @@ export class PawGateway {
 
           // Route message to agent
           if (msg.type === 'message') {
+            const messageText = typeof msg.payload === 'string'
+              ? msg.payload
+              : typeof msg.payload === 'object' && msg.payload !== null
+                ? (msg.payload as any).text ?? JSON.stringify(msg.payload)
+                : '';
+
+            if (!messageText) {
+              this.sendToClient(clientId, {
+                type: 'response',
+                channel: 'webchat',
+                from: 'system',
+                payload: { error: 'Empty message' },
+                timestamp: new Date().toISOString(),
+              });
+              return;
+            }
+
             const userId = client.info.user_id ?? `webchat:${clientId}`;
             const channel = client.info.channel;
             const startTime = Date.now();
 
             // Track in cross-app sync
             crossAppSync.addChannelToSession(userId, channel);
-            crossAppSync.addMessage(userId, String(msg.payload), 'user', channel);
+            crossAppSync.addMessage(userId, messageText, 'user', channel);
             missionControl.recordMessage();
 
             let response: unknown;
             try {
-              response = await this.agent.process(userId, String(msg.payload));
+              response = await this.agent.process(userId, messageText);
             } catch (processErr) {
               console.error('[Gateway] agent.process error:', (processErr as Error).message);
               this.sendToClient(clientId, {
@@ -261,7 +278,7 @@ export class PawGateway {
 
             // Record in cross-app sync and mission control
             crossAppSync.addMessage(userId, typeof response === 'string' ? response : JSON.stringify(response), 'agent', channel);
-            crossAppSync.recordAction('agent_response', String(msg.payload).substring(0, 100), channel, userId, durationMs, true);
+            crossAppSync.recordAction('agent_response', messageText.substring(0, 100), channel, userId, durationMs, true);
             missionControl.recordResponseTime(durationMs);
 
             this.sendToClient(clientId, {
@@ -276,7 +293,7 @@ export class PawGateway {
             const agentResp = response as { hub_control?: { action: string; [key: string]: unknown } };
             if (agentResp?.hub_control) {
               this.broadcast({
-                type: 'hub_control' as any,
+                type: 'hub_control',
                 channel: 'system',
                 from: 'agent',
                 payload: agentResp.hub_control,
@@ -540,8 +557,8 @@ export class PawGateway {
       payload: {
         event: 'sync',
         metrics: missionControl.getCurrentMetrics(),
-        provider: config.models.defaultProvider,
-        model: this.getDefaultModel(),
+        provider: config.models.defaultProvider || 'not configured',
+        model: config.models.defaultProvider ? this.getDefaultModel() : 'none',
         connectedAgents: this.clients.size,
         connectedChannels: this.getActiveChannels().length,
         syncStats: {
@@ -569,8 +586,8 @@ export class PawGateway {
       payload: {
         event: 'sync',
         metrics: missionControl.getCurrentMetrics(),
-        provider: config.models.defaultProvider,
-        model: this.getDefaultModel(),
+        provider: config.models.defaultProvider || 'not configured',
+        model: config.models.defaultProvider ? this.getDefaultModel() : 'none',
         connectedAgents: this.clients.size,
         connectedChannels: this.getActiveChannels().length,
         syncStats: {

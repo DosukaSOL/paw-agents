@@ -140,13 +140,17 @@ function setupIPC(): void {
       return { error: 'Not connected to PAW gateway' };
     }
 
-    ws.send(JSON.stringify({
-      type: 'message',
-      channel: 'desktop',
-      from: 'desktop-user',
-      payload: { text: message },
-      timestamp: new Date().toISOString(),
-    }));
+    try {
+      ws.send(JSON.stringify({
+        type: 'message',
+        channel: 'desktop',
+        from: 'desktop-user',
+        payload: { text: message },
+        timestamp: new Date().toISOString(),
+      }));
+    } catch (err) {
+      return { error: 'Failed to send message: ' + (err as Error).message };
+    }
 
     return { sent: true };
   });

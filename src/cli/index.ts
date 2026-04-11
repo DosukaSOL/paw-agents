@@ -71,7 +71,7 @@ function showStatus(): void {
   console.log(`  ${c.cyan}Mode:${c.reset}       ${config.agent.mode}`);
   console.log(`  ${c.cyan}Network:${c.reset}    ${config.solana.network}`);
   console.log(`  ${c.cyan}Gateway:${c.reset}    ws://${config.gateway.host}:${config.gateway.port}`);
-  console.log(`  ${c.cyan}Model:${c.reset}      ${config.models.defaultProvider}`);
+  console.log(`  ${c.cyan}Model:${c.reset}      ${config.models.defaultProvider || 'not set — configure in Hub or .env'}`);
   console.log(`  ${c.cyan}Validation:${c.reset} ${config.agent.requireValidation ? 'Always on' : 'Disabled'}`);
 
   // Check configured channels
@@ -123,7 +123,7 @@ function showModels(): void {
 // ─── Interactive chat ───
 async function startChat(): Promise<void> {
   banner();
-  console.log(`${c.dim}Mode: ${config.agent.mode} | Model: ${config.models.defaultProvider} | Type /help for commands${c.reset}\n`);
+  console.log(`${c.dim}Mode: ${config.agent.mode} | Model: ${config.models.defaultProvider || 'auto'} | Type /help for commands${c.reset}\n`);
 
   const agent = new PawAgent();
   const userId = `cli:${Date.now()}`;

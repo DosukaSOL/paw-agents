@@ -573,6 +573,10 @@ export class ExecutionEngine {
     this.registerTool('hub_control', async (params) => {
       const action = String(params.action ?? '');
       if (!action) throw new Error('hub_control requires an "action" parameter');
+      const validActions = ['toggle_companion', 'toggle_voice', 'toggle_wake_word'];
+      if (!validActions.includes(action)) {
+        throw new Error(`hub_control: unknown action "${action}". Valid: ${validActions.join(', ')}`);
+      }
       // Return a directive that the gateway will broadcast to Hub clients
       return { __hub_control: true, action, params };
     });

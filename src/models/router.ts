@@ -474,8 +474,12 @@ export class ModelRouter {
     console.log(`[ModelRouter] Registered providers: ${registered.length > 0 ? registered.join(', ') : 'NONE'}`);
     if (registered.length === 0) {
       console.warn('[ModelRouter] ⚠ No providers registered. Check your .env keys.');
-    } else {
+    } else if (this.defaultProviderName) {
       console.log(`[ModelRouter] Default provider: ${this.defaultProviderName}`);
+    } else {
+      // No default set — auto-select the first registered provider
+      this.defaultProviderName = registered[0];
+      console.log(`[ModelRouter] No default provider set — using first available: ${this.defaultProviderName}`);
     }
   }
 

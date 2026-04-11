@@ -88,13 +88,13 @@ export class FastPathRouter {
       }
     }
 
-    // Default: moderate complexity, use default provider
+    // Default: moderate complexity, use default provider or first available
     return {
       task_type: 'complex_reasoning',
       confidence: 0.4,
       complexity: 'moderate',
       recommended_model: '',
-      recommended_provider: config.models.defaultProvider,
+      recommended_provider: config.models.defaultProvider || this.getFirstAvailableProvider(),
     };
   }
 
@@ -147,7 +147,7 @@ export class FastPathRouter {
       return { provider: rec.provider, model: '', reason: rec.reason };
     }
 
-    return { provider: config.models.defaultProvider, model: '', reason: 'Default provider' };
+    return { provider: config.models.defaultProvider || this.getFirstAvailableProvider(), model: '', reason: 'Default provider' };
   }
 
   // ─── Should this task use the fast path? ───
@@ -170,6 +170,20 @@ export class FastPathRouter {
     }
 
     this.savePerformance();
+  }
+
+  // ─── Get first available provider from config (when no default is set) ───
+  private getFirstAvailableProvider(): string {
+    if (config.models.openai.apiKey) return 'openai';
+    if (config.models.anthropic.apiKey) return 'anthropic';
+    if (config.models.google.apiKey) return 'google';
+    if (config.models.groq.apiKey) return 'groq';
+    if (config.models.mistral.apiKey) return 'mistral';
+    if (config.models.deepseek.apiKey) return 'deepseek';
+    if ((config.models as any).xai?.apiKey) return 'xai';
+    if ((config.models as any).cohere?.apiKey) return 'cohere';
+    if (config.models.ollama.enabled) return 'ollama';
+    return '';
   }
 
   // ─── Get performance stats ───
