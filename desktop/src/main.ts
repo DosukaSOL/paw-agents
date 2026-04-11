@@ -20,8 +20,8 @@ let reconnectDelay = 3000;
 const MAX_RECONNECT_DELAY = 30000;
 let pawl: PawlCompanion | null = null;
 
-// Enable speech recognition in Electron (requires Google cloud service access)
-app.commandLine.appendSwitch('enable-speech-dispatcher');
+// Speech recognition uses Chromium's built-in Web Speech API
+// Note: enable-speech-dispatcher is Linux-only and causes mic flashing on macOS, so we skip it
 
 // ─── Create Hub window (primary) ───
 function createHubWindow(): void {

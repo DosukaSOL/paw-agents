@@ -272,6 +272,18 @@ export class PawGateway {
               timestamp: new Date().toISOString(),
             });
 
+            // If response contains a hub_control directive, broadcast it to all clients
+            const agentResp = response as { hub_control?: { action: string; [key: string]: unknown } };
+            if (agentResp?.hub_control) {
+              this.broadcast({
+                type: 'hub_control' as any,
+                channel: 'system',
+                from: 'agent',
+                payload: agentResp.hub_control,
+                timestamp: new Date().toISOString(),
+              });
+            }
+
             // Send sync to ALL clients including the sender
             this.broadcastSyncToAll(channel);
           }
@@ -420,6 +432,24 @@ export class PawGateway {
             timestamp: new Date().toISOString(),
           });
         }
+        break;
+
+      case 'hub_control':
+        // Broadcast hub control directive to all connected clients (Hub will act on it)
+        this.broadcast({
+          type: 'hub_control',
+          channel: 'system',
+          from: 'agent',
+          payload: { action: payload.action, ...payload },
+          timestamp: new Date().toISOString(),
+        });
+        this.sendToClient(clientId, {
+          type: 'response',
+          channel: 'webchat',
+          from: 'system',
+          payload: { event: 'hub_control_sent', action: payload.action },
+          timestamp: new Date().toISOString(),
+        });
         break;
 
       default:

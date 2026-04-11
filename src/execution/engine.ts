@@ -568,6 +568,14 @@ export class ExecutionEngine {
       const mint = this.defi.resolveMint(String(params.token ?? params.symbol));
       return { token: params.token ?? params.symbol, mint };
     });
+
+    // ─── Hub / Desktop control ───
+    this.registerTool('hub_control', async (params) => {
+      const action = String(params.action ?? '');
+      if (!action) throw new Error('hub_control requires an "action" parameter');
+      // Return a directive that the gateway will broadcast to Hub clients
+      return { __hub_control: true, action, params };
+    });
   }
 
   private delay(ms: number): Promise<void> {

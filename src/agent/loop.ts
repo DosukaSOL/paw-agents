@@ -28,6 +28,7 @@ export interface AgentResponse {
   plan_summary?: string;
   trace_id?: string;
   error?: string;
+  hub_control?: { action: string; [key: string]: unknown };
 }
 
 // Pending confirmations stored per user (with expiry to prevent memory leaks)
@@ -194,6 +195,7 @@ export class PawAgent {
         'rag_index', 'rag_search', 'rag_list',
         'branch_create', 'branch_list', 'branch_switch', 'branch_rollback',
         'profile_get', 'profile_update',
+        'hub_control',
       ];
 
       // ═══ STEP 5: Generate plan (LLM reasoning) ═══
@@ -454,7 +456,20 @@ export class PawAgent {
       message: responseMsg,
       plan_id: plan.id,
       trace_id: trace.getSessionId(),
+      ...this.extractHubControl(result),
     };
+  }
+
+  // ─── Extract hub_control directive from execution results ───
+  private extractHubControl(result: ExecutionResult): { hub_control?: { action: string; [key: string]: unknown } } {
+    for (const step of result.steps_completed) {
+      const output = step.output as Record<string, unknown> | null;
+      if (output && output.__hub_control === true) {
+        const { __hub_control, ...rest } = output;
+        return { hub_control: rest as { action: string; [key: string]: unknown } };
+      }
+    }
+    return {};
   }
 
   // ─── Format result for user ───

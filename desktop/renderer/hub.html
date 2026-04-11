@@ -936,6 +936,38 @@
         addLog('error', 'gateway', msg.payload?.message || msg.payload || 'Gateway error');
         addPawTraceLog('error', 'gateway', msg.payload?.message || msg.payload || 'Gateway error');
       }
+      // ─── Hub Control from Agent ───
+      if (msg.type === 'hub_control') {
+        const action = msg.payload?.action;
+        addPawTraceLog('info', 'hub', 'Hub control: ' + action);
+        if (action === 'toggle_companion') {
+          const enabled = msg.payload?.enabled !== false;
+          const pawlBtn = document.getElementById('pawl-toggle');
+          if (pawlBtn) {
+            pawlBtn.classList.toggle('pawl-on', enabled);
+            pawlBtn.title = enabled ? 'PAWL ON — Click to disable' : 'Toggle PAWL Companion';
+          }
+          if (typeof window.paw !== 'undefined' && window.paw.togglePawl) {
+            window.paw.togglePawl(enabled);
+          }
+          addLog('info', 'hub', 'Companion ' + (enabled ? 'enabled' : 'disabled') + ' by agent');
+        }
+        if (action === 'toggle_voice') {
+          const enabled = msg.payload?.enabled !== false;
+          const voiceBtn = document.getElementById('voice-btn');
+          if (voiceBtn) voiceBtn.click(); // Toggle voice mode
+          addLog('info', 'hub', 'Voice mode toggled by agent');
+        }
+        if (action === 'toggle_wake_word') {
+          const enabled = msg.payload?.enabled !== false;
+          if (enabled && typeof window._pawStartWakeWord === 'function') {
+            window._pawStartWakeWord();
+          } else if (!enabled && typeof window._pawStopWakeWord === 'function') {
+            window._pawStopWakeWord();
+          }
+          addLog('info', 'hub', 'Wake word ' + (enabled ? 'enabled' : 'disabled') + ' by agent');
+        }
+      }
     }
 
     function sendMessage(text) {
@@ -1691,12 +1723,18 @@
         }
       }
 
-      // Auto-start wake word on launch (delayed to avoid startup conflicts)
-      setTimeout(() => {
-        if (!isListening && SpeechRecognition) {
-          startWakeWord();
-        }
-      }, 3000);
+      // Expose wake word controls for hub_control messages
+      window._pawStartWakeWord = startWakeWord;
+      window._pawStopWakeWord = stopWakeWord;
+
+      // Wake word is disabled by default to avoid constant mic access / flashing icon.
+      // Users can enable it via voice settings or by asking the agent.
+      // To auto-start, uncomment the block below:
+      // setTimeout(() => {
+      //   if (!isListening && SpeechRecognition) {
+      //     startWakeWord();
+      //   }
+      // }, 3000);
     })();
 
     // ─── Multi-Agent Management ───
