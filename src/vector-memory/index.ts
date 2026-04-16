@@ -148,6 +148,11 @@ export class VectorMemory {
     return removed;
   }
 
+  // ─── Get all entries ───
+  getAllEntries(): VectorEntry[] {
+    return [...this.entries];
+  }
+
   // ─── Stats ───
   stats(): { total: number; by_scope: Record<string, number>; storage_bytes: number } {
     const byScope: Record<string, number> = { session: 0, user: 0, global: 0 };
