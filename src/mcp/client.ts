@@ -48,8 +48,9 @@ export class PawMCPClient {
       throw new Error(`Connection to private/internal addresses is not allowed: ${hostname}`);
     }
 
-    // Initialize
-    const initResponse = await this.rpc(url, 'initialize', {
+    try {
+      // Initialize
+      const initResponse = await this.rpc(url, 'initialize', {
       protocolVersion: '2024-11-05',
       capabilities: {},
       clientInfo: { name: 'paw-agents', version: '4.0.0' },
@@ -91,10 +92,14 @@ export class PawMCPClient {
     this.connections.set(url, connection);
     console.log(`[MCP Client] Connected to ${connection.name} (${url}) — ${remoteTools.length} tools`);
     return connection;
+    } catch (err) {
+      // If initialization failed, clean up any partial connection from the map
+      this.connections.delete(url);
+      throw err;
+    }
   }
 
   // ─── Invoke Remote Tool ───
-
   async invokeTool(serverUrl: string, toolName: string, args: Record<string, unknown>): Promise<unknown> {
     const connection = this.connections.get(serverUrl);
     if (!connection?.connected) {

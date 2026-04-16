@@ -6,6 +6,13 @@ import { ModelProvider, ModelConfig, TaskType, ModelPerformanceRecord } from '..
 import { config } from '../core/config';
 import { FastPathRouter } from '../intelligence/fast-path';
 
+// ─── Helper: Timeout wrapper for fetch calls ───
+function fetchWithTimeout(url: string, options: RequestInit, timeoutMs: number = 30_000): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(timeout));
+}
+
 // ─── OpenAI Provider ───
 class OpenAIProvider implements ModelProvider {
   name = 'openai';
@@ -56,8 +63,8 @@ class AnthropicProvider implements ModelProvider {
   }
 
   async generate(system: string, prompt: string): Promise<string> {
-    // Anthropic SDK call
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    // Anthropic SDK call with 30s timeout
+    const response = await fetchWithTimeout('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -99,7 +106,7 @@ class GoogleProvider implements ModelProvider {
   }
 
   async generate(system: string, prompt: string): Promise<string> {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent`, {
+    const response = await fetchWithTimeout(`https://generativelanguage.googleapis.com/v1beta/models/${this.model}:generateContent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -139,7 +146,7 @@ class MistralProvider implements ModelProvider {
   }
 
   async generate(system: string, prompt: string): Promise<string> {
-    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    const response = await fetchWithTimeout('https://api.mistral.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -183,8 +190,8 @@ class DeepSeekProvider implements ModelProvider {
   }
 
   async generate(system: string, prompt: string): Promise<string> {
-    // DeepSeek uses OpenAI-compatible API
-    const response = await fetch('https://api.deepseek.com/chat/completions', {
+    // DeepSeek uses OpenAI-compatible API with 30s timeout
+    const response = await fetchWithTimeout('https://api.deepseek.com/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -273,7 +280,7 @@ class XAIProvider implements ModelProvider {
   }
 
   async generate(system: string, prompt: string): Promise<string> {
-    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+    const response = await fetchWithTimeout('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -317,7 +324,7 @@ class CohereProvider implements ModelProvider {
   }
 
   async generate(system: string, prompt: string): Promise<string> {
-    const response = await fetch('https://api.cohere.com/v2/chat', {
+    const response = await fetchWithTimeout('https://api.cohere.com/v2/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

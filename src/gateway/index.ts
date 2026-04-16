@@ -608,11 +608,19 @@ export class PawGateway {
   // ─── Timing-safe string comparison ───
   private safeCompare(a: string, b: string): boolean {
     if (typeof a !== 'string' || typeof b !== 'string') return false;
-    if (!a || !b) return false;
-    // Pad shorter string to prevent timing leak from length difference
-    const maxLen = Math.max(a.length, b.length);
-    const bufA = Buffer.from(a.padEnd(maxLen, '\0'));
-    const bufB = Buffer.from(b.padEnd(maxLen, '\0'));
-    return a.length === b.length && timingSafeEqual(bufA, bufB);
+    // Use fixed-length buffers (256 bytes) to prevent timing attacks from length differences
+    const fixedLen = 256;
+    const bufA = Buffer.alloc(fixedLen);
+    const bufB = Buffer.alloc(fixedLen);
+    const aBuf = Buffer.from(a);
+    const bBuf = Buffer.from(b);
+    bufA.set(aBuf, 0);
+    bufB.set(bBuf, 0);
+    // Always use timingSafeEqual regardless of length to prevent timing leaks
+    try {
+      return timingSafeEqual(bufA, bufB);
+    } catch {
+      return false;
+    }
   }
 }

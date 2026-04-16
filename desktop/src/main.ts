@@ -124,6 +124,8 @@ function connectGateway(): void {
     // Auto-reconnect with exponential backoff
     if (reconnectTimer) clearTimeout(reconnectTimer);
     reconnectTimer = setTimeout(connectGateway, reconnectDelay);
+    // Mark timer as background so it doesn't block app exit
+    if (reconnectTimer.unref) reconnectTimer.unref();
     reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
   });
 
@@ -334,6 +336,6 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
-  if (reconnectTimer) clearTimeout(reconnectTimer);
+  if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
   ws?.close();
 });

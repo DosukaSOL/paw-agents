@@ -11,7 +11,7 @@ import { ExecutionEngine, ToolHandler } from '../execution/engine';
 import { TraceLogger } from '../trace/index';
 import { SolanaExecutor } from '../integrations/solana/executor';
 import { PurpEngine } from '../integrations/purp/engine';
-import { SelfHealingSystem } from '../self-healing/index';
+import { SelfHealingSystem, HealingResult } from '../self-healing/index';
 import { sanitizeInput } from '../security/sanitizer';
 import { checkRateLimit } from '../security/rate-limiter';
 import { config } from '../core/config';
@@ -377,13 +377,19 @@ export class PawAgent {
         duration_ms: Date.now() - startTime,
       });
 
-      const healResult = await this.healer.heal(
+      // Wrap healing in timeout to prevent indefinite hangs
+      const healPromise = this.healer.heal(
         result.error.message,
         plan,
         (hint) => this.brain.generatePlan(plan.intent, [], plan.tools ?? [], hint),
         (p) => this.validator.validate(p, this.getUserMode(userId)),
         (p) => this.executor.execute(p),
       );
+      const healTimeoutMs = 30_000;
+      const healResult: HealingResult = (await Promise.race([
+        healPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Healing timeout exceeded')), healTimeoutMs)),
+      ])) as HealingResult;
 
       if (healResult.final_status === 'healed' && healResult.fixed_plan) {
         // Use the healed plan and re-execute
