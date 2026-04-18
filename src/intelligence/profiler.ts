@@ -18,6 +18,11 @@ export class UserProfiler {
   private profiles = new Map<string, UserProfile>();
   private storePath: string;
   private dirty = new Set<string>();
+  private static readonly DEFAULT_MAX_PROFILES_IN_MEMORY = 5000;
+  private maxInMemory(): number {
+    const v = Number(process.env.PAW_PROFILER_MAX_IN_MEMORY);
+    return Number.isFinite(v) && v > 0 ? v : UserProfiler.DEFAULT_MAX_PROFILES_IN_MEMORY;
+  }
 
   constructor(storePath?: string) {
     this.storePath = path.resolve(storePath ?? config.intelligence.profileStorePath);
@@ -52,6 +57,7 @@ export class UserProfiler {
 
     this.profiles.set(userId, profile);
     this.dirty.add(userId);
+    this.evictIfNeeded();
     return profile;
   }
 
@@ -252,6 +258,23 @@ export class UserProfiler {
     // Batch flush every 10 dirty profiles
     if (this.dirty.size >= 10) {
       this.flushAll();
+    }
+  }
+
+  // ─── Evict oldest in-memory profiles to keep heap bounded ───
+  private evictIfNeeded(): void {
+    const max = this.maxInMemory();
+    if (this.profiles.size <= max) return;
+    // Flush dirty entries first so we don't drop unsaved data
+    if (this.dirty.size > 0) this.flushAll();
+    // Evict ~10% of oldest entries by last_seen
+    const target = Math.floor(max * 0.9);
+    const sorted = [...this.profiles.entries()].sort(
+      (a, b) => Date.parse(a[1].last_seen) - Date.parse(b[1].last_seen),
+    );
+    while (this.profiles.size > target && sorted.length > 0) {
+      const [oldestId] = sorted.shift()!;
+      this.profiles.delete(oldestId);
     }
   }
 

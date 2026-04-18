@@ -2,7 +2,7 @@
 // Combines Dashboard, Mission Control, CLI Companion, Plugins, and Workflows
 // into a single unified desktop application with Pawl companion.
 
-import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, session } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, session, globalShortcut } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import WebSocket from 'ws';
@@ -99,21 +99,25 @@ function connectGateway(): void {
 
   ws.on('open', () => {
     console.log('[PAW Desktop] Connected to gateway');
+    hubWindow?.webContents.send('gateway:status', 'connected');
     mainWindow?.webContents.send('gateway:status', 'connected');
     reconnectDelay = 3000; // Reset backoff on successful connection
     reconnectAttempts = 0;
 
-    // Register as desktop channel
+    // Register as desktop channel; include auth_token if configured
     ws?.send(JSON.stringify({
       type: 'register',
       channel: 'desktop',
       client_id: `desktop_${Date.now()}`,
+      auth_token: AUTH_TOKEN || undefined,
     }));
   });
 
   ws.on('message', (data: Buffer) => {
     try {
       const msg = JSON.parse(data.toString());
+      // Forward to BOTH windows (hub + classic chat) so each can react
+      hubWindow?.webContents.send('gateway:message', msg);
       mainWindow?.webContents.send('gateway:message', msg);
     } catch {
       // ignore malformed messages
@@ -122,12 +126,14 @@ function connectGateway(): void {
 
   ws.on('close', () => {
     console.log(`[PAW Desktop] Disconnected from gateway — reconnecting in ${reconnectDelay / 1000}s`);
+    hubWindow?.webContents.send('gateway:status', 'disconnected');
     mainWindow?.webContents.send('gateway:status', 'disconnected');
 
     // Stop trying after too many failed attempts to avoid infinite log spam
     reconnectAttempts++;
     if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
       console.error('[PAW Desktop] Giving up reconnect after', MAX_RECONNECT_ATTEMPTS, 'attempts. Restart the framework and the hub.');
+      hubWindow?.webContents.send('gateway:status', 'unavailable');
       mainWindow?.webContents.send('gateway:status', 'unavailable');
       return;
     }
@@ -315,6 +321,19 @@ app.whenReady().then(() => {
   setupIPC();
   connectGateway();
 
+  // Global hotkey: Cmd/Ctrl+Shift+P toggles Hub focus
+  try {
+    const accelerator = process.platform === 'darwin' ? 'Cmd+Shift+P' : 'Ctrl+Shift+P';
+    const registered = globalShortcut.register(accelerator, () => {
+      if (!hubWindow) { createHubWindow(); return; }
+      if (hubWindow.isFocused() && hubWindow.isVisible()) hubWindow.hide();
+      else { hubWindow.show(); hubWindow.focus(); }
+    });
+    if (!registered) console.warn('[PAW Desktop] Global hotkey could not be registered');
+  } catch (err) {
+    console.warn('[PAW Desktop] Global shortcut registration failed:', (err as Error).message);
+  }
+
   // Start Pawl companion
   pawl = new PawlCompanion();
   pawl.show();
@@ -360,5 +379,6 @@ app.on('window-all-closed', () => {
 
 app.on('before-quit', () => {
   if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
+  try { globalShortcut.unregisterAll(); } catch { /* ignore */ }
   ws?.close();
 });

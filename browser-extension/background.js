@@ -4,6 +4,10 @@
 let ws = null;
 let gatewayUrl = 'ws://127.0.0.1:18789';
 let authToken = '';
+let reconnectAttempts = 0;
+let reconnectDelay = 5000;
+const MAX_RECONNECT_DELAY = 30_000;
+const MAX_RECONNECT_ATTEMPTS = 60;
 
 // ─── Load settings ───
 chrome.storage.sync.get(['gatewayUrl', 'authToken'], (result) => {
@@ -48,6 +52,8 @@ function connectGateway() {
 
     ws.onopen = () => {
       console.log('[PAW Extension] Connected to gateway');
+      reconnectAttempts = 0;
+      reconnectDelay = 5000;
       // Authenticate via message instead of query parameter
       if (authToken) {
         ws.send(JSON.stringify({
@@ -79,8 +85,7 @@ function connectGateway() {
     ws.onclose = () => {
       console.log('[PAW Extension] Disconnected');
       updateBadge('disconnected');
-      // Auto-reconnect
-      setTimeout(connectGateway, 5000);
+      scheduleReconnect();
     };
 
     ws.onerror = () => {
@@ -88,8 +93,19 @@ function connectGateway() {
     };
   } catch {
     updateBadge('error');
-    setTimeout(connectGateway, 5000);
+    scheduleReconnect();
   }
+}
+
+function scheduleReconnect() {
+  if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+    console.warn('[PAW Extension] Giving up after', MAX_RECONNECT_ATTEMPTS, 'reconnect attempts');
+    return;
+  }
+  reconnectAttempts++;
+  const delay = reconnectDelay;
+  reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY);
+  setTimeout(connectGateway, delay);
 }
 
 function sendToPaw(message) {

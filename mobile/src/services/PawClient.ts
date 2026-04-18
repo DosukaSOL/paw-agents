@@ -21,6 +21,10 @@ export class PawClient {
   private onStatusCallback: ((status: ConnectionStatus) => void) | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private clientId: string;
+  private reconnectAttempts = 0;
+  private reconnectDelay = 3000;
+  private static readonly MAX_RECONNECT_DELAY = 30_000;
+  private static readonly MAX_RECONNECT_ATTEMPTS = 60;
 
   constructor(gatewayUrl?: string, authToken?: string) {
     this.gatewayUrl = gatewayUrl ?? DEFAULT_GATEWAY;
@@ -32,18 +36,19 @@ export class PawClient {
     this.updateStatus('connecting');
 
     try {
-      const url = this.authToken
-        ? `${this.gatewayUrl}?token=${encodeURIComponent(this.authToken)}`
-        : this.gatewayUrl;
-
-      this.ws = new WebSocket(url);
+      // Auth token is sent inside the register message, NOT in the URL,
+      // to keep secrets out of access logs / proxies.
+      this.ws = new WebSocket(this.gatewayUrl);
 
       this.ws.onopen = () => {
         this.updateStatus('connected');
+        this.reconnectAttempts = 0;
+        this.reconnectDelay = 3000;
         this.send(JSON.stringify({
           type: 'register',
           channel: 'mobile',
           client_id: this.clientId,
+          auth_token: this.authToken || undefined,
         }));
       };
 
@@ -117,9 +122,16 @@ export class PawClient {
 
   private scheduleReconnect(): void {
     if (this.reconnectTimer) return;
+    if (this.reconnectAttempts >= PawClient.MAX_RECONNECT_ATTEMPTS) {
+      this.updateStatus('error');
+      return;
+    }
+    this.reconnectAttempts++;
+    const delay = this.reconnectDelay;
+    this.reconnectDelay = Math.min(this.reconnectDelay * 2, PawClient.MAX_RECONNECT_DELAY);
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
       this.connect();
-    }, 3000);
+    }, delay);
   }
 }

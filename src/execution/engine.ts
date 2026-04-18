@@ -17,8 +17,22 @@ import { DeFiEngine } from '../defi/engine';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const MAX_RETRIES = 2;
-const RETRY_DELAY_MS = 1000;
+const DEFAULT_MAX_RETRIES = 2;
+const DEFAULT_RETRY_DELAY_MS = 1000;
+const DEFAULT_STEP_TIMEOUT_MS = 60_000;
+
+function maxRetries(): number {
+  const v = Number(process.env.PAW_EXEC_MAX_RETRIES);
+  return Number.isFinite(v) && v >= 0 ? v : DEFAULT_MAX_RETRIES;
+}
+function retryDelayMs(): number {
+  const v = Number(process.env.PAW_EXEC_RETRY_DELAY_MS);
+  return Number.isFinite(v) && v >= 0 ? v : DEFAULT_RETRY_DELAY_MS;
+}
+function stepTimeoutMs(): number {
+  const v = Number(process.env.PAW_EXEC_STEP_TIMEOUT_MS);
+  return Number.isFinite(v) && v > 0 ? v : DEFAULT_STEP_TIMEOUT_MS;
+}
 
 // In-process key-value memory store for agent tools
 const memoryStore = new Map<string, unknown>();
@@ -77,15 +91,21 @@ export class ExecutionEngine {
       let output: unknown = null;
 
       // Retry loop
-      for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      const maxR = maxRetries();
+      const baseDelay = retryDelayMs();
+      const stepTimeout = stepTimeoutMs();
+      for (let attempt = 0; attempt <= maxR; attempt++) {
         try {
-          output = await this.executeStep(step);
+          output = await this.runWithTimeout(this.executeStep(step), stepTimeout, step.tool);
           success = true;
           break;
         } catch (err) {
           lastError = (err as Error).message;
-          if (attempt < MAX_RETRIES) {
-            await this.delay(RETRY_DELAY_MS * (attempt + 1));
+          if (attempt < maxR) {
+            // Exponential backoff with jitter (±25%) to avoid thundering herd
+            const base = baseDelay * (attempt + 1);
+            const jitter = base * (Math.random() * 0.5 - 0.25);
+            await this.delay(Math.max(0, Math.round(base + jitter)));
           }
         }
       }
@@ -111,7 +131,7 @@ export class ExecutionEngine {
           final_output: null,
           error: {
             code: 'STEP_FAILED',
-            message: `Step ${step.step} failed after ${MAX_RETRIES + 1} attempts: ${lastError}`,
+            message: `Step ${step.step} failed after ${maxRetries() + 1} attempts: ${lastError}`,
             step: step.step,
             recoverable: false,
             recovery_attempted: true,
@@ -140,6 +160,20 @@ export class ExecutionEngine {
       throw new Error(`Unknown tool: ${step.tool}`);
     }
     return handler(step.params);
+  }
+
+  // ─── Run a tool with a hard timeout so a hanging tool can't stall the loop ───
+  private async runWithTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => reject(new Error(`Tool "${label}" timed out after ${timeoutMs}ms`)), timeoutMs);
+      if (timer && typeof (timer as any).unref === 'function') (timer as any).unref();
+    });
+    try {
+      return await Promise.race([promise, timeout]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
   }
 
   // ─── Rollback completed steps ───

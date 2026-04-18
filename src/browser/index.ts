@@ -160,7 +160,16 @@ export class BrowserEngine {
           if (blocked.test(action.script)) {
             throw new Error('Script contains blocked patterns');
           }
-          const result = await page.evaluate(action.script);
+          // Hard timeout so a hanging script can't stall the agent loop
+          const evalTimeoutMs = action.timeout ?? 10000;
+          let timer: ReturnType<typeof setTimeout> | undefined;
+          const result = await Promise.race([
+            page.evaluate(action.script),
+            new Promise((_, reject) => {
+              timer = setTimeout(() => reject(new Error(`evaluate timed out after ${evalTimeoutMs}ms`)), evalTimeoutMs);
+              if (timer && typeof (timer as any).unref === 'function') (timer as any).unref();
+            }),
+          ]).finally(() => { if (timer) clearTimeout(timer); });
           return { success: true, data: result };
         }
 
