@@ -1613,19 +1613,21 @@
         recognition.onend = () => {
           if (isListening && voiceRetries < MAX_VOICE_RETRIES) {
             voiceRetries++;
+            // Don't immediately restart - wait to give the mic a chance to release
             setTimeout(() => {
               if (isListening && recognition) {
-                try { recognition.start(); } catch(e) {
-                  setTimeout(() => {
-                    if (isListening) {
-                      try { createRecognition(); } catch(e2) { stopListening(); }
-                    }
-                  }, 1000);
+                try { 
+                  recognition.start(); 
+                } catch(e) {
+                  addLog('warn', 'voice', 'Voice restart attempt ' + voiceRetries + ' failed: ' + e.message);
+                  if (voiceRetries >= MAX_VOICE_RETRIES) {
+                    stopListening();
+                  }
                 }
               }
-            }, 300);
+            }, 800);
           } else if (isListening) {
-            addLog('warn', 'voice', 'Voice recognition stopped after retries — click mic to restart');
+            addLog('warn', 'voice', 'Voice recognition stopped after ' + MAX_VOICE_RETRIES + ' retries — click mic to restart');
             stopListening();
           }
         };
@@ -1643,19 +1645,30 @@
         voiceBtn.classList.remove('listening');
         voiceBtn.title = 'Voice Mode';
         if (recognition) {
-          try { recognition.stop(); } catch(e) {}
+          try { recognition.abort(); } catch(e) {}
           recognition = null;
         }
         addPawTraceLog('info', 'voice', 'Voice mode OFF');
       }
 
       // ─── "Hey PAW" Wake Word ───
+      let wakeWordRestartTimer = null;
+      let wakeWordCreating = false;
+      
       function startWakeWord() {
         if (!SpeechRecognition) return;
         if (wakeWordActive) return; // Already running
         if (isListening) return; // Full voice mode is active
+        if (wakeWordCreating) return; // Prevent concurrent creation attempts
 
+        wakeWordCreating = true;
         try {
+          // Clean up old instance if exists
+          if (wakeWordRecognition) {
+            try { wakeWordRecognition.abort(); } catch(e) {}
+            wakeWordRecognition = null;
+          }
+
           wakeWordRecognition = new SpeechRecognition();
           wakeWordRecognition.continuous = true;
           wakeWordRecognition.interimResults = true;
@@ -1679,48 +1692,45 @@
           };
 
           wakeWordRecognition.onerror = (event) => {
-            if (event.error === 'aborted' || event.error === 'no-speech') return;
+            if (event.error === 'aborted' || event.error === 'no-speech' || event.error === 'net-timeout') return;
             if (event.error === 'not-allowed') {
               addLog('warn', 'voice', 'Wake word needs mic permission');
               wakeWordActive = false;
+              wakeWordCreating = false;
               return;
             }
+            // Log other errors but don't spam
+            addLog('warn', 'voice', 'Wake word error: ' + event.error);
           };
 
           wakeWordRecognition.onend = () => {
-            // Auto-restart wake word unless full voice mode took over
-            if (wakeWordActive && !isListening) {
-              setTimeout(() => {
-                if (wakeWordActive && !isListening) {
-                  try { 
-                    wakeWordRecognition.start(); 
-                  } catch(e) {
-                    // Recreate if the old instance is dead
-                    setTimeout(() => {
-                      if (wakeWordActive && !isListening) {
-                        wakeWordActive = false;
-                        startWakeWord();
-                      }
-                    }, 2000);
-                  }
-                }
-              }, 500);
+            // Don't auto-restart wake word - it causes constant mic access flashing
+            // Users must enable wake word explicitly via settings or agent command
+            if (wakeWordActive) {
+              wakeWordActive = false;
+              addPawTraceLog('info', 'voice', 'Wake word listener stopped');
             }
           };
 
           wakeWordActive = true;
+          wakeWordCreating = false;
           wakeWordRecognition.start();
           addPawTraceLog('info', 'voice', '"Hey PAW" wake word listener active');
         } catch(e) {
           wakeWordActive = false;
+          wakeWordCreating = false;
           addLog('warn', 'voice', 'Could not start wake word listener: ' + e.message);
         }
       }
 
       function stopWakeWord() {
         wakeWordActive = false;
+        if (wakeWordRestartTimer) {
+          clearTimeout(wakeWordRestartTimer);
+          wakeWordRestartTimer = null;
+        }
         if (wakeWordRecognition) {
-          try { wakeWordRecognition.stop(); } catch(e) {}
+          try { wakeWordRecognition.abort(); } catch(e) {}
           wakeWordRecognition = null;
         }
       }

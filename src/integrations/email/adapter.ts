@@ -33,6 +33,9 @@ export class EmailAdapter implements ChannelAdapter {
   private handler: ((userId: string, message: string, channel: ChannelType) => Promise<void>) | null = null;
   private polling: ReturnType<typeof setInterval> | null = null;
   private pendingReplies: Map<string, PendingReply> = new Map();
+  private checking = false;
+  private failureCount = 0;
+  private static readonly MAX_FAILURES = 10;
 
   constructor(config: EmailConfig) {
     this.config = config;
@@ -41,7 +44,24 @@ export class EmailAdapter implements ChannelAdapter {
   async start(): Promise<void> {
     // Start IMAP polling
     const interval = this.config.pollIntervalMs ?? 30_000;
-    this.polling = setInterval(() => this.checkInbox(), interval);
+    this.polling = setInterval(() => {
+      // Skip overlapping runs to prevent queue buildup if checkInbox is slow
+      if (this.checking) return;
+      this.checking = true;
+      Promise.resolve(this.checkInbox())
+        .catch((err) => {
+          this.failureCount++;
+          console.warn('[EMAIL] checkInbox failed:', (err as Error).message);
+          if (this.failureCount >= EmailAdapter.MAX_FAILURES && this.polling) {
+            console.error('[EMAIL] Disabling polling after repeated failures');
+            clearInterval(this.polling);
+            this.polling = null;
+          }
+        })
+        .finally(() => {
+          this.checking = false;
+        });
+    }, interval);
     console.log(`[EMAIL] Adapter started, polling every ${interval / 1000}s`);
   }
 

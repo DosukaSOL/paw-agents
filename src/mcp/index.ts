@@ -188,7 +188,17 @@ export class MCPClient {
         },
         (res) => {
           const chunks: Buffer[] = [];
-          res.on('data', (chunk: Buffer) => chunks.push(chunk));
+          let totalSize = 0;
+          const MAX_RESPONSE_SIZE = 16 * 1024 * 1024; // 16MB cap to prevent memory exhaustion
+          res.on('data', (chunk: Buffer) => {
+            totalSize += chunk.length;
+            if (totalSize > MAX_RESPONSE_SIZE) {
+              req.destroy();
+              safeReject(new Error(`MCP response exceeds ${MAX_RESPONSE_SIZE} bytes`));
+              return;
+            }
+            chunks.push(chunk);
+          });
           res.on('end', () => {
             const data = Buffer.concat(chunks).toString('utf-8');
             if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {

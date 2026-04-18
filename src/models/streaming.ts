@@ -124,23 +124,27 @@ class AnthropicStream implements StreamProvider {
   async stream(system: string, prompt: string, onChunk: StreamCallback): Promise<string> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': this.apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: this.model,
-        max_tokens: 4096,
-        system,
-        messages: [{ role: 'user', content: prompt }],
-        stream: true,
-      }),
-      signal: controller.signal,
-    });
-    clearTimeout(timeout);
+    let response: Response;
+    try {
+      response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': this.apiKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: this.model,
+          max_tokens: 4096,
+          system,
+          messages: [{ role: 'user', content: prompt }],
+          stream: true,
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) throw new Error(`Anthropic stream error: ${response.status}`);
     if (!response.body) throw new Error('Anthropic stream: no body');
@@ -198,23 +202,27 @@ class GoogleStream implements StreamProvider {
   async stream(system: string, prompt: string, onChunk: StreamCallback): Promise<string> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 30_000);
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:streamGenerateContent?alt=sse`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-goog-api-key': this.apiKey,
-        },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: system }] },
-          contents: [{ role: 'user', parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.1, maxOutputTokens: 4096 },
-        }),
-        signal: controller.signal,
-      }
-    );
-    clearTimeout(timeout);
+    let response: Response;
+    try {
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${this.model}:streamGenerateContent?alt=sse`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-goog-api-key': this.apiKey,
+          },
+          body: JSON.stringify({
+            system_instruction: { parts: [{ text: system }] },
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.1, maxOutputTokens: 4096 },
+          }),
+          signal: controller.signal,
+        }
+      );
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) throw new Error(`Google stream error: ${response.status}`);
     if (!response.body) throw new Error('Google stream: no body');
@@ -283,23 +291,26 @@ class OpenAICompatibleStream implements StreamProvider {
     const timeoutMs = this.name === 'ollama' ? 60_000 : 30_000;
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-    const response = await fetch(`${this.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        model: this.model,
-        messages: [
-          { role: 'system', content: system },
-          { role: 'user', content: prompt },
-        ],
-        temperature: 0.1,
-        max_tokens: 4096,
-        stream: true,
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeout);
+    let response: Response;
+    try {
+      response = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          model: this.model,
+          messages: [
+            { role: 'system', content: system },
+            { role: 'user', content: prompt },
+          ],
+          temperature: 0.1,
+          max_tokens: 4096,
+          stream: true,
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
 
     if (!response.ok) throw new Error(`${this.name} stream error: ${response.status}`);
     if (!response.body) throw new Error(`${this.name} stream: no body`);

@@ -64,6 +64,7 @@ export class PawlCompanion {
   private idleTimer: ReturnType<typeof setTimeout> | null = null;
   private animationInterval: ReturnType<typeof setInterval> | null = null;
   private walkInterval: ReturnType<typeof setInterval> | null = null;
+  private walkStepInterval: ReturnType<typeof setInterval> | null = null;
   private posX = 0;
   private posY = 0;
   private notificationQueue: Array<{ text: string; type: 'info' | 'success' | 'error' | 'warning' }> = [];
@@ -253,14 +254,19 @@ export class PawlCompanion {
     this.walkInterval = setInterval(() => {
       if (this.isAsleep || !this.window) return;
       if (Math.random() > 0.3) return; // Only walk sometimes
+      // Skip if a walk is already in progress
+      if (this.walkStepInterval) return;
 
       const direction = Math.random() < 0.5 ? 'left' : 'right';
       const steps = Math.floor(Math.random() * 8) + 3;
       let step = 0;
 
-      const walkStep = setInterval(() => {
+      this.walkStepInterval = setInterval(() => {
         if (step >= steps || !this.window) {
-          clearInterval(walkStep);
+          if (this.walkStepInterval) {
+            clearInterval(this.walkStepInterval);
+            this.walkStepInterval = null;
+          }
           this.setFrame('idle_front');
           return;
         }
@@ -316,6 +322,7 @@ export class PawlCompanion {
   private stopAnimations(): void {
     if (this.animationInterval) { clearInterval(this.animationInterval); this.animationInterval = null; }
     if (this.walkInterval) { clearInterval(this.walkInterval); this.walkInterval = null; }
+    if (this.walkStepInterval) { clearInterval(this.walkStepInterval); this.walkStepInterval = null; }
     if (this.idleTimer) { clearTimeout(this.idleTimer); this.idleTimer = null; }
   }
 

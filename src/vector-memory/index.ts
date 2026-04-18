@@ -64,11 +64,14 @@ function cosineSimilarity(a: number[], b: number[]): number {
 }
 
 export class VectorMemory {
+  // Hard cap to prevent unbounded growth (FIFO eviction)
+  private static readonly MAX_ENTRIES = 50_000;
   private entries: VectorEntry[] = [];
   private storePath: string;
   private dirty = false;
   private vocabSize: number;
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
+  private writing = false;
 
   constructor(storePath: string = './data/vector-memory.json', vocabSize: number = 512) {
     this.storePath = path.resolve(storePath);
@@ -90,6 +93,10 @@ export class VectorMemory {
     };
 
     this.entries.push(entry);
+    // FIFO eviction once cap is exceeded — keeps newest entries
+    if (this.entries.length > VectorMemory.MAX_ENTRIES) {
+      this.entries.splice(0, this.entries.length - VectorMemory.MAX_ENTRIES);
+    }
     this.dirty = true;
     this.save();
     return entry;
@@ -191,17 +198,26 @@ export class VectorMemory {
   }
 
   private flushToDisk(): void {
-    if (!this.dirty) return;
+    if (!this.dirty || this.writing) return;
+    this.writing = true;
+    // Snapshot to avoid mutation during async write
+    const snapshot = this.entries.slice();
     try {
       const dir = path.dirname(this.storePath);
       if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      const data = JSON.stringify(this.entries);
+      const data = JSON.stringify(snapshot);
       fs.writeFile(this.storePath, data, 'utf-8', (err) => {
-        if (err) { /* disk error — memory still works in-process */ }
+        this.writing = false;
+        if (err) {
+          console.warn('[VectorMemory] save failed:', err.message);
+          // Keep dirty flag so the next save attempt retries
+          return;
+        }
+        this.dirty = false;
       });
-      this.dirty = false;
-    } catch {
-      // Silently fail — memory still works in-process
+    } catch (err) {
+      this.writing = false;
+      console.warn('[VectorMemory] flush error:', (err as Error).message);
     }
   }
 }

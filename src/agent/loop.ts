@@ -377,7 +377,8 @@ export class PawAgent {
         duration_ms: Date.now() - startTime,
       });
 
-      // Wrap healing in timeout to prevent indefinite hangs
+      // Wrap healing in timeout to prevent indefinite hangs.
+      // Use a settled flag + cleared timeout to avoid double-resolve and unhandled rejections.
       const healPromise = this.healer.heal(
         result.error.message,
         plan,
@@ -386,10 +387,36 @@ export class PawAgent {
         (p) => this.executor.execute(p),
       );
       const healTimeoutMs = 30_000;
-      const healResult: HealingResult = (await Promise.race([
-        healPromise,
-        new Promise((_, reject) => setTimeout(() => reject(new Error('Healing timeout exceeded')), healTimeoutMs)),
-      ])) as HealingResult;
+      let healResult: HealingResult;
+      try {
+        let timeoutHandle: ReturnType<typeof setTimeout> | undefined;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timeoutHandle = setTimeout(
+            () => reject(new Error('Healing timeout exceeded')),
+            healTimeoutMs,
+          );
+        });
+        try {
+          healResult = (await Promise.race([healPromise, timeoutPromise])) as HealingResult;
+        } finally {
+          if (timeoutHandle) clearTimeout(timeoutHandle);
+        }
+        // Ensure healPromise rejection (if any after race) doesn't become unhandled.
+        healPromise.catch(() => undefined);
+      } catch (healErr) {
+        trace.log('verification', {
+          execution: result,
+          error: `Healing failed: ${(healErr as Error).message}`,
+          duration_ms: Date.now() - startTime,
+        });
+        return {
+          success: false,
+          message: `Action failed and self-healing did not complete: ${result.error.message}`,
+          plan_id: plan.id,
+          error: result.error.code,
+          trace_id: trace.getSessionId(),
+        };
+      }
 
       if (healResult.final_status === 'healed' && healResult.fixed_plan) {
         // Use the healed plan and re-execute

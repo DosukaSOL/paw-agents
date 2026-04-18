@@ -18,6 +18,8 @@ let ws: WebSocket | null = null;
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let reconnectDelay = 3000;
 const MAX_RECONNECT_DELAY = 30000;
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 60; // ~30 min of attempts before giving up
 let pawl: PawlCompanion | null = null;
 
 // Speech recognition uses Chromium's built-in Web Speech API
@@ -99,6 +101,7 @@ function connectGateway(): void {
     console.log('[PAW Desktop] Connected to gateway');
     mainWindow?.webContents.send('gateway:status', 'connected');
     reconnectDelay = 3000; // Reset backoff on successful connection
+    reconnectAttempts = 0;
 
     // Register as desktop channel
     ws?.send(JSON.stringify({
@@ -120,6 +123,14 @@ function connectGateway(): void {
   ws.on('close', () => {
     console.log(`[PAW Desktop] Disconnected from gateway — reconnecting in ${reconnectDelay / 1000}s`);
     mainWindow?.webContents.send('gateway:status', 'disconnected');
+
+    // Stop trying after too many failed attempts to avoid infinite log spam
+    reconnectAttempts++;
+    if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
+      console.error('[PAW Desktop] Giving up reconnect after', MAX_RECONNECT_ATTEMPTS, 'attempts. Restart the framework and the hub.');
+      mainWindow?.webContents.send('gateway:status', 'unavailable');
+      return;
+    }
 
     // Auto-reconnect with exponential backoff
     if (reconnectTimer) clearTimeout(reconnectTimer);
@@ -281,10 +292,22 @@ function createTray(): void {
 
 // ─── App lifecycle ───
 app.whenReady().then(() => {
-  // Grant microphone permission for voice mode / wake word
+  // Grant microphone permission only for our local hub renderer files (file://).
+  // Reject permission requests from any other origin for safety.
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback) => {
     const allowed = ['media', 'microphone', 'audioCapture'];
-    callback(allowed.includes(permission));
+    if (!allowed.includes(permission)) return callback(false);
+    const url = webContents.getURL();
+    const isLocal = url.startsWith('file://') || url.startsWith('http://127.0.0.1') || url.startsWith('http://localhost');
+    callback(isLocal);
+  });
+  // Also explicitly check existing permissions per-origin
+  session.defaultSession.setPermissionCheckHandler((_webContents, permission, requestingOrigin) => {
+    const allowed = ['media', 'microphone', 'audioCapture'];
+    if (!allowed.includes(permission)) return false;
+    return requestingOrigin.startsWith('file://') ||
+      requestingOrigin.startsWith('http://127.0.0.1') ||
+      requestingOrigin.startsWith('http://localhost');
   });
 
   createHubWindow();

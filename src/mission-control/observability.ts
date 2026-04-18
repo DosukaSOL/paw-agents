@@ -122,8 +122,10 @@ export class MissionControlObservability {
 
       // Keep rolling window of traces
       if (this.traces.size > 5000) {
-        const firstKey = this.traces.keys().next().value;
-        this.traces.delete(firstKey);
+        const firstKey = this.traces.keys().next().value as string | undefined;
+        if (firstKey) {
+          this.traces.delete(firstKey);
+        }
       }
 
       this.recordMetric('span_duration_ms', span.duration_ms ?? 0, { span_name: span.name || 'unknown' } as Record<string, string>);
