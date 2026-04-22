@@ -211,6 +211,27 @@ export class ValidationEngine {
       }
     }
 
+    // System action: shell / open-app calls. ALWAYS treated as risky so that
+    // supervised mode prompts the user (the desktop hub turns this into a
+    // native dialog), and autonomous mode at least requires confirmation
+    // for destructive verbs. Free mode bypasses confirmation entirely.
+    if (plan.tools.some(t => t === 'system_action') || plan.plan.some(s => s.tool === 'system_action')) {
+      risk_score += 25;
+      for (const step of plan.plan) {
+        if (step.tool !== 'system_action') continue;
+        const cmd = String((step.params as any)?.command ?? '').toLowerCase();
+        const destructiveSignals = ['rm ', 'mv ', 'cp -r', 'chmod', 'chown', 'kill', 'pkill', 'curl', 'wget', '|sh', '| sh', '> /'];
+        if (destructiveSignals.some(s => cmd.includes(s))) {
+          risk_score += 25;
+          warnings.push({
+            code: 'SYSTEM_ACTION_DESTRUCTIVE',
+            field: `plan[${step.step}].params.command`,
+            message: `system_action contains potentially destructive verb in: ${cmd.slice(0, 80)}`,
+          });
+        }
+      }
+    }
+
     // Clamp risk score to 0-100
     return Math.max(0, Math.min(100, risk_score));
   }
@@ -224,6 +245,8 @@ export class ValidationEngine {
     if (mode === 'autonomous') {
       // Critical risks ALWAYS require confirmation regardless of mode
       if (plan.risks?.some(r => r.level === 'critical')) return true;
+      // Destructive system_action commands always confirm even in autonomous
+      if (plan.plan.some(s => s.tool === 'system_action' && /\b(rm|mv|chmod|chown|kill|pkill|curl|wget)\b/i.test(String((s.params as any)?.command ?? '')))) return true;
       // If confirmHighRisk is on, also confirm for high-risk actions
       if (config.agent.confirmHighRisk && risk_score >= 70) return true;
       if (config.agent.confirmHighRisk && plan.risks?.some(r => r.level === 'high')) return true;

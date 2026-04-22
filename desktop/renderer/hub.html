@@ -613,8 +613,12 @@
             <div class="cli-line">&nbsp;</div>
           </div>
           <div class="chat-input-area" style="border-top: 1px solid var(--border-subtle);">
-            <button class="voice-btn" id="voice-btn" title="Voice Mode">
+            <button class="voice-btn" id="voice-btn" title="Hold to talk">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+            </button>
+            <button class="voice-btn" id="tts-toggle-btn" title="Voice replies on (click to mute)">
+              <svg id="tts-toggle-icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              <svg id="tts-toggle-icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>
             </button>
             <input class="chat-input" id="chat-input" placeholder="Message PAW..." autocomplete="off">
             <button class="chat-send" id="chat-send">Send</button>
@@ -1025,13 +1029,16 @@
       if (msg.type === 'response') {
         const raw = msg.payload;
         let text;
+        let parsedObj = null;
         if (typeof raw === 'string') {
           // Try parsing stringified JSON
           try {
             const parsed = JSON.parse(raw);
+            parsedObj = parsed;
             text = parsed.message || parsed.text || parsed.response || raw;
           } catch { text = raw; }
         } else if (raw && typeof raw === 'object') {
+          parsedObj = raw;
           text = raw.message || raw.text || raw.response || JSON.stringify(raw);
         } else {
           text = String(raw);
@@ -1042,6 +1049,23 @@
         // TTS: speak response when voice mode is active
         if (typeof window._pawTTSEnabled === 'function' && window._pawTTSEnabled() && typeof window._pawSpeak === 'function') {
           window._pawSpeak(text);
+        }
+        // Native confirmation dialog: when the agent asked for confirmation
+        // (supervised/autonomous mode gating), show a native OS dialog and
+        // auto-reply yes/no based on the user's choice instead of forcing
+        // them to type the response.
+        if (parsedObj && parsedObj.requires_confirmation && window.paw && typeof window.paw.confirm === 'function') {
+          const detail = String(text || '').slice(0, 1500);
+          const risk = Number(parsedObj.risk_score ?? 0);
+          window.paw.confirm({
+            title: 'PAW — Permission required',
+            message: 'PAW wants to take an action on your machine.',
+            detail,
+            risk: Number.isFinite(risk) ? risk : undefined,
+          }).then((res) => {
+            const reply = res && res.allowed ? 'yes' : 'no';
+            try { sendMessage(reply); } catch(_) {}
+          }).catch(() => {});
         }
         // Mark agent as ready on first successful response
         if (!document.getElementById('status-agent').classList.contains('active')) {
@@ -1678,11 +1702,31 @@
         try {
           const voices = window.speechSynthesis.getVoices() || [];
           if (!voices.length) return null;
-          const prefs = ['Samantha', 'Karen', 'Daniel', 'Google US English', 'Microsoft Aria'];
+          // Priority list: high-quality humanlike female English voices first.
+          // macOS "Premium"/"Enhanced" variants sound dramatically more natural
+          // than the default Samantha (free download from System Settings →
+          // Accessibility → Spoken Content → System Voice → Manage Voices).
+          // Microsoft "Neural" voices (Aria/Jenny) ship with Edge / Win 11 and
+          // are exposed to the Web Speech API on those platforms.
+          const prefs = [
+            'Ava (Premium)', 'Ava (Enhanced)', 'Ava',
+            'Allison (Premium)', 'Allison (Enhanced)', 'Allison',
+            'Zoe (Premium)', 'Zoe (Enhanced)', 'Zoe',
+            'Serena (Premium)', 'Serena (Enhanced)', 'Serena',
+            'Samantha (Enhanced)', 'Samantha (Premium)', 'Samantha',
+            'Microsoft Aria Online (Natural) - English (United States)',
+            'Microsoft Jenny Online (Natural) - English (United States)',
+            'Microsoft Aria', 'Microsoft Jenny',
+            'Google US English Female', 'Google US English',
+            'Karen (Premium)', 'Karen',
+          ];
           for (const p of prefs) {
             const v = voices.find(v => v.name === p);
             if (v) return v;
           }
+          // Fall back to any female-sounding en-US voice, then any en-US, then any en
+          const female = voices.find(v => /en[-_]US/i.test(v.lang) && /(female|samantha|allison|ava|zoe|serena|karen|aria|jenny|nicky|moira|tessa|fiona)/i.test(v.name));
+          if (female) return female;
           return voices.find(v => /en[-_]US/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang)) || voices[0];
         } catch (_) { return null; }
       }
@@ -1701,13 +1745,43 @@
           if (!clean.trim()) return;
           const u = new SpeechSynthesisUtterance(clean);
           if (selectedVoice) u.voice = selectedVoice;
-          u.rate = 1.0; u.pitch = 1.0; u.volume = 1.0;
+          // Slightly slower + slightly higher pitch reads warmer/friendlier
+          // than monotone default while still sounding natural.
+          u.rate = 0.97; u.pitch = 1.05; u.volume = 1.0;
           window.speechSynthesis.speak(u);
         } catch (e) { try { addLog('warn', 'voice', 'TTS failed: ' + e.message); } catch (_) {} }
       }
       window._pawSpeak = speak;
       window._pawTTSEnabled = () => ttsEnabled;
-      window._pawSetTTSEnabled = (v) => { ttsEnabled = !!v; if (!ttsEnabled) try { window.speechSynthesis.cancel(); } catch(_){} };
+      window._pawSetTTSEnabled = (v) => {
+        ttsEnabled = !!v;
+        try { localStorage.setItem('paw.ttsEnabled', ttsEnabled ? '1' : '0'); } catch(_) {}
+        if (!ttsEnabled) try { window.speechSynthesis.cancel(); } catch(_){}
+        // Sync UI button if present
+        const btn = document.getElementById('tts-toggle-btn');
+        const onIcon = document.getElementById('tts-toggle-icon-on');
+        const offIcon = document.getElementById('tts-toggle-icon-off');
+        if (btn && onIcon && offIcon) {
+          onIcon.style.display = ttsEnabled ? '' : 'none';
+          offIcon.style.display = ttsEnabled ? 'none' : '';
+          btn.title = ttsEnabled ? 'Voice replies on (click to mute)' : 'Voice replies muted (click to enable)';
+          btn.style.opacity = ttsEnabled ? '1' : '0.5';
+        }
+      };
+      // Restore persisted preference
+      try {
+        const saved = localStorage.getItem('paw.ttsEnabled');
+        if (saved === '0') ttsEnabled = false;
+      } catch(_) {}
+      // Wire toggle button click
+      try {
+        const ttsBtn = document.getElementById('tts-toggle-btn');
+        if (ttsBtn) {
+          ttsBtn.addEventListener('click', () => { window._pawSetTTSEnabled(!ttsEnabled); });
+          // Initialize visual state
+          window._pawSetTTSEnabled(ttsEnabled);
+        }
+      } catch(_) {}
 
       // ─── Recording ───
       function cleanupStream() {

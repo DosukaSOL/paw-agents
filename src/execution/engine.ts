@@ -16,6 +16,20 @@ import { TransactionSimulator } from '../simulation/index';
 import { DeFiEngine } from '../defi/engine';
 import * as fs from 'fs';
 import * as path from 'path';
+import { exec, spawn } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
+
+// system_action allowlist: shell verbs the agent may execute. Anything else is rejected.
+// Destructive verbs (rm, mv into system dirs, sudo, curl|sh) are deliberately omitted —
+// the brain must reach for higher-level tools (file_read/write) for those.
+const SYSTEM_ACTION_SAFE_BINS = new Set([
+  'open', 'ls', 'pwd', 'echo', 'cat', 'head', 'tail', 'grep', 'find', 'wc',
+  'date', 'uname', 'whoami', 'hostname', 'which', 'env', 'printenv',
+  'git', 'node', 'npm', 'npx', 'python', 'python3', 'pip', 'pip3',
+  'curl', 'wget', 'ping', 'dig', 'nslookup',
+]);
 
 const DEFAULT_MAX_RETRIES = 2;
 const DEFAULT_RETRY_DELAY_MS = 1000;
@@ -634,6 +648,74 @@ export class ExecutionEngine {
       }
       // Return a directive that the gateway will broadcast to Hub clients
       return { __hub_control: true, action, params };
+    });
+
+    // ─── System action: run shell commands / open apps (gated by ValidationEngine) ───
+    // The Validation Engine inflates risk for this tool so supervised mode
+    // ALWAYS prompts for confirmation, autonomous mode prompts for destructive
+    // patterns, and free mode runs without prompting. See validation/engine.ts.
+    this.registerTool('system_action', async (params) => {
+      const action = String(params.action ?? 'shell');
+      const cwd = params.cwd ? String(params.cwd) : undefined;
+      const timeoutMs = Math.min(Number(params.timeout_ms ?? 30000) || 30000, 120000);
+
+      if (action === 'open_app') {
+        const appName = String(params.app ?? '').trim();
+        if (!appName) throw new Error('system_action open_app: "app" is required');
+        // Reject path traversal / shell metacharacters in app name
+        if (/[;&|`$<>\\]/.test(appName)) throw new Error('system_action: invalid app name');
+        if (process.platform === 'darwin') {
+          const target = params.target ? String(params.target) : '';
+          const args = target ? ['-a', appName, target] : ['-a', appName];
+          // Reject metacharacters in target too
+          if (target && /[;&|`$<>]/.test(target)) throw new Error('system_action: invalid target');
+          return await new Promise((resolve, reject) => {
+            const child = spawn('open', args, { cwd });
+            let err = '';
+            child.stderr.on('data', d => { err += d.toString(); });
+            child.on('error', reject);
+            child.on('close', code => {
+              if (code === 0) resolve({ ok: true, app: appName, target: target || undefined });
+              else reject(new Error(`open failed (${code}): ${err}`));
+            });
+          });
+        }
+        if (process.platform === 'win32') {
+          await execAsync(`start "" "${appName.replace(/"/g, '')}"`, { cwd, timeout: timeoutMs });
+          return { ok: true, app: appName };
+        }
+        // linux
+        await execAsync(`xdg-open "${appName.replace(/"/g, '')}"`, { cwd, timeout: timeoutMs });
+        return { ok: true, app: appName };
+      }
+
+      if (action === 'shell') {
+        const cmd = String(params.command ?? '').trim();
+        if (!cmd) throw new Error('system_action shell: "command" is required');
+        // Reject obviously destructive patterns regardless of mode
+        const lowered = cmd.toLowerCase();
+        const HARD_DENY = [
+          'rm -rf /', 'rm -rf ~', 'rm -rf $home', 'mkfs', ':(){:|:&};:',
+          'dd if=/dev/zero of=/', '> /dev/sda', 'shutdown', 'reboot', 'halt',
+          'sudo ', 'chmod -r 777 /', 'chown -r ',
+        ];
+        for (const pat of HARD_DENY) {
+          if (lowered.includes(pat)) throw new Error(`system_action: refused — destructive pattern "${pat}"`);
+        }
+        // First binary must be in safe-list
+        const firstBin = cmd.split(/\s+/)[0].split('/').pop() || '';
+        if (!SYSTEM_ACTION_SAFE_BINS.has(firstBin)) {
+          throw new Error(`system_action: "${firstBin}" is not on the safe binary list. Safe: ${[...SYSTEM_ACTION_SAFE_BINS].join(', ')}`);
+        }
+        try {
+          const { stdout, stderr } = await execAsync(cmd, { cwd, timeout: timeoutMs, maxBuffer: 1024 * 1024 });
+          return { ok: true, stdout: stdout.slice(0, 8000), stderr: stderr.slice(0, 2000) };
+        } catch (err: any) {
+          throw new Error(`system_action shell failed: ${err.message ?? err}`);
+        }
+      }
+
+      throw new Error(`system_action: unknown action "${action}". Use "open_app" or "shell".`);
     });
   }
 

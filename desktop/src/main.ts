@@ -2,7 +2,7 @@
 // Combines Dashboard, Mission Control, CLI Companion, Plugins, and Workflows
 // into a single unified desktop application with Pawl companion.
 
-import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, session, globalShortcut, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, session, globalShortcut, shell, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import WebSocket from 'ws';
@@ -287,6 +287,24 @@ function setupIPC(): void {
     } catch (err: unknown) {
       return { error: String(err) };
     }
+  });
+
+  // ─── Native confirmation dialog (used for system_action gating in supervised mode) ───
+  ipcMain.handle('paw:confirm', async (_event, payload: { title?: string; message?: string; detail?: string; risk?: number }) => {
+    const win = hubWindow ?? mainWindow ?? undefined;
+    const safeMessage = String(payload?.message ?? 'PAW wants to take an action').slice(0, 200);
+    const safeDetail = String(payload?.detail ?? '').slice(0, 1500);
+    const result = await dialog.showMessageBox(win as BrowserWindow, {
+      type: 'question',
+      buttons: ['Allow', 'Deny'],
+      defaultId: 0,
+      cancelId: 1,
+      title: String(payload?.title ?? 'PAW — Permission required').slice(0, 80),
+      message: safeMessage,
+      detail: safeDetail + (typeof payload?.risk === 'number' ? `\n\nRisk score: ${payload.risk}/100` : ''),
+      noLink: true,
+    });
+    return { allowed: result.response === 0 };
   });
 }
 

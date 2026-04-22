@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld('paw', {
   openExternal: (url: string) => ipcRenderer.invoke('paw:openExternal', url),
   getConfig: () => ipcRenderer.invoke('paw:getConfig'),
   saveConfig: (updates: Record<string, string>) => ipcRenderer.invoke('paw:saveConfig', updates),
+  confirm: (payload: { title?: string; message?: string; detail?: string; risk?: number }) => ipcRenderer.invoke('paw:confirm', payload),
   togglePawl: (enabled: boolean) => ipcRenderer.invoke('pawl:toggle', enabled),
   onMessage: (callback: (msg: unknown) => void) => {
     addListener('gateway:message', callback);
