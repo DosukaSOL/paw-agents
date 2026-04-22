@@ -74,10 +74,64 @@ def is_dog_pixel(rgba: tuple[int, int, int, int]) -> bool:
     r, g, b, a = rgba
     if a < 16:
         return False
-    # Treat near-pure-white as background (the sheet's canvas).
-    if r > 245 and g > 245 and b > 245:
-        return False
     return True
+
+
+def flood_fill_background(spx, W: int, H: int) -> None:
+    """Make ONLY background-connected near-white pixels transparent.
+
+    Eye highlights, white fur markings, and tooth/sparkle pixels are also
+    near-white but are surrounded by colored fur, so we must not blindly
+    erase every near-white pixel. Instead, flood from the four canvas corners
+    (guaranteed background) and only mark reached pixels as transparent.
+    """
+    # A pixel is "white-ish" enough to be considered part of the canvas if
+    # all channels are very close to 255. Use a generous threshold so soft
+    # anti-aliased edges of the canvas/dog get cleaned up too — the flood
+    # only spreads through pixels that meet this test, so it can't escape
+    # into the dog body where colored pixels block it.
+    def is_white_ish(x: int, y: int) -> bool:
+        r, g, b, a = spx[x, y]
+        if a == 0:
+            return True
+        return r > 235 and g > 235 and b > 235
+
+    visited = bytearray(W * H)
+
+    def vidx(x: int, y: int) -> int:
+        return y * W + x
+
+    queue: deque[tuple[int, int]] = deque()
+    for sx, sy in ((0, 0), (W - 1, 0), (0, H - 1), (W - 1, H - 1)):
+        if is_white_ish(sx, sy) and not visited[vidx(sx, sy)]:
+            visited[vidx(sx, sy)] = 1
+            queue.append((sx, sy))
+    # Also seed every edge pixel that is white-ish so we cover any non-corner
+    # background entry point.
+    for x in range(W):
+        for y in (0, H - 1):
+            if is_white_ish(x, y) and not visited[vidx(x, y)]:
+                visited[vidx(x, y)] = 1
+                queue.append((x, y))
+    for y in range(H):
+        for x in (0, W - 1):
+            if is_white_ish(x, y) and not visited[vidx(x, y)]:
+                visited[vidx(x, y)] = 1
+                queue.append((x, y))
+
+    while queue:
+        x, y = queue.popleft()
+        spx[x, y] = (255, 255, 255, 0)
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx, ny = x + dx, y + dy
+            if (
+                0 <= nx < W
+                and 0 <= ny < H
+                and not visited[vidx(nx, ny)]
+                and is_white_ish(nx, ny)
+            ):
+                visited[vidx(nx, ny)] = 1
+                queue.append((nx, ny))
 
 
 def main() -> None:
@@ -90,13 +144,11 @@ def main() -> None:
     cell_w = W / COLS
     cell_h = H / ROWS
 
-    # 1. Replace background-white with full transparency.
+    # 1. Replace background-canvas pixels with full transparency. Uses a
+    # corner flood-fill so eye highlights / fur markings (also near-white
+    # but enclosed by colored fur) are preserved.
     spx = sheet.load()
-    for y in range(H):
-        for x in range(W):
-            r, g, b, a = spx[x, y]
-            if a > 0 and r > 245 and g > 245 and b > 245:
-                spx[x, y] = (r, g, b, 0)
+    flood_fill_background(spx, W, H)
 
     # 2. Connected-components on the entire cleaned sheet.
     print(f"scanning {W}×{H} sheet for blobs…")
