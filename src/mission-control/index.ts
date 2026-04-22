@@ -136,13 +136,30 @@ export class MissionControl {
     this.modelCallsToday.set(provider, (this.modelCallsToday.get(provider) ?? 0) + 1);
   }
 
+  // ─── CPU usage sampler ───
+  // Uses process.cpuUsage() deltas. Maintains a baseline that resets every call,
+  // returning the average CPU% used by THIS process since the previous sample.
+  // First call after start returns the avg since process boot.
+  private lastCpuSample: { cpu: NodeJS.CpuUsage; ts: number } = { cpu: process.cpuUsage(), ts: Date.now() };
+  private getCpuPct(): number {
+    const now = Date.now();
+    const cur = process.cpuUsage();
+    const elapsedMs = Math.max(1, now - this.lastCpuSample.ts);
+    const userMs = (cur.user - this.lastCpuSample.cpu.user) / 1000;
+    const sysMs = (cur.system - this.lastCpuSample.cpu.system) / 1000;
+    this.lastCpuSample = { cpu: cur, ts: now };
+    const pct = ((userMs + sysMs) / elapsedMs) * 100;
+    if (!Number.isFinite(pct) || pct < 0) return 0;
+    return Math.round(Math.min(pct, 100 * Math.max(1, require('os').cpus().length)) * 100) / 100;
+  }
+
   getCurrentMetrics(): SystemMetrics {
     const mem = process.memoryUsage();
     const uptimeSeconds = Math.floor((Date.now() - this.startTime) / 1000);
     const uptimeMinutes = Math.max(uptimeSeconds / 60, 1);
 
     return {
-      cpu_usage_pct: 0, // Would require os module, simplified
+      cpu_usage_pct: this.getCpuPct(),
       memory_usage_mb: Math.round(mem.heapUsed / 1024 / 1024),
       memory_total_mb: Math.round(mem.heapTotal / 1024 / 1024),
       active_connections: this.agents.size,

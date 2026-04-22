@@ -15,6 +15,7 @@ import { getDashboardHTML } from '../dashboard/index';
 import { missionControl } from '../mission-control/index';
 import { crossAppSync } from '../sync/cross-app';
 import { StreamingEngine, StreamChunk } from '../models/streaming';
+import { getCostTracker, getUserDailyBudgetUsd, CostTracker } from '../intelligence/cost-tracker';
 
 interface ConnectedClient {
   ws: WebSocket;
@@ -70,14 +71,59 @@ export class PawGateway {
         return;
       }
 
-      if (req.url === '/health') {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({
-          status: 'ok',
-          version: '4.0.5',
-          clients: this.clients.size,
-          uptime: process.uptime(),
-        }));
+      if (req.url?.startsWith('/health')) {
+        const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
+        const deep = url.searchParams.get('deep') === '1';
+        if (!deep) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            status: 'ok',
+            version: '4.0.5',
+            clients: this.clients.size,
+            uptime: process.uptime(),
+          }));
+          return;
+        }
+        // Deep probe: check provider reachability.
+        this.runDeepHealth().then((deepResult) => {
+          const httpStatus = deepResult.status === 'ok' ? 200 : 503;
+          res.writeHead(httpStatus, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(deepResult));
+        }).catch((err) => {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ status: 'error', message: err?.message ?? 'unknown' }));
+        });
+        return;
+      }
+
+      // Prometheus metrics endpoint.
+      if (req.url === '/metrics') {
+        res.writeHead(200, { 'Content-Type': 'text/plain; version=0.0.4; charset=utf-8' });
+        res.end(this.renderPrometheus());
+        return;
+      }
+
+      // Usage / cost endpoint.
+      if (req.url?.startsWith('/api/usage')) {
+        const url = new URL(req.url, `http://${req.headers.host ?? 'localhost'}`);
+        const userId = url.searchParams.get('userId');
+        const tracker = getCostTracker();
+        if (userId) {
+          const u = tracker.getUserUsage(userId);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            user: u,
+            today_spend_usd: tracker.getTodaySpend(userId),
+            budget: tracker.checkBudget(userId, getUserDailyBudgetUsd()),
+          }));
+        } else {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            global: tracker.getGlobalUsage(),
+            recent: tracker.getRecent(50),
+            budget_per_user_usd: getUserDailyBudgetUsd(),
+          }));
+        }
         return;
       }
 
@@ -332,6 +378,27 @@ You have tools for Solana, browser automation, file ops, and more — but only m
             crossAppSync.addMessage(userId, String(msg.payload), 'user', channel);
             missionControl.recordMessage();
 
+            // ─── Per-user daily USD budget enforcement ───
+            const dailyBudget = getUserDailyBudgetUsd();
+            if (dailyBudget > 0) {
+              const check = getCostTracker().checkBudget(userId, dailyBudget);
+              if (!check.allowed) {
+                this.sendToClient(clientId, {
+                  type: 'event',
+                  channel: 'webchat',
+                  from: 'system',
+                  payload: {
+                    event: 'error',
+                    error: 'BUDGET_EXCEEDED',
+                    message: `Daily LLM budget reached (spent $${check.spentTodayUsd.toFixed(4)} / $${check.budgetUsd.toFixed(2)}). Resets at ${check.resetAtUtc}.`,
+                    budget: check,
+                  },
+                  timestamp: new Date().toISOString(),
+                });
+                return;
+              }
+            }
+
             try {
               const fullResponse = await this.streaming.stream(
                 systemPrompt,
@@ -357,6 +424,15 @@ You have tools for Solana, browser automation, file ops, and more — but only m
               crossAppSync.addMessage(userId, fullResponse, 'agent', channel);
               crossAppSync.recordAction('agent_stream_response', String(msg.payload).substring(0, 100), channel, userId, durationMs, true);
               missionControl.recordResponseTime(durationMs);
+              // Record cost. Output tokens come from streaming counter via fullResponse length;
+              // input tokens estimated from prompt + system prompt.
+              try {
+                const inTok = CostTracker.estimateTokens(systemPrompt) + CostTracker.estimateTokens(String(msg.payload));
+                const outTok = CostTracker.estimateTokens(fullResponse);
+                const provider = config.models.defaultProvider;
+                const model = this.getDefaultModel();
+                getCostTracker().record(userId, provider, model, inTok, outTok);
+              } catch { /* tracking is best-effort */ }
             } catch (err) {
               this.sendToClient(clientId, {
                 type: 'event',
@@ -556,6 +632,96 @@ You have tools for Solana, browser automation, file ops, and more — but only m
       channels.add(client.info.channel);
     }
     return Array.from(channels);
+  }
+
+  // ─── Deep health probe: contact configured providers, return per-component status. ───
+  private async runDeepHealth(): Promise<{
+    status: 'ok' | 'degraded' | 'error';
+    version: string;
+    uptime: number;
+    clients: number;
+    providers: Record<string, { ok: boolean; configured: boolean; latency_ms?: number; error?: string }>;
+  }> {
+    const providers: Record<string, { ok: boolean; configured: boolean; latency_ms?: number; error?: string }> = {};
+
+    // Ollama: HTTP probe (only if listed in models config or default).
+    const ollamaUrl = (config.models.ollama?.baseUrl ?? 'http://127.0.0.1:11434').replace(/\/$/, '');
+    {
+      const t0 = Date.now();
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 1500);
+        const r = await fetch(`${ollamaUrl}/api/tags`, { signal: ctrl.signal });
+        clearTimeout(timer);
+        providers.ollama = { ok: r.ok, configured: true, latency_ms: Date.now() - t0 };
+        if (!r.ok) providers.ollama.error = `HTTP ${r.status}`;
+      } catch (err: any) {
+        providers.ollama = { ok: false, configured: true, latency_ms: Date.now() - t0, error: err?.message ?? 'unreachable' };
+      }
+    }
+
+    // OpenAI: only verify presence of API key (do not burn quota on every health check).
+    providers.openai = {
+      ok: Boolean(config.models.openai?.apiKey),
+      configured: Boolean(config.models.openai?.apiKey),
+    };
+    if (!providers.openai.ok) providers.openai.error = 'no api key';
+
+    // Anthropic / Google / Groq / Mistral / DeepSeek — same pattern.
+    for (const p of ['anthropic', 'google', 'groq', 'mistral', 'deepseek'] as const) {
+      const cfg = (config.models as any)[p];
+      const ok = Boolean(cfg?.apiKey);
+      providers[p] = { ok, configured: ok };
+      if (!ok) providers[p].error = 'no api key';
+    }
+
+    const defaultProv = config.models.defaultProvider;
+    const defaultOk = providers[defaultProv]?.ok ?? false;
+    const status: 'ok' | 'degraded' | 'error' = defaultOk ? 'ok' : 'degraded';
+
+    return {
+      status,
+      version: '4.0.5',
+      uptime: process.uptime(),
+      clients: this.clients.size,
+      providers,
+    };
+  }
+
+  // ─── Render Prometheus exposition (counters + gauges from live state). ───
+  private renderPrometheus(): string {
+    const lines: string[] = [];
+    const metrics = missionControl.getCurrentMetrics();
+    const totalMsgs = (metrics as any).total_messages ?? (metrics as any).message_count ?? 0;
+    const avgRt = (metrics as any).avg_response_time_ms ?? 0;
+    const memMb = (metrics as any).memory_usage_mb ?? Math.round(process.memoryUsage().heapUsed / 1024 / 1024);
+    const cpuPct = (metrics as any).cpu_usage_pct ?? 0;
+
+    lines.push('# HELP paw_uptime_seconds Process uptime in seconds.');
+    lines.push('# TYPE paw_uptime_seconds gauge');
+    lines.push(`paw_uptime_seconds ${process.uptime()}`);
+
+    lines.push('# HELP paw_connected_clients Number of currently connected gateway clients.');
+    lines.push('# TYPE paw_connected_clients gauge');
+    lines.push(`paw_connected_clients ${this.clients.size}`);
+
+    lines.push('# HELP paw_messages_total Total messages processed by the agent.');
+    lines.push('# TYPE paw_messages_total counter');
+    lines.push(`paw_messages_total ${totalMsgs}`);
+
+    lines.push('# HELP paw_avg_response_ms Average response time in milliseconds.');
+    lines.push('# TYPE paw_avg_response_ms gauge');
+    lines.push(`paw_avg_response_ms ${avgRt}`);
+
+    lines.push('# HELP paw_memory_usage_mb Process heap memory in MiB.');
+    lines.push('# TYPE paw_memory_usage_mb gauge');
+    lines.push(`paw_memory_usage_mb ${memMb}`);
+
+    lines.push('# HELP paw_cpu_usage_pct Process CPU usage percent (0-100).');
+    lines.push('# TYPE paw_cpu_usage_pct gauge');
+    lines.push(`paw_cpu_usage_pct ${cpuPct}`);
+
+    return lines.join('\n') + '\n' + getCostTracker().toPrometheus();
   }
 
   // ─── Broadcast sync state to all other clients ───
