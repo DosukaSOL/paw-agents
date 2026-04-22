@@ -43,7 +43,8 @@ export const SPRITE_MAP = {
   mad:          { col: 3, row: 1 },
 
   // Row 2: Rest / Joy
-  sleep:        { col: 0, row: 2 },
+  play:         { col: 0, row: 2 },
+  sleep:        { col: 1, row: 2 },
   sleep_zzz:    { col: 1, row: 2 },
   sleep_peek:   { col: 2, row: 2 },
   wag:          { col: 3, row: 2 },
