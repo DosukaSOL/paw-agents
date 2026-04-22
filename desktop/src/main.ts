@@ -2,11 +2,22 @@
 // Combines Dashboard, Mission Control, CLI Companion, Plugins, and Workflows
 // into a single unified desktop application with Pawl companion.
 
-import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, session, globalShortcut } from 'electron';
+import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, session, globalShortcut, shell } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import WebSocket from 'ws';
 import { PawlCompanion } from './companion';
+
+// Allowlist for shell.openExternal — only these hosts may be opened from the renderer.
+const EXTERNAL_HOST_ALLOWLIST = new Set([
+  'pawagents.ai',
+  'www.pawagents.ai',
+  'github.com',
+  'www.github.com',
+  't.me',
+  'telegram.org',
+  'core.telegram.org',
+]);
 
 const GATEWAY_URL = process.env.PAW_GATEWAY_URL ?? 'ws://127.0.0.1:18789';
 const AUTH_TOKEN = process.env.PAW_AUTH_TOKEN ?? '';
@@ -186,6 +197,19 @@ function setupIPC(): void {
   ipcMain.handle('paw:reconnect', () => {
     connectGateway();
     return { reconnecting: true };
+  });
+
+  // Open an external URL in the default browser. Allowlisted hosts only.
+  ipcMain.handle('paw:openExternal', async (_event, rawUrl: string) => {
+    try {
+      const u = new URL(String(rawUrl));
+      if (u.protocol !== 'https:' && u.protocol !== 'http:') return { error: 'protocol not allowed' };
+      if (!EXTERNAL_HOST_ALLOWLIST.has(u.hostname.toLowerCase())) return { error: 'host not allowlisted' };
+      await shell.openExternal(u.toString());
+      return { ok: true };
+    } catch (err) {
+      return { error: 'invalid url: ' + (err as Error).message };
+    }
   });
 
   // ─── Config: read/write PAW .env file ───

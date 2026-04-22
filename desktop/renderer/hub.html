@@ -437,6 +437,35 @@
     .trace-type { min-width: 60px; font-weight: 700; font-size: 10px; flex-shrink: 0; }
     .trace-msg { color: var(--text-secondary); word-break: break-word; line-height: 1.5; }
     .trace-empty, .trace-loading { color: var(--text-tertiary); padding: 40px; text-align: center; font-family: 'Inter', sans-serif; font-size: 13px; }
+
+    /* Get Started view */
+    .learn-wrap { max-width: 860px; margin: 0 auto; width: 100%; }
+    .learn-hero { margin-bottom: 24px; }
+    .learn-hero h2 { font-size: 22px; margin: 0 0 6px; color: var(--text-primary); }
+    .learn-hero p { font-size: 13px; color: var(--text-tertiary); margin: 0; }
+    .learn-card { display: flex; gap: 16px; background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .learn-card-icon { font-size: 28px; line-height: 1; padding-top: 4px; flex-shrink: 0; }
+    .learn-card-body { flex: 1; min-width: 0; }
+    .learn-card-body h3 { font-size: 15px; margin: 0 0 6px; color: var(--text-primary); font-weight: 600; }
+    .learn-card-body > p { font-size: 13px; color: var(--text-secondary); line-height: 1.55; margin: 0 0 14px; }
+    .learn-card code { background: rgba(255,255,255,0.06); border: 1px solid var(--border-subtle); border-radius: 4px; padding: 1px 6px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; color: var(--brand-light); }
+    .learn-btn { display: inline-block; border: none; cursor: pointer; padding: 8px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; margin-right: 8px; font-family: inherit; transition: filter .15s ease, background .15s ease; }
+    .learn-btn.primary { background: var(--brand); color: #0c0c0e; }
+    .learn-btn.primary:hover { filter: brightness(1.1); }
+    .learn-btn.ghost { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-subtle); }
+    .learn-btn.ghost:hover { background: var(--bg-card); color: var(--text-primary); }
+    .learn-website { background: linear-gradient(135deg, var(--brand-glow), var(--bg-card)); }
+    .learn-steps { list-style: none; counter-reset: step; padding: 0; margin: 8px 0 0; }
+    .learn-steps > li { padding: 14px 0; border-bottom: 1px dashed var(--border-subtle); }
+    .learn-steps > li:last-child { border-bottom: none; padding-bottom: 0; }
+    .step-h { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+    .step-num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: var(--brand-glow); color: var(--brand-light); font-size: 11px; font-weight: 700; flex-shrink: 0; }
+    .step-b { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; padding-left: 32px; }
+    .step-b ul { margin: 6px 0 0; padding-left: 18px; }
+    .step-b li { margin: 3px 0; }
+    .learn-code { background: rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); border-radius: 6px; padding: 10px 12px; margin: 8px 0; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; color: var(--text-primary); white-space: pre-wrap; word-break: break-all; overflow-x: auto; }
+    .learn-inline-link { color: var(--brand-light); text-decoration: underline; cursor: pointer; }
+    .learn-tip { margin-top: 16px; padding: 12px 14px; border-radius: 8px; background: var(--brand-glow); border: 1px solid var(--brand); color: var(--text-primary); font-size: 12.5px; line-height: 1.5; }
   </style>
 </head>
 <body>
@@ -470,6 +499,9 @@
       </button>
       <button class="sidebar-btn" data-view="traces" title="Thought Trace">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </button>
+      <button class="sidebar-btn" data-view="learn" title="Get Started">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
       </button>
       <div class="sidebar-spacer"></div>
       <button class="sidebar-btn" id="pawl-toggle" title="Toggle PAWL Companion">
@@ -617,6 +649,104 @@
         </div>
         <div class="trace-panel" id="trace-content">
           <div class="trace-empty">Send a message to the agent to see its thinking process here.</div>
+        </div>
+      </div>
+
+      <!-- Get Started View -->
+      <div class="view-panel" id="view-learn">
+        <div class="learn-wrap">
+          <header class="learn-hero">
+            <h2>Welcome to PAW Agents</h2>
+            <p>Your self-hosted AI agent OS. Everything below runs on your own machine — no cloud dependency.</p>
+          </header>
+
+          <section class="learn-card learn-website">
+            <div class="learn-card-icon">🌐</div>
+            <div class="learn-card-body">
+              <h3>Visit the website</h3>
+              <p>Docs, examples, the changelog and the latest releases live at <code>pawagents.ai</code>.</p>
+              <button class="learn-btn primary" data-extlink="https://pawagents.ai">Open pawagents.ai →</button>
+              <button class="learn-btn ghost" data-extlink="https://github.com/DosukaSOL/paw-agents">View on GitHub</button>
+            </div>
+          </section>
+
+          <section class="learn-card">
+            <div class="learn-card-icon">🤖</div>
+            <div class="learn-card-body">
+              <h3>Create a Telegram agent with BotFather</h3>
+              <p>Spin up a fully working PAW agent on Telegram in under five minutes. PAW <em>is</em> the backend — no webhook server, no Flask, no cloud hosting required.</p>
+
+              <ol class="learn-steps">
+                <li>
+                  <div class="step-h"><span class="step-num">1</span><span>Open BotFather on Telegram</span></div>
+                  <div class="step-b">
+                    Search for <code>@BotFather</code> in Telegram or
+                    <a href="#" class="learn-inline-link" data-extlink="https://t.me/BotFather">tap here to open it</a>.
+                    Press <strong>Start</strong> to begin a chat.
+                  </div>
+                </li>
+                <li>
+                  <div class="step-h"><span class="step-num">2</span><span>Create a new bot</span></div>
+                  <div class="step-b">
+                    Send <code>/newbot</code>. BotFather will ask for two things:
+                    <ul>
+                      <li><strong>Display name</strong> — what people see in chats (e.g. <em>My PAW Agent</em>).</li>
+                      <li><strong>Username</strong> — must end in <code>bot</code> (e.g. <code>mypawagent_bot</code>).</li>
+                    </ul>
+                  </div>
+                </li>
+                <li>
+                  <div class="step-h"><span class="step-num">3</span><span>Copy your bot token</span></div>
+                  <div class="step-b">
+                    BotFather replies with a token that looks like:
+                    <pre class="learn-code">123456789:AAH-thisIsYourSecretBotTokenKeepItSafe</pre>
+                    Treat this like a password — anyone with it can control your bot.
+                  </div>
+                </li>
+                <li>
+                  <div class="step-h"><span class="step-num">4</span><span>Add the token to PAW</span></div>
+                  <div class="step-b">
+                    Open <code>.env</code> at the root of your PAW install and add:
+                    <pre class="learn-code">TELEGRAM_BOT_TOKEN=123456789:AAH-thisIsYourSecretBotTokenKeepItSafe</pre>
+                    Or set it from <a href="#" class="learn-inline-link" data-goto-view="settings">Settings → Channels</a>.
+                  </div>
+                </li>
+                <li>
+                  <div class="step-h"><span class="step-num">5</span><span>Restart PAW</span></div>
+                  <div class="step-b">
+                    Stop and re-run <code>node dist/index.js</code> (or <code>pm2 restart paw</code>).
+                    On boot you should see:
+                    <pre class="learn-code">[PAW] 🐾 Starting Telegram bot...
+[PAW] ✓ Telegram bot @mypawagent_bot online</pre>
+                  </div>
+                </li>
+                <li>
+                  <div class="step-h"><span class="step-num">6</span><span>Say hi to your bot</span></div>
+                  <div class="step-b">
+                    Open Telegram, find your bot by username, send <code>/start</code> — your PAW agent will reply using whichever model provider you configured.
+                  </div>
+                </li>
+                <li>
+                  <div class="step-h"><span class="step-num">7</span><span>(Optional) Polish it with BotFather</span></div>
+                  <div class="step-b">
+                    Back in <code>@BotFather</code> you can:
+                    <ul>
+                      <li><code>/setdescription</code> — short pitch shown in the chat preview.</li>
+                      <li><code>/setabouttext</code> — &ldquo;About&rdquo; section on your bot's profile.</li>
+                      <li><code>/setuserpic</code> — upload a profile picture.</li>
+                      <li><code>/setcommands</code> — register slash commands like <code>/help</code>, <code>/reset</code>.</li>
+                      <li><code>/setjoingroups</code> — allow your bot to be added to groups.</li>
+                      <li><code>/setprivacy</code> — set to <em>Disable</em> if you want it to read all group messages.</li>
+                    </ul>
+                  </div>
+                </li>
+              </ol>
+
+              <div class="learn-tip">
+                <strong>Tip:</strong> for 24/7 uptime use <code>pm2</code>, <code>systemd</code>, <code>launchd</code>, or Docker — but the &ldquo;backend&rdquo; itself is already PAW. You don't need a separate webhook server.
+              </div>
+            </div>
+          </section>
         </div>
       </div>
 
@@ -810,7 +940,7 @@
     }, 2600);
 
     // ─── Navigation ───
-    const viewNames = { dashboard: 'PawTrace', 'mission-control': 'Mission Control', cli: 'Chat', plugins: 'Plugins', workflows: 'Workflows', traces: 'Thought Trace', settings: 'Settings' };
+    const viewNames = { dashboard: 'PawTrace', 'mission-control': 'Mission Control', cli: 'Chat', plugins: 'Plugins', workflows: 'Workflows', traces: 'Thought Trace', learn: 'Get Started', settings: 'Settings' };
     document.querySelectorAll('.sidebar-btn[data-view]').forEach(btn => {
       btn.addEventListener('click', () => {
         const view = btn.dataset.view;
@@ -821,6 +951,24 @@
         document.getElementById('topbar-title').textContent = viewNames[view] || view;
         state.view = view;
       });
+    });
+
+    // ─── Get Started: external links + intra-app navigation ───
+    function gotoView(view) {
+      const btn = document.querySelector('.sidebar-btn[data-view="' + view + '"]');
+      if (btn) btn.click();
+    }
+    document.addEventListener('click', (ev) => {
+      const target = ev.target.closest('[data-extlink], [data-goto-view]');
+      if (!target) return;
+      ev.preventDefault();
+      const url = target.getAttribute('data-extlink');
+      const view = target.getAttribute('data-goto-view');
+      if (url && window.paw && typeof window.paw.openExternal === 'function') {
+        window.paw.openExternal(url);
+      } else if (view) {
+        gotoView(view);
+      }
     });
 
     // ─── WebSocket ───

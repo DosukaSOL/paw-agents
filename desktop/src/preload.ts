@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('paw', {
   send: (message: string) => ipcRenderer.invoke('paw:send', message),
   status: () => ipcRenderer.invoke('paw:status'),
   reconnect: () => ipcRenderer.invoke('paw:reconnect'),
+  openExternal: (url: string) => ipcRenderer.invoke('paw:openExternal', url),
   getConfig: () => ipcRenderer.invoke('paw:getConfig'),
   saveConfig: (updates: Record<string, string>) => ipcRenderer.invoke('paw:saveConfig', updates),
   togglePawl: (enabled: boolean) => ipcRenderer.invoke('pawl:toggle', enabled),
