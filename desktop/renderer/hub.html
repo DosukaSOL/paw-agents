@@ -773,7 +773,7 @@
           </div>
           <div class="settings-row">
             <div><div class="settings-label">Model</div><div class="settings-desc">OpenAI model to use</div></div>
-            <select class="settings-select" id="cfg-openai-model"><option value="gpt-4o">gpt-4o</option><option value="gpt-4o-mini">gpt-4o-mini</option><option value="gpt-4-turbo">gpt-4-turbo</option><option value="o1">o1</option><option value="o1-mini">o1-mini</option></select>
+            <select class="settings-select" id="cfg-openai-model"><option value="gpt-5">gpt-5 (flagship)</option><option value="gpt-5-mini">gpt-5-mini</option><option value="gpt-4o">gpt-4o</option><option value="o4-mini">o4-mini (reasoning)</option><option value="gpt-4o-mini">gpt-4o-mini</option></select>
           </div>
           <div class="cfg-status" id="cfg-openai-status"></div>
         </div>
@@ -786,7 +786,7 @@
           </div>
           <div class="settings-row">
             <div><div class="settings-label">Model</div><div class="settings-desc">Anthropic model to use</div></div>
-            <select class="settings-select" id="cfg-anthropic-model"><option value="claude-sonnet-4-20250514">claude-sonnet-4-20250514</option><option value="claude-opus-4-20250514">claude-opus-4-20250514</option><option value="claude-3-haiku-20240307">claude-3-haiku</option></select>
+            <select class="settings-select" id="cfg-anthropic-model"><option value="claude-opus-4-1-20250805">claude-opus-4-1 (flagship)</option><option value="claude-sonnet-4-5" selected>claude-sonnet-4-5 (recommended)</option><option value="claude-haiku-4-20250915">claude-haiku-4 (fast)</option></select>
           </div>
           <div class="cfg-status" id="cfg-anthropic-status"></div>
         </div>
@@ -799,7 +799,7 @@
           </div>
           <div class="settings-row">
             <div><div class="settings-label">Model</div><div class="settings-desc">Google AI model to use</div></div>
-            <select class="settings-select" id="cfg-google-model"><option value="gemma-3-27b-it">gemma-3-27b-it</option><option value="gemini-2.0-flash">gemini-2.0-flash</option><option value="gemini-1.5-pro">gemini-1.5-pro</option></select>
+            <select class="settings-select" id="cfg-google-model"><option value="gemini-2.5-pro">gemini-2.5-pro (flagship)</option><option value="gemini-2.5-flash">gemini-2.5-flash</option><option value="gemini-2.0-flash">gemini-2.0-flash (fast)</option><option value="gemma-3-27b-it">gemma-3-27b-it (free tier)</option></select>
           </div>
           <div class="cfg-status" id="cfg-google-status"></div>
         </div>
@@ -812,7 +812,7 @@
           </div>
           <div class="settings-row">
             <div><div class="settings-label">Model</div><div class="settings-desc">Groq model to use</div></div>
-            <select class="settings-select" id="cfg-groq-model"><option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile</option><option value="mixtral-8x7b-32768">mixtral-8x7b</option><option value="gemma2-9b-it">gemma2-9b-it</option></select>
+            <select class="settings-select" id="cfg-groq-model"><option value="llama-3.3-70b-versatile">llama-3.3-70b-versatile</option><option value="deepseek-r1-distill-llama-70b">deepseek-r1-distill-70b (reasoning)</option><option value="llama-3.1-8b-instant">llama-3.1-8b-instant (fast)</option><option value="mixtral-8x7b-32768">mixtral-8x7b</option></select>
           </div>
           <div class="cfg-status" id="cfg-groq-status"></div>
         </div>
@@ -825,7 +825,7 @@
           </div>
           <div class="settings-row">
             <div><div class="settings-label">Model</div><div class="settings-desc">Mistral model to use</div></div>
-            <select class="settings-select" id="cfg-mistral-model"><option value="mistral-large-latest">mistral-large-latest</option><option value="mistral-medium-latest">mistral-medium-latest</option><option value="open-mistral-nemo">open-mistral-nemo</option></select>
+            <select class="settings-select" id="cfg-mistral-model"><option value="mistral-large-latest">mistral-large-latest</option><option value="mistral-medium-latest">mistral-medium-latest</option><option value="codestral-latest">codestral-latest (code)</option><option value="open-mistral-nemo">open-mistral-nemo</option></select>
           </div>
           <div class="cfg-status" id="cfg-mistral-status"></div>
         </div>
@@ -838,7 +838,7 @@
           </div>
           <div class="settings-row">
             <div><div class="settings-label">Model</div><div class="settings-desc">DeepSeek model to use</div></div>
-            <select class="settings-select" id="cfg-deepseek-model"><option value="deepseek-chat">deepseek-chat</option><option value="deepseek-coder">deepseek-coder</option></select>
+            <select class="settings-select" id="cfg-deepseek-model"><option value="deepseek-reasoner">deepseek-reasoner (R1)</option><option value="deepseek-chat">deepseek-chat (V3)</option><option value="deepseek-coder">deepseek-coder</option></select>
           </div>
           <div class="cfg-status" id="cfg-deepseek-status"></div>
         </div>
@@ -851,7 +851,7 @@
           </div>
           <div class="settings-row">
             <div><div class="settings-label">Model</div><div class="settings-desc">xAI model to use</div></div>
-            <select class="settings-select" id="cfg-xai-model"><option value="grok-3">grok-3</option><option value="grok-3-mini">grok-3-mini</option><option value="grok-2">grok-2</option></select>
+            <select class="settings-select" id="cfg-xai-model"><option value="grok-4">grok-4 (flagship)</option><option value="grok-3">grok-3</option><option value="grok-3-mini">grok-3-mini</option></select>
           </div>
           <div class="cfg-status" id="cfg-xai-status"></div>
         </div>
@@ -864,7 +864,7 @@
           </div>
           <div class="settings-row">
             <div><div class="settings-label">Model</div><div class="settings-desc">Cohere model to use</div></div>
-            <select class="settings-select" id="cfg-cohere-model"><option value="command-r-plus">command-r-plus</option><option value="command-r">command-r</option><option value="command-light">command-light</option></select>
+            <select class="settings-select" id="cfg-cohere-model"><option value="command-a-03-2025">command-a (flagship)</option><option value="command-r-plus">command-r-plus</option><option value="command-r">command-r</option></select>
           </div>
           <div class="cfg-status" id="cfg-cohere-status"></div>
         </div>
@@ -877,7 +877,8 @@
           </div>
           <div class="settings-row">
             <div><div class="settings-label">Ollama Model</div><div class="settings-desc">Model to use (gemma4, llama3, etc.)</div></div>
-            <input class="settings-input" id="cfg-ollama-model" value="gemma4" style="width:160px">
+            <input class="settings-input" id="cfg-ollama-model" value="qwen2.5-coder:7b" style="width:200px" list="ollama-models-list">
+            <datalist id="ollama-models-list"><option value="qwen2.5-coder:7b"></option><option value="qwen2.5:14b"></option><option value="llama3.3:70b"></option><option value="llama3.2:3b"></option><option value="gemma2:9b"></option><option value="mistral-nemo:12b"></option><option value="deepseek-r1:7b"></option><option value="phi3:mini"></option></datalist>
           </div>
           <div class="cfg-status" id="cfg-ollama-status"></div>
         </div>
@@ -1474,10 +1475,41 @@
       try {
         const result = await window.paw.saveConfig(updates);
         const msg = document.getElementById('cfg-save-msg');
+        // Pick the model id for the chosen provider so we can apply it live
+        const providerModelInputId = {
+          openai: 'cfg-openai-model', anthropic: 'cfg-anthropic-model', google: 'cfg-google-model',
+          groq: 'cfg-groq-model', mistral: 'cfg-mistral-model', deepseek: 'cfg-deepseek-model',
+          xai: 'cfg-xai-model', cohere: 'cfg-cohere-model', ollama: 'cfg-ollama-model',
+        }[provider];
+        const liveModel = providerModelInputId ? document.getElementById(providerModelInputId).value.trim() : '';
+
+        // Apply LIVE without restart via gateway endpoint (best-effort).
+        let liveApplied = false; let liveError = null;
+        try {
+          const r = await fetch('http://127.0.0.1:18789/api/providers/select', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ provider, model: liveModel }),
+          });
+          const j = await r.json().catch(() => ({}));
+          if (r.ok && j.ok) {
+            liveApplied = true;
+          } else if (j.error) {
+            liveError = j.error;
+          }
+        } catch (e) {
+          liveError = 'gateway unreachable';
+        }
+
         if (result.saved) {
-          msg.textContent = 'Saved! Restart PAW gateway to apply.';
-          msg.style.color = 'var(--success)';
-          addLog('info', 'settings', 'Provider config saved to .env');
+          if (liveApplied) {
+            msg.textContent = 'Saved & applied live: ' + provider + (liveModel ? ' / ' + liveModel : '');
+            msg.style.color = 'var(--success)';
+          } else {
+            msg.textContent = 'Saved to .env. Live apply failed (' + (liveError || 'unknown') + ') — restart gateway to take effect.';
+            msg.style.color = 'var(--warning, #f59e0b)';
+          }
+          addLog('info', 'settings', 'Provider config saved: ' + provider + (liveApplied ? ' (LIVE)' : ' (.env only)'));
           recordAction('config_save', 'Saved provider: ' + provider, 'hub');
           // Reload statuses
           const cfg = await window.paw.getConfig();
@@ -1486,7 +1518,7 @@
           msg.textContent = 'Error: ' + (result.error || 'Unknown');
           msg.style.color = 'var(--error)';
         }
-        setTimeout(() => { msg.textContent = ''; }, 5000);
+        setTimeout(() => { msg.textContent = ''; }, 6000);
       } catch(e) { console.error('saveConfig:', e); }
     });
 
@@ -1628,275 +1660,165 @@
       });
     })();
 
-    // ─── Voice Mode + TTS + Wake Word ───
+    // ─── Voice Mode (push-to-talk) + TTS ───
     (function() {
       const voiceBtn = document.getElementById('voice-btn');
-      let isListening = false;
-      let recognition = null;
-      let wakeWordRecognition = null;
-      let wakeWordActive = false;
+      if (!voiceBtn) return;
+
+      let mediaRecorder = null;
+      let audioStream = null;
+      let chunks = [];
+      let isRecording = false;
+      let stopTimer = null;
       let ttsEnabled = true;
       let selectedVoice = null;
-      let voiceRetries = 0;
-      const MAX_VOICE_RETRIES = 5;
 
-      // Check if SpeechRecognition is available
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        addLog('warn', 'voice', 'SpeechRecognition API not available in this environment');
-        voiceBtn.title = 'Voice not available';
-        voiceBtn.style.opacity = '0.4';
+      // ─── TTS ───
+      function pickVoice() {
+        try {
+          const voices = window.speechSynthesis.getVoices() || [];
+          if (!voices.length) return null;
+          const prefs = ['Samantha', 'Karen', 'Daniel', 'Google US English', 'Microsoft Aria'];
+          for (const p of prefs) {
+            const v = voices.find(v => v.name === p);
+            if (v) return v;
+          }
+          return voices.find(v => /en[-_]US/i.test(v.lang)) || voices.find(v => /^en/i.test(v.lang)) || voices[0];
+        } catch (_) { return null; }
       }
-
-      // ─── TTS Setup ───
       function initTTS() {
-        if (!window.speechSynthesis) return;
-        function loadVoices() {
-          const voices = window.speechSynthesis.getVoices();
-          if (voices.length === 0) return;
-          const preferred = [
-            'Google UK English Female', 'Google US English', 'Samantha', 'Karen',
-            'Daniel', 'Alex', 'Moira', 'Tessa', 'Fiona', 'Victoria'
-          ];
-          for (const name of preferred) {
-            const match = voices.find(v => v.name.includes(name));
-            if (match) { selectedVoice = match; break; }
-          }
-          if (!selectedVoice) {
-            selectedVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
-          }
-          if (selectedVoice) {
-            addPawTraceLog('info', 'voice', 'TTS voice: ' + selectedVoice.name);
-          }
+        if (!('speechSynthesis' in window)) { ttsEnabled = false; return; }
+        selectedVoice = pickVoice();
+        if (!selectedVoice) {
+          window.speechSynthesis.onvoiceschanged = () => { selectedVoice = pickVoice(); };
         }
-        window.speechSynthesis.onvoiceschanged = loadVoices;
-        loadVoices();
       }
-      initTTS();
-
       function speak(text) {
-        if (!ttsEnabled || !window.speechSynthesis || !text) return;
-        if (text.length > 500) text = text.substring(0, 500) + '...';
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text);
-        if (selectedVoice) utterance.voice = selectedVoice;
-        utterance.rate = 1.0;
-        utterance.pitch = 1.0;
-        utterance.volume = 0.9;
-        window.speechSynthesis.speak(utterance);
+        if (!ttsEnabled || !text || !('speechSynthesis' in window)) return;
+        try {
+          window.speechSynthesis.cancel();
+          const clean = String(text).replace(/```[\s\S]*?```/g, ' code block ').replace(/[*_`#>]/g, '').slice(0, 1200);
+          if (!clean.trim()) return;
+          const u = new SpeechSynthesisUtterance(clean);
+          if (selectedVoice) u.voice = selectedVoice;
+          u.rate = 1.0; u.pitch = 1.0; u.volume = 1.0;
+          window.speechSynthesis.speak(u);
+        } catch (e) { try { addLog('warn', 'voice', 'TTS failed: ' + e.message); } catch (_) {} }
       }
-
       window._pawSpeak = speak;
-      window._pawTTSEnabled = () => ttsEnabled && isListening;
+      window._pawTTSEnabled = () => ttsEnabled;
+      window._pawSetTTSEnabled = (v) => { ttsEnabled = !!v; if (!ttsEnabled) try { window.speechSynthesis.cancel(); } catch(_){} };
 
-      // ─── Voice Input (STT) ───
-      voiceBtn.addEventListener('click', () => {
-        if (!SpeechRecognition) {
-          addChatMessage('agent', 'Voice input is not supported in this environment.');
-          return;
+      // ─── Recording ───
+      function cleanupStream() {
+        if (audioStream) {
+          try { audioStream.getTracks().forEach(t => t.stop()); } catch(_) {}
+          audioStream = null;
         }
-        if (isListening) {
-          stopListening();
-          // Re-enable wake word after manual stop
-          if (!wakeWordActive) setTimeout(() => startWakeWord(), 500);
-          return;
-        }
-        // Stop wake word before starting full voice
-        stopWakeWord();
-        startListening();
-      });
-
-      function startListening() {
-        if (!SpeechRecognition) return;
-        voiceRetries = 0;
-        createRecognition();
-      }
-
-      function createRecognition() {
-        if (!SpeechRecognition) return;
-        recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
-        recognition.maxAlternatives = 1;
-
-        recognition.onstart = () => {
-          isListening = true;
-          voiceRetries = 0;
-          voiceBtn.classList.add('listening');
-          voiceBtn.title = 'Listening... Click to stop';
-          addLog('info', 'voice', 'Voice mode active — speak to interact');
-          addPawTraceLog('info', 'voice', 'Voice mode ON');
-        };
-
-        recognition.onresult = (event) => {
-          let finalTranscript = '';
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            if (event.results[i].isFinal) {
-              finalTranscript += event.results[i][0].transcript;
-            }
-          }
-          if (finalTranscript.trim()) {
-            const text = finalTranscript.trim();
-            addPawTraceLog('info', 'voice', 'Heard: ' + text.substring(0, 80));
-            sendMessage(text);
-          }
-        };
-
-        recognition.onerror = (event) => {
-          if (event.error === 'aborted') return;
-          if (event.error === 'no-speech') return;
-          if (event.error === 'not-allowed') {
-            addChatMessage('agent', 'Microphone access was denied. Please allow mic access in your system settings.');
-            addLog('error', 'voice', 'Mic permission denied');
-            stopListening();
-            return;
-          }
-          if (event.error === 'network') {
-            addLog('warn', 'voice', 'Voice requires internet for speech recognition (uses Google services)');
-          }
-          addLog('warn', 'voice', 'Voice error: ' + event.error);
-        };
-
-        recognition.onend = () => {
-          if (isListening && voiceRetries < MAX_VOICE_RETRIES) {
-            voiceRetries++;
-            // Don't immediately restart - wait to give the mic a chance to release
-            setTimeout(() => {
-              if (isListening && recognition) {
-                try { 
-                  recognition.start(); 
-                } catch(e) {
-                  addLog('warn', 'voice', 'Voice restart attempt ' + voiceRetries + ' failed: ' + e.message);
-                  if (voiceRetries >= MAX_VOICE_RETRIES) {
-                    stopListening();
-                  }
-                }
-              }
-            }, 800);
-          } else if (isListening) {
-            addLog('warn', 'voice', 'Voice recognition stopped after ' + MAX_VOICE_RETRIES + ' retries — click mic to restart');
-            stopListening();
-          }
-        };
-
-        try {
-          recognition.start();
-        } catch(e) {
-          addLog('warn', 'voice', 'Could not start voice input: ' + e.message);
-          stopListening();
-        }
-      }
-
-      function stopListening() {
-        isListening = false;
         voiceBtn.classList.remove('listening');
-        voiceBtn.title = 'Voice Mode';
-        if (recognition) {
-          try { recognition.abort(); } catch(e) {}
-          recognition = null;
-        }
-        addPawTraceLog('info', 'voice', 'Voice mode OFF');
+        isRecording = false;
+        if (stopTimer) { clearTimeout(stopTimer); stopTimer = null; }
       }
 
-      // ─── "Hey PAW" Wake Word ───
-      let wakeWordRestartTimer = null;
-      let wakeWordCreating = false;
-      
-      function startWakeWord() {
-        if (!SpeechRecognition) return;
-        if (wakeWordActive) return; // Already running
-        if (isListening) return; // Full voice mode is active
-        if (wakeWordCreating) return; // Prevent concurrent creation attempts
-
-        wakeWordCreating = true;
+      async function startRecording() {
+        if (isRecording) return;
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          try { addChatMessage('agent', 'Microphone API is not available in this environment.'); } catch(_){}
+          return;
+        }
+        if (typeof MediaRecorder === 'undefined') {
+          try { addChatMessage('agent', 'MediaRecorder is not supported.'); } catch(_){}
+          return;
+        }
         try {
-          // Clean up old instance if exists
-          if (wakeWordRecognition) {
-            try { wakeWordRecognition.abort(); } catch(e) {}
-            wakeWordRecognition = null;
-          }
-
-          wakeWordRecognition = new SpeechRecognition();
-          wakeWordRecognition.continuous = true;
-          wakeWordRecognition.interimResults = true;
-          wakeWordRecognition.lang = 'en-US';
-
-          wakeWordRecognition.onresult = (event) => {
-            for (let i = event.resultIndex; i < event.results.length; i++) {
-              const transcript = event.results[i][0].transcript.toLowerCase().trim();
-              // Match various pronunciations of "Hey PAW"
-              if (transcript.includes('hey paw') || transcript.includes('hey pa') || 
-                  transcript.includes('hey paul') || transcript.includes('hey pow') ||
-                  transcript.includes('a paw') || transcript.includes('hey pah')) {
-                addPawTraceLog('info', 'voice', 'Wake word detected: "' + transcript + '"');
-                addLog('info', 'voice', '"Hey PAW" detected — activating voice mode');
-                addChatMessage('agent', 'Hey! I\'m listening. Go ahead.');
-                stopWakeWord();
-                setTimeout(() => startListening(), 200);
-                return;
-              }
-            }
+          audioStream = await navigator.mediaDevices.getUserMedia({
+            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+          });
+          let mime = 'audio/webm';
+          if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) mime = 'audio/webm;codecs=opus';
+          else if (MediaRecorder.isTypeSupported('audio/ogg;codecs=opus')) mime = 'audio/ogg;codecs=opus';
+          else if (MediaRecorder.isTypeSupported('audio/mp4')) mime = 'audio/mp4';
+          mediaRecorder = new MediaRecorder(audioStream, { mimeType: mime });
+          chunks = [];
+          mediaRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+          mediaRecorder.onerror = (e) => {
+            try { addLog('error', 'voice', 'Recorder error: ' + (e.error && e.error.message || 'unknown')); } catch(_){}
+            cleanupStream();
           };
-
-          wakeWordRecognition.onerror = (event) => {
-            if (event.error === 'aborted' || event.error === 'no-speech' || event.error === 'net-timeout') return;
-            if (event.error === 'not-allowed') {
-              addLog('warn', 'voice', 'Wake word needs mic permission');
-              wakeWordActive = false;
-              wakeWordCreating = false;
+          mediaRecorder.onstop = async () => {
+            const recMime = mime;
+            const blob = new Blob(chunks, { type: recMime });
+            chunks = [];
+            cleanupStream();
+            if (blob.size < 800) {
+              try { addLog('warn', 'voice', 'No audio captured (too short)'); } catch(_){}
               return;
             }
-            // Log other errors but don't spam
-            addLog('warn', 'voice', 'Wake word error: ' + event.error);
-          };
-
-          wakeWordRecognition.onend = () => {
-            // Don't auto-restart wake word - it causes constant mic access flashing
-            // Users must enable wake word explicitly via settings or agent command
-            if (wakeWordActive) {
-              wakeWordActive = false;
-              addPawTraceLog('info', 'voice', 'Wake word listener stopped');
+            try { addLog('info', 'voice', 'Sending ' + Math.round(blob.size / 1024) + ' KB to STT...'); } catch(_){}
+            try {
+              const r = await fetch('http://127.0.0.1:18789/api/voice/stt', {
+                method: 'POST',
+                headers: { 'Content-Type': recMime },
+                body: blob
+              });
+              const j = await r.json();
+              if (j && j.ok && j.transcript && j.transcript.trim()) {
+                const text = j.transcript.trim();
+                try { addLog('info', 'voice', 'Heard: ' + text); } catch(_){}
+                if (typeof sendMessage === 'function') {
+                  sendMessage(text);
+                } else if (typeof addChatMessage === 'function') {
+                  addChatMessage('user', text);
+                }
+              } else {
+                const err = (j && j.error) ? j.error : 'no transcript';
+                try { addChatMessage('agent', 'Voice transcription failed: ' + err); } catch(_){}
+              }
+            } catch (e) {
+              try { addChatMessage('agent', 'Voice request failed: ' + e.message); } catch(_){}
             }
           };
-
-          wakeWordActive = true;
-          wakeWordCreating = false;
-          wakeWordRecognition.start();
-          addPawTraceLog('info', 'voice', '"Hey PAW" wake word listener active');
-        } catch(e) {
-          wakeWordActive = false;
-          wakeWordCreating = false;
-          addLog('warn', 'voice', 'Could not start wake word listener: ' + e.message);
+          mediaRecorder.start();
+          isRecording = true;
+          voiceBtn.classList.add('listening');
+          voiceBtn.title = 'Recording... click to stop';
+          try { addLog('info', 'voice', 'Recording started (click mic to stop, max 30s)'); } catch(_){}
+          stopTimer = setTimeout(() => { if (isRecording) stopRecording(); }, 30000);
+        } catch (err) {
+          cleanupStream();
+          try { addChatMessage('agent', 'Microphone access denied or unavailable: ' + err.message); } catch(_){}
+          try { addLog('error', 'voice', 'getUserMedia failed: ' + err.message); } catch(_){}
         }
       }
 
-      function stopWakeWord() {
-        wakeWordActive = false;
-        if (wakeWordRestartTimer) {
-          clearTimeout(wakeWordRestartTimer);
-          wakeWordRestartTimer = null;
-        }
-        if (wakeWordRecognition) {
-          try { wakeWordRecognition.abort(); } catch(e) {}
-          wakeWordRecognition = null;
+      function stopRecording() {
+        if (!isRecording) return;
+        try {
+          if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            mediaRecorder.stop();
+          } else {
+            cleanupStream();
+          }
+        } catch (e) {
+          cleanupStream();
         }
       }
 
-      // Expose wake word controls for hub_control messages
-      window._pawStartWakeWord = startWakeWord;
-      window._pawStopWakeWord = stopWakeWord;
+      voiceBtn.addEventListener('click', () => {
+        if (isRecording) stopRecording();
+        else startRecording();
+      });
 
-      // Wake word is disabled by default to avoid constant mic access / flashing icon.
-      // Users can enable it via voice settings or by asking the agent.
-      // To auto-start, uncomment the block below:
-      // setTimeout(() => {
-      //   if (!isListening && SpeechRecognition) {
-      //     startWakeWord();
-      //   }
-      // }, 3000);
+      // Cleanup on unload to release mic immediately
+      window.addEventListener('beforeunload', cleanupStream);
+
+      initTTS();
+
+      // Wake word disabled in this build (push-to-talk only) — was causing
+      // continuous mic activation and OS-level mic indicator flicker.
+      window._pawStartWakeWord = () => { try { addLog('info', 'voice', 'Wake word disabled — use push-to-talk (mic button).'); } catch(_){} };
+      window._pawStopWakeWord = () => {};
     })();
-
     // ─── Multi-Agent Management ───
     (function() {
       const addBtn = document.getElementById('mc-add-agent');

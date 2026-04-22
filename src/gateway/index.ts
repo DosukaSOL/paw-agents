@@ -15,6 +15,7 @@ import { getDashboardHTML } from '../dashboard/index';
 import { missionControl } from '../mission-control/index';
 import { crossAppSync } from '../sync/cross-app';
 import { StreamingEngine, StreamChunk } from '../models/streaming';
+import { MODEL_CATALOG, findProvider, findModel, recommendedModel } from '../models/catalog';
 import { getCostTracker, getUserDailyBudgetUsd, CostTracker } from '../intelligence/cost-tracker';
 
 interface ConnectedClient {
@@ -192,6 +193,42 @@ export class PawGateway {
       // Webhook endpoint for external triggers
       if (req.url?.startsWith('/webhook/') && req.method === 'POST') {
         this.handleWebhook(req, res);
+        return;
+      }
+
+      // ─── Providers / Models catalog ───
+      if (req.url === '/api/providers' && req.method === 'GET') {
+        const router = this.agent.getRouter();
+        const registered = new Set(router.getAvailableProviders());
+        const activeProvider = router.getDefaultProviderName();
+        const payload = {
+          active_provider: activeProvider,
+          active_model: activeProvider ? router.getProviderModel(activeProvider) : null,
+          providers: MODEL_CATALOG.map(p => ({
+            id: p.id,
+            label: p.label,
+            envKey: p.envKey,
+            docsUrl: p.docsUrl,
+            signupUrl: p.signupUrl,
+            free: !!p.free,
+            configured: registered.has(p.id),
+            current_model: registered.has(p.id) ? router.getProviderModel(p.id) : null,
+            models: p.models,
+          })),
+        };
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify(payload));
+        return;
+      }
+
+      if (req.url === '/api/providers/select' && req.method === 'POST') {
+        this.handleSelectProvider(req, res);
+        return;
+      }
+
+      // ─── Voice STT (audio upload → transcript) ───
+      if (req.url === '/api/voice/stt' && req.method === 'POST') {
+        this.handleVoiceSTT(req, res);
         return;
       }
 
@@ -624,6 +661,175 @@ You have tools for Solana, browser automation, file ops, and more — but only m
         res.end(JSON.stringify({ error: 'Internal server error' }));
       }
     });
+  }
+
+  // ─── Provider switch handler ───
+  private handleSelectProvider(req: IncomingMessage, res: ServerResponse): void {
+    const chunks: Buffer[] = [];
+    let size = 0;
+    const MAX_BODY = 4096;
+    let exceeded = false;
+    req.on('data', (c: Buffer) => {
+      size += c.length;
+      if (size > MAX_BODY) {
+        exceeded = true;
+        res.writeHead(413, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Body too large' }));
+        req.destroy();
+        return;
+      }
+      chunks.push(c);
+    });
+    req.on('end', () => {
+      if (exceeded) return;
+      try {
+        const body = JSON.parse(Buffer.concat(chunks).toString('utf-8')) as { provider?: string; model?: string };
+        const provider = String(body.provider ?? '').trim();
+        const model = String(body.model ?? '').trim();
+        if (!provider) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'provider is required' }));
+          return;
+        }
+        const catalogProvider = findProvider(provider);
+        if (!catalogProvider) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: `Unknown provider "${provider}"` }));
+          return;
+        }
+        const router = this.agent.getRouter();
+        const setProv = router.setDefaultProvider(provider);
+        if (!setProv.ok) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: setProv.error }));
+          return;
+        }
+        const targetModel = model || (recommendedModel(provider)?.id ?? '');
+        if (targetModel) {
+          // If user passed an unknown model, allow it but warn (provider may have new models not in catalog yet)
+          const known = !!findModel(provider, targetModel);
+          const setModel = router.setProviderModel(provider, targetModel);
+          if (!setModel.ok) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: setModel.error }));
+            return;
+          }
+          // Mutate live config so syncs / cost tracking stay consistent
+          (config.models as any).defaultProvider = provider;
+          if ((config.models as any)[provider]) {
+            (config.models as any)[provider].model = targetModel;
+          }
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, provider, model: targetModel, known_model: known }));
+        } else {
+          (config.models as any).defaultProvider = provider;
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ ok: true, provider, model: router.getProviderModel(provider) ?? null }));
+        }
+        // Push a fresh sync to all clients so the UI updates
+        this.broadcastSyncToAll('hub' as ChannelType);
+      } catch (err) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Invalid JSON body' }));
+      }
+    });
+    req.on('error', () => {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Request error' }));
+    });
+  }
+
+  // ─── Voice STT handler (audio upload → transcript) ───
+  private async handleVoiceSTT(req: IncomingMessage, res: ServerResponse): Promise<void> {
+    const chunks: Buffer[] = [];
+    let size = 0;
+    const MAX_AUDIO = 10 * 1024 * 1024; // 10MB cap
+    let exceeded = false;
+    req.on('data', (c: Buffer) => {
+      size += c.length;
+      if (size > MAX_AUDIO) {
+        exceeded = true;
+        res.writeHead(413, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Audio too large (max 10MB)' }));
+        req.destroy();
+        return;
+      }
+      chunks.push(c);
+    });
+    req.on('end', async () => {
+      if (exceeded) return;
+      const audio = Buffer.concat(chunks);
+      if (audio.length === 0) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Empty audio body' }));
+        return;
+      }
+      const contentType = req.headers['content-type'] ?? 'audio/webm';
+      try {
+        const transcript = await this.transcribeAudio(audio, contentType);
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ ok: true, transcript }));
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: (err as Error).message }));
+      }
+    });
+    req.on('error', () => {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Upload error' }));
+    });
+  }
+
+  // ─── Transcribe with OpenAI Whisper API first, fall back to local whisper CLI. ───
+  private async transcribeAudio(audio: Buffer, contentType: string): Promise<string> {
+    const openaiKey = config.models.openai?.apiKey;
+    if (openaiKey) {
+      try {
+        const ext = contentType.includes('mp3') ? 'mp3'
+          : contentType.includes('wav') ? 'wav'
+          : contentType.includes('ogg') ? 'ogg'
+          : contentType.includes('mp4') || contentType.includes('m4a') ? 'm4a'
+          : 'webm';
+        // Use OpenAI Whisper (cheap, fast, ~$0.006/min)
+        const form = new FormData();
+        const blob = new Blob([new Uint8Array(audio)], { type: contentType || 'audio/webm' });
+        form.append('file', blob, `voice.${ext}`);
+        form.append('model', 'whisper-1');
+        const resp = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${openaiKey}` },
+          body: form,
+        });
+        if (!resp.ok) {
+          const errText = await resp.text().catch(() => '');
+          throw new Error(`OpenAI Whisper API error ${resp.status}: ${errText.slice(0, 200)}`);
+        }
+        const data = await resp.json() as { text?: string };
+        const text = (data.text ?? '').trim();
+        if (text) return text;
+        throw new Error('Empty transcript from Whisper API');
+      } catch (err) {
+        console.warn('[Voice STT] OpenAI Whisper failed, trying local whisper:', (err as Error).message);
+      }
+    }
+
+    // Fallback: local whisper CLI via SpeechToText engine
+    try {
+      const { SpeechToText } = await import('../voice/stt');
+      const stt = new SpeechToText();
+      const ext = contentType.includes('mp3') ? 'mp3'
+        : contentType.includes('wav') ? 'wav'
+        : contentType.includes('ogg') ? 'ogg'
+        : contentType.includes('m4a') ? 'm4a'
+        : 'webm';
+      const result = await stt.transcribeBuffer(audio, ext);
+      return (result.text ?? '').trim() || '(no speech detected)';
+    } catch (err) {
+      throw new Error(
+        'Voice STT unavailable. Add OPENAI_API_KEY to .env (Whisper API), or install local whisper: pip install openai-whisper. Detail: ' +
+          (err as Error).message,
+      );
+    }
   }
 
   private getActiveChannels(): string[] {

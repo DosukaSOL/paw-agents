@@ -520,6 +520,35 @@ export class ModelRouter {
     throw new Error('No AI model providers available. Check your API keys in .env');
   }
 
+  // ─── Runtime provider/model switching ───
+  // Used by the Hub picker (POST /api/providers/select) and by the agent CLI.
+  setDefaultProvider(name: string): { ok: boolean; error?: string } {
+    const exists = this.providers.find(p => p.name === name);
+    if (!exists) return { ok: false, error: `Provider "${name}" is not registered. Add an API key in .env and restart.` };
+    this.defaultProviderName = name;
+    console.log(`[ModelRouter] Default provider switched → ${name}`);
+    return { ok: true };
+  }
+
+  setProviderModel(name: string, model: string): { ok: boolean; error?: string } {
+    const provider = this.providers.find(p => p.name === name);
+    if (!provider) return { ok: false, error: `Provider "${name}" is not registered.` };
+    if (!model || typeof model !== 'string') return { ok: false, error: 'Model id is required.' };
+    // Light sanity check — alphanumeric + a few safe punctuation chars
+    if (!/^[a-zA-Z0-9._:\/-]+$/.test(model)) return { ok: false, error: 'Invalid model id.' };
+    provider.model = model;
+    console.log(`[ModelRouter] ${name} model switched → ${model}`);
+    return { ok: true };
+  }
+
+  getDefaultProviderName(): string {
+    return this.defaultProviderName;
+  }
+
+  getProviderModel(name: string): string | undefined {
+    return this.providers.find(p => p.name === name)?.model;
+  }
+
   getAvailableProviders(): string[] {
     return this.providers.map(p => p.name);
   }
